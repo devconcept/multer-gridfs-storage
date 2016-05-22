@@ -82,15 +82,15 @@ describe('GridFS storage', function () {
             expect(result).to.have.deep.property('files[1].metadata').that.is.null;
         });
 
-        it('should have a _id property with the stored file id', function () {
-            expect(result).to.have.deep.property('files[0]._id').that.is.a('string');
-            expect(result).to.have.deep.property('files[1]._id').that.is.a('string');
+        it('should have a id property with the stored file id', function () {
+            expect(result).to.have.deep.property('files[0].id').that.is.a('string');
+            expect(result).to.have.deep.property('files[1].id').that.is.a('string');
         });
 
-        it('should have a file property with the stored file info', function () {
-            expect(result).to.have.deep.property('files[0].file')
+        it('should have a grid property with the stored file info', function () {
+            expect(result).to.have.deep.property('files[0].grid')
                 .that.have.all.keys(['chunkSize', 'contentType', 'filename', 'length', 'md5', 'uploadDate', '_id']);
-            expect(result).to.have.deep.property('files[1].file')
+            expect(result).to.have.deep.property('files[1].grid')
                 .that.have.all.keys(['chunkSize', 'contentType', 'filename', 'length', 'md5', 'uploadDate', '_id']);
         });
 

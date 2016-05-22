@@ -252,6 +252,8 @@ Key | Description
 --- | --
 `filename` | The name of the file within the database
 `metadata` | The stored metadata of the file
+`id` | The id of the stored file
+`grid` | The GridFS information of the stored file
 
 To see all the other properties of the file object check the Multer's github repository
 
