@@ -288,12 +288,12 @@ Key | Description
 `id` | The id of the stored file
 `grid` | The GridFS information of the stored file
 
-To see all the other properties of the file object check the Multer's github repository
+To see all the other properties of the file object check the Multer's [documentation](https://github.com/expressjs/multer#file-information).
 
 ## Events
 
 Each storage object is also a standard Node.js Event Emitter. This is done to ensure that some 
-objects are made available to the developer after they are instantiated since some options
+objects are made available after they are instantiated since some options
 generate asyncronous database connections that needs to be established before those objects
 are referenced.
 
@@ -352,7 +352,15 @@ $ npm install
 $ npm test
 ```
 
-Tests are written with mocha and chai. You can also run
+Tests are written with [mocha](https://mochajs.org/) and [chai](http://chaijs.com/). You can also run the tests with:
+
+In case you don't have mocha installed globally run
+
+```bash
+$ npm install mocha -g
+```
+
+and then run
 
 ```bash
 $ mocha
