@@ -3,6 +3,7 @@ var chai = require('chai');
 var expect = chai.expect;
 var GridFsStorage = require('../index');
 var setting = require('./utils/settings');
+var uploads = require('./utils/uploads');
 var request = require('supertest');
 var multer = require('multer');
 var mongo = require('mongodb');
@@ -10,10 +11,6 @@ var MongoClient = mongo.MongoClient;
 const GridFS = require('gridfs-stream');
 
 var app = express();
-
-var files = ['sample1.jpg', 'sample2.jpg'].map(function (file) {
-    return __dirname + '/attachments/' + file;
-});
 
 describe('GridFS storage', function () {
     var result,
@@ -45,11 +42,11 @@ describe('GridFS storage', function () {
             });
 
             app.post('/url', uploadUrl.array('photos', 2), function (req, res) {
-                res.send({headers: req.headers, files: req.files});
+                res.send({headers: req.headers, files: req.files, body: req.body});
             });
 
             app.post('/gfs', uploadGfs.array('photos', 2), function (req, res) {
-                res.send({headers: req.headers, files: req.files});
+                res.send({headers: req.headers, files: req.files, body: req.body});
             });
 
             done();
@@ -60,8 +57,8 @@ describe('GridFS storage', function () {
         beforeEach(function (done) {
             request(app)
                 .post('/url')
-                .attach('photos', files[0])
-                .attach('photos', files[1])
+                .attach('photos', uploads.files[0])
+                .attach('photos', uploads.files[1])
                 .end(function (err, res) {
                     result = res.body;
                     done();
@@ -73,8 +70,8 @@ describe('GridFS storage', function () {
         });
 
         it('should use a 16 bytes long in hexadecimal format naming by default', function () {
-            expect(result).to.have.deep.property('files[0].filename').that.matches(/[a-f0-9]{32}/);
-            expect(result).to.have.deep.property('files[1].filename').that.matches(/[a-f0-9]{32}/);
+            expect(result).to.have.deep.property('files[0].filename').that.matches(/^[a-f0-9]{32}$/);
+            expect(result).to.have.deep.property('files[1].filename').that.matches(/^[a-f0-9]{32}$/);
         });
 
         it('should have a metadata property with the value null', function () {
@@ -112,8 +109,8 @@ describe('GridFS storage', function () {
         beforeEach(function (done) {
             request(app)
                 .post('/gfs')
-                .attach('photos', files[0])
-                .attach('photos', files[1])
+                .attach('photos', uploads.files[0])
+                .attach('photos', uploads.files[1])
                 .end(function (err, res) {
                     result = res.body;
                     done();
@@ -124,7 +121,29 @@ describe('GridFS storage', function () {
             expect(result.files).to.have.length(2);
         });
 
-        afterEach(function () {
+        it('should use a 16 bytes long in hexadecimal format naming by default', function () {
+            expect(result).to.have.deep.property('files[0].filename').that.matches(/^[a-f0-9]{32}$/);
+            expect(result).to.have.deep.property('files[1].filename').that.matches(/^[a-f0-9]{32}$/);
+        });
+
+        it('should have a metadata property with the value null', function () {
+            expect(result).to.have.deep.property('files[0].metadata').that.is.null;
+            expect(result).to.have.deep.property('files[1].metadata').that.is.null;
+        });
+
+        it('should have a id property with the stored file id', function () {
+            expect(result).to.have.deep.property('files[0].id').that.is.a('string');
+            expect(result).to.have.deep.property('files[1].id').that.is.a('string');
+        });
+
+        it('should have a grid property with the stored file info', function () {
+            expect(result).to.have.deep.property('files[0].grid')
+                .that.have.all.keys(['chunkSize', 'contentType', 'filename', 'length', 'md5', 'uploadDate', '_id']);
+            expect(result).to.have.deep.property('files[1].grid')
+                .that.have.all.keys(['chunkSize', 'contentType', 'filename', 'length', 'md5', 'uploadDate', '_id']);
+        });
+
+        afterEach(function (done) {
             db.collection('fs.files').deleteMany({})
                 .then(function () {
                     return db.collection('fs.chunks').deleteMany({});
@@ -143,7 +162,3 @@ describe('GridFS storage', function () {
     });
 
 });
-
-
-
-

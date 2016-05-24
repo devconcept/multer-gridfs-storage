@@ -1,95 +1,80 @@
-var storage = require('../index');
-var Grid = require('gridfs-stream');
-var mongo = require('mongodb');
+var express = require('express');
 var chai = require('chai');
 var expect = chai.expect;
-var settings = require('./utils/settings');
-var MongoClient = mongo.MongoClient;
+var GridFsStorage = require('../index');
+var setting = require('./utils/settings');
+var uploads = require('./utils/uploads');
+var request = require('supertest');
+var multer = require('multer');
 
-describe('module options', function () {
-    var instance;
-    this.timeout(5000);
+var app = express();
 
-    it('should create a mongodb connection when using the url parameter', function (done) {
-        instance = storage({
-            url: settings.mongoUrl()
+
+describe('all configuration options', function () {
+    var result,
+        db;
+
+    before(function (done) {
+        var storage = GridFsStorage({
+            url: setting.mongoUrl(),
+            metadata: function (req, file, cb) {
+                cb(null, req.body);
+            },
+            log: true,
+            logLevel: 'all'
         });
-        setTimeout(function () {
-            expect(instance.gfs).to.be.an.instanceof(Grid);
-            done();
-        }, 2000);
-    });
 
-    it('should use an existing GridFS connection when using the gfs parameter', function (done) {
-        MongoClient.connect(settings.mongoUrl(), function (err, db) {
-            var gfs = Grid(db, mongo);
-            instance = storage({
-                gfs: gfs
-            });
-            expect(instance.gfs).to.be.an.instanceof(Grid);
-            expect(instance.gfs).to.be.equal(gfs);
-            done();
+        var upload = multer({
+            storage: storage
+        });
+
+        app.post('/conf', upload.array('photos', 2), function (req, res) {
+            res.send({headers: req.headers, files: req.files, body: req.body});
+        });
+
+        storage.once('connection', function (gridfs, database) {
+            db = database;
+
+            request(app)
+                .post('/conf')
+                .attach('photos', uploads.files[0])
+                .attach('photos', uploads.files[1])
+                .field('field', 'field')
+                .end(function (err, res) {
+                    result = res.body;
+                    done();
+                });
         });
     });
 
-    it('should throw an error when no url and gfs parameters are passed in', function () {
-        var fn = function () {
-            instance = storage({});
-        };
-        expect(fn).to.throw(Error, /^Missing required configuration$/);
+    it('should store the files on upload', function () {
+        expect(result.files).to.have.length(2);
     });
 
-    it('should disable logging by default', function () {
-        instance = storage({
-            url: settings.mongoUrl()
-        });
-        expect(instance.log).to.equal(false);
+    it('should use a 16 bytes long in hexadecimal format naming by default', function () {
+        expect(result).to.have.deep.property('files[0].filename').that.matches(/[a-f0-9]{32}/);
+        expect(result).to.have.deep.property('files[1].filename').that.matches(/[a-f0-9]{32}/);
     });
 
-    it('should set the logLevel to file by default', function () {
-        instance = storage({
-            url: settings.mongoUrl()
-        });
-        expect(instance.logLevel).to.equal('file');
+    it('should have a metadata property with the value null', function () {
+        expect(result).to.have.deep.property('files[0].metadata').that.have.keys('field');
+        expect(result).to.have.deep.property('files[1].metadata').that.have.keys('field');
     });
 
-    it('should change the default naming function', function () {
-        var namingFn = function (req, file, cb) {
-            cb(null, 'foo' + Date.now());
-        };
-        instance = storage({
-            url: settings.mongoUrl(),
-            filename: namingFn
-        });
-        expect(instance.getFilename).to.be.a('function');
-        expect(instance.getFilename).to.equal(namingFn);
+    it('should have a id property with the stored file id', function () {
+        expect(result).to.have.deep.property('files[0].id').that.is.a('string');
+        expect(result).to.have.deep.property('files[1].id').that.is.a('string');
     });
 
-    it('should change the default metadata function', function () {
-        var metadataFn = function (req, file, cb) {
-            cb(null, 'foo' + Date.now());
-        };
-        instance = storage({
-            url: settings.mongoUrl(),
-            metadata: metadataFn
-        });
-        expect(instance.getMetadata).to.be.a('function');
-        expect(instance.getMetadata).to.equal(metadataFn);
+    it('should have a grid property with the stored file info', function () {
+        expect(result).to.have.deep.property('files[0].grid')
+            .that.have.keys(['chunkSize', 'contentType', 'filename', 'length', 'md5', 'uploadDate', 'metadata', '_id']);
+        expect(result).to.have.deep.property('files[1].grid')
+            .that.have.keys(['chunkSize', 'contentType', 'filename', 'length', 'md5', 'uploadDate', 'metadata', '_id']);
     });
 
-    afterEach(function () {
-        instance.removeAllListeners('connection');
-        if (instance.gfs) {
-            instance.gfs.db.close(false);
-        } else {
-            instance.once('connection', function (gfs, db) {
-                db.close(false);
-            });
-        }
+    after(function (done) {
+        db.dropDatabase(done);
     });
 
 });
-
-
-
-
