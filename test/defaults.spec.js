@@ -8,6 +8,7 @@ var MongoClient = mongo.MongoClient;
 
 describe('module default options', function () {
     var instance;
+    this.slow(2000);
     this.timeout(5000);
 
     it('should create a mongodb connection when using the url parameter', function (done) {

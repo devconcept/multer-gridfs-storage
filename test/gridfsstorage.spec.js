@@ -8,7 +8,7 @@ var request = require('supertest');
 var multer = require('multer');
 var mongo = require('mongodb');
 var MongoClient = mongo.MongoClient;
-const GridFS = require('gridfs-stream');
+var GridFS = require('gridfs-stream');
 
 var app = express();
 
