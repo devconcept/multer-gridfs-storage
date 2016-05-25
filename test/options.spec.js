@@ -90,13 +90,13 @@ describe('module usage', function () {
             done();
         });
 
-        /*it('should have a id property with the value sample(n + 1)', function (done) {
+        it('should have a id property that matches an ObjectId format', function (done) {
             result.files.forEach(function (file) {
                 expect(file).to.have.property('id').that.is.a('string');
                 expect(file).to.have.property('id').that.matches(/^[a-f0-9]{24}$/);
             });
             done();
-        });*/
+        });
 
         it('should have a grid property with the stored file info', function (done) {
             result.files.forEach(function (file) {
