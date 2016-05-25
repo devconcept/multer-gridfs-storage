@@ -6,10 +6,22 @@ var expect = chai.expect;
 var settings = require('./utils/settings');
 var MongoClient = mongo.MongoClient;
 
+chai.use(require('chai-spies'));
+
 describe('module default options', function () {
     var instance;
-    this.slow(2000);
-    this.timeout(5000);
+
+    it('should emit a connection event when using the url parameter', function (done) {
+        var connectionSpy = chai.spy();
+        instance = storage({
+            url: settings.mongoUrl()
+        });
+        instance.once('connection', connectionSpy);
+        setTimeout(function () {
+            expect(connectionSpy).to.have.been.called();
+            done();
+        }, 1900);
+    });
 
     it('should create a mongodb connection when using the url parameter', function (done) {
         instance = storage({
@@ -19,7 +31,7 @@ describe('module default options', function () {
         setTimeout(function () {
             expect(instance.gfs).to.be.an.instanceof(Grid);
             done();
-        }, 2000);
+        }, 1900);
     });
 
     it('should use an existing GridFS connection when using the gfs parameter', function (done) {

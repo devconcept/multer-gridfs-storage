@@ -16,56 +16,35 @@ chai.use(require('chai-interface'));
 var app = express();
 
 describe('GridFS storage', function () {
-    var result,
-        db, gfs;
+    var result;
 
-    before(function (done) {
-        MongoClient.connect(setting.mongoUrl(), function (err, database) {
-            if (err) {
-                return done(err);
-            }
-
-            db = database;
-            gfs = Grid(db, mongo);
-
-            var storageUrl = GridFsStorage({
+    describe('url created instance', function () {
+        var db, gfs;
+        before(function (done) {
+            var storage = GridFsStorage({
                 url: setting.mongoUrl()
             });
 
-            var storageGfs = GridFsStorage({
-                gfs: gfs
+            var upload = multer({
+                storage: storage
             });
 
-            var uploadUrl = multer({
-                storage: storageUrl
-            });
-
-            var uploadGfs = multer({
-                storage: storageGfs
-            });
-
-            app.post('/url', uploadUrl.array('photos', 2), function (req, res) {
+            app.post('/url', upload.array('photos', 2), function (req, res) {
                 res.send({headers: req.headers, files: req.files, body: req.body});
             });
 
-            app.post('/gfs', uploadGfs.array('photos', 2), function (req, res) {
-                res.send({headers: req.headers, files: req.files, body: req.body});
+            storage.on('connection', function (gridfs, database) {
+                gfs = gridfs;
+                db = database;
+                request(app)
+                    .post('/url')
+                    .attach('photos', uploads.files[0])
+                    .attach('photos', uploads.files[1])
+                    .end(function (err, res) {
+                        result = res.body;
+                        done();
+                    });
             });
-
-            done();
-        });
-    });
-
-    describe('url created instance', function () {
-        beforeEach(function (done) {
-            request(app)
-                .post('/url')
-                .attach('photos', uploads.files[0])
-                .attach('photos', uploads.files[1])
-                .end(function (err, res) {
-                    result = res.body;
-                    done();
-                });
         });
 
         it('should store the files on upload', function () {
@@ -116,7 +95,7 @@ describe('GridFS storage', function () {
             done()
         });
 
-        afterEach(function (done) {
+        after(function (done) {
             db.collection('fs.files').deleteMany({})
                 .then(function () {
                     return db.collection('fs.chunks').deleteMany({});
@@ -128,18 +107,41 @@ describe('GridFS storage', function () {
                     done(err);
                 });
         });
+
     });
 
     describe('gfs created instance', function () {
-        beforeEach(function (done) {
-            request(app)
-                .post('/gfs')
-                .attach('photos', uploads.files[0])
-                .attach('photos', uploads.files[1])
-                .end(function (err, res) {
-                    result = res.body;
-                    done();
+        var db, gfs;
+        before(function (done) {
+            MongoClient.connect(setting.mongoUrl(), function (err, database) {
+                if (err) {
+                    return done(err);
+                }
+
+                db = database;
+                gfs = Grid(db, mongo);
+
+                var storage = GridFsStorage({
+                    gfs: gfs
                 });
+
+                var upload = multer({
+                    storage: storage
+                });
+
+                app.post('/gfs', upload.array('photos', 2), function (req, res) {
+                    res.send({headers: req.headers, files: req.files, body: req.body});
+                });
+
+                request(app)
+                    .post('/gfs')
+                    .attach('photos', uploads.files[0])
+                    .attach('photos', uploads.files[1])
+                    .end(function (err, res) {
+                        result = res.body;
+                        done();
+                    });
+            });
         });
 
         it('should store the files on upload', function () {
@@ -190,22 +192,13 @@ describe('GridFS storage', function () {
             done()
         });
 
-        afterEach(function (done) {
-            db.collection('fs.files').deleteMany({})
-                .then(function () {
-                    return db.collection('fs.chunks').deleteMany({});
-                })
-                .then(function () {
-                    done();
-                })
-                .catch(function (err) {
-                    done(err);
-                });
+        after(function (done) {
+            db.dropDatabase(done);
         });
     });
 
-    after(function (done) {
-        db.dropDatabase(done);
-    });
-
 });
+
+
+
+

@@ -50,7 +50,6 @@ describe('module usage', function () {
                 storage: storage
             });
 
-
             app.post('/opts', upload.array('photos', 2), function (req, res) {
                 res.send({headers: req.headers, files: req.files, body: req.body});
             });
@@ -155,7 +154,7 @@ describe('module usage', function () {
                 });
         });
 
-        it('should fail with an error', function () {
+        it('should fail with an error', function (done) {
             gfs.files.count({}, function (err, count) {
                 expect(count).to.equal(0);
                 done(err);

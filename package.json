@@ -21,6 +21,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-interface": "^2.0.3",
+    "chai-spies": "^0.7.1",
     "eslint": "^2.10.2",
     "express": "^4.13.4",
     "md5-file": "^2.0.4",

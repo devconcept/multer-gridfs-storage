@@ -14,4 +14,4 @@ services: mongodb
 env:
   - NODE_ENV=test
 before_script:
-  - sleep 30
+  - sleep 15
