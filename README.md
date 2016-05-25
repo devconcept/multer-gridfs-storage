@@ -55,11 +55,11 @@ The options parameter is an object with the following properties.
 
 Type: **Object**
 
-Required if `url` option is not present
+Required if [`url`](https://github.com/devconcept/multer-gridfs-storage#url) option is not present
 
 The [gridfs-stream](https://github.com/aheckmann/gridfs-stream/) instance to use.
 
-If this option is provided files are stored using this stream. The connection should be opened or
+If this option is provided files are stored using this stream. The connection should be open or
 the module might fail to store incoming files since no connection test is made. 
 This option is useful when you have an existing GridFS object and want to reuse it to upload your files.
 
@@ -87,7 +87,7 @@ db.open(function (err) {
 
 Type: **String**
 
-Required if `gfs` option is not present
+Required if [`gfs`](https://github.com/devconcept/multer-gridfs-storage#gfs) option is not present
 
 The mongodb connection uri. 
 
@@ -190,7 +190,7 @@ A function to control the unique identifier of the file.
 
 This function is invoked as all the others with the `req`, `file` and `callback` 
 parameters and can be used to change the default identifier ( the `_id` property)
-created by MongoDb. Please note that you must guarantee that this value is unique 
+created by MongoDb. You must guarantee that this value is unique 
 otherwise you will get an error.
 
 To use the default generated identifier invoke the callback with a [falsey](http://james.padolsey.com/javascript/truthy-falsey/) value like `null` or `undefined`.  
@@ -238,8 +238,8 @@ var storage = require('multer-gridfs-storage')({
 var upload = multer({ storage: storage });
 ```
 
-In this example the contents of the request body are stored with the file. Please note that
-this is only for illustrative purposes. If your users send passwords or other sensitive data in the request 
+In this example the contents of the request body are stored with the file. 
+This is only for illustrative purposes. If your users send passwords or other sensitive data in the request 
 those will be stored unencrypted in the database as well, inside the metadata of the file.
 
 #### log
@@ -371,4 +371,4 @@ $ mocha
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE.md)
 
 [travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
-[travis-image]: https://img.shields.io/devconcept/multer-gridfs-storage/master.svg
+[travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master
