@@ -1,5 +1,7 @@
 # Multer GridFS storage engine
 
+[![Build Status][travis-image]][travis-url]
+
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb
 
 ## Installation
@@ -367,3 +369,6 @@ $ mocha
 ## License
 
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE.md)
+
+[travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
+[travis-image]: https://img.shields.io/devconcept/multer-gridfs-storage/master.svg
