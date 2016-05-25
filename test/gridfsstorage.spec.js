@@ -109,7 +109,7 @@ describe('GridFS storage', function () {
             done();
         });
 
-        it('should have then same MD5 signature than the upload', function (done) {
+        it('should have the same MD5 signature than the upload', function (done) {
             result.files.forEach(function (file, index) {
                 expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
             });
@@ -183,7 +183,7 @@ describe('GridFS storage', function () {
             done();
         });
 
-        it('should have then same MD5 signature than the upload', function (done) {
+        it('should have the same MD5 signature than the upload', function (done) {
             result.files.forEach(function (file, index) {
                 expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
             });

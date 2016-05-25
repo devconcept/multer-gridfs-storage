@@ -22,7 +22,7 @@ describe('module usage', function () {
         db, gfs;
 
     before(function (done) {
-        MongoClient.connect(setting.mongoUrl(), function (err, database) {
+         MongoClient.connect(setting.mongoUrl(), function (err, database) {
             if (err) {
                 return done(err);
             }
@@ -98,6 +98,14 @@ describe('module usage', function () {
             done();
         });
 
+        it('should have a id property that matches an ObjectId format', function (done) {
+            result.files.forEach(function (file) {
+                expect(file).to.have.property('id').that.is.a('string');
+                expect(file).to.have.property('id').that.matches(/^[a-f0-9]{24}$/);
+            });
+            done();
+        });
+
         it('should have a grid property with the stored file info', function (done) {
             result.files.forEach(function (file) {
                 expect(file).to.have.property('grid').that.have.interface({
@@ -113,7 +121,7 @@ describe('module usage', function () {
             done();
         });
 
-        it('should have then same MD5 signature than the upload', function (done) {
+        it('should have the same MD5 signature than the upload', function (done) {
             result.files.forEach(function (file, index) {
                 expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
             });
