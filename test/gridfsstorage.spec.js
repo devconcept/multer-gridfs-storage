@@ -116,7 +116,7 @@ describe('GridFS storage', function () {
             done()
         });
 
-        afterEach(function () {
+        afterEach(function (done) {
             db.collection('fs.files').deleteMany({})
                 .then(function () {
                     return db.collection('fs.chunks').deleteMany({});
