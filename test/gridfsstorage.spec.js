@@ -8,7 +8,7 @@ var request = require('supertest');
 var multer = require('multer');
 var mongo = require('mongodb');
 var MongoClient = mongo.MongoClient;
-var GridFS = require('gridfs-stream');
+var Grid = require('gridfs-stream');
 var md5File = require('md5-file');
 
 chai.use(require('chai-interface'));
@@ -26,7 +26,7 @@ describe('GridFS storage', function () {
             }
 
             db = database;
-            gfs = GridFS(db, mongo);
+            gfs = Grid(db, mongo);
 
             var storageUrl = GridFsStorage({
                 url: setting.mongoUrl()

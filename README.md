@@ -200,18 +200,16 @@ var path = require('path');
 var storage = require('multer-gridfs-storage')({
    url: 'mongodb://localhost:27017/database',
    identifier: function(req, file, cb) {
-      var id = '';
-      for (var i = 0; i < 24; i++) {
-          id = id + Math.floor(Math.random()*16777216).toString(16);
-      }
-      cb(null, id);
+      cb(null, Math.floor(Math.random() * 1000000));
    }
 });
 var upload = multer({ storage: storage });
 ```
 
-In this example a random hex value between 0 and ffffff is used for the file identifier. Normally you shouldn't use this function
+In this example a random number is used for the file identifier. Normally you shouldn't use this function
 unless you want granular control of your file ids because auto-generated identifiers are guaranteed to be unique.
+
+Please note that the identifiers must conform to the MongoDb spec for ObjectID, that is a 24 byte hex string, 12 byte binary string or a Number.
 
 #### metadata
 
