@@ -15,6 +15,7 @@ describe('module default options', function () {
         instance = storage({
             url: settings.mongoUrl()
         });
+
         setTimeout(function () {
             expect(instance.gfs).to.be.an.instanceof(Grid);
             done();
