@@ -260,6 +260,31 @@ var storage = require('multer-gridfs-storage')({
 var upload = multer({ storage: storage });
 ```
 
+#### root
+
+Type: **String**
+
+Not required
+
+The root collection to store the files. By default this value is `null`.
+
+Example:
+
+```javascript
+var storage = require('multer-gridfs-storage')({
+   url: 'mongodb://localhost:27017/database',
+   root: 'myfiles'
+});
+var upload = multer({ storage: storage });
+```
+
+Later on you can query the GridFS collection using
+
+```javascript
+db.collection('myfiles.files')//...
+db.collection('myfiles.chunks')//...
+```
+
 #### log
 
 Type: **Boolean**

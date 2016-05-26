@@ -33,6 +33,7 @@ describe('module usage', function () {
                 cb(null, Math.floor(Math.random() * 1000000));
             },
             chunkSize: 131072,
+            root: 'myfiles',
             log: true,
             logLevel: 'all'
         });
@@ -129,10 +130,26 @@ describe('module usage', function () {
             done();
         });
 
+        it('should be stored under a different root', function (done) {
+            db.collection('myfiles.files', {strict:true}, function (err, col) {
+                expect(err).to.be.equal(null);
+                db.collection('myfiles.chunks', {strict:true}, function (err, col) {
+                    expect(err).to.be.equal(null);
+                    db.collection('fs.files', {strict:true}, function (err, col) {
+                        expect(err).not.to.be.equal(null);
+                        db.collection('fs.chunks', {strict:true}, function (err, col) {
+                            expect(err).not.to.be.equal(null);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
         after(function (done) {
-            db.collection('fs.files').deleteMany({})
+            db.collection('myfiles.files').deleteMany({})
                 .then(function () {
-                    return db.collection('fs.chunks').deleteMany({});
+                    return db.collection('myfiles.chunks').deleteMany({});
                 })
                 .then(function () {
                     done();
