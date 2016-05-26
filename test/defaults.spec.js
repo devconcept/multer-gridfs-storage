@@ -103,13 +103,13 @@ describe('module default options', function () {
         expect(instance.getIdentifier).to.equal(identifierFn);
     });
 
-    afterEach(function () {
+    afterEach(function (done) {
         instance.removeAllListeners('connection');
         if (instance.gfs) {
-            instance.gfs.db.close(false);
+            instance.gfs.db.close(false, done);
         } else {
             instance.once('connection', function (gfs, db) {
-                db.close(false);
+                db.close(false, done);
             });
         }
     });

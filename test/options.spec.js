@@ -139,13 +139,13 @@ describe('module usage', function () {
         });
 
         it('should be stored under a different root', function (done) {
-            db.collection('myfiles.files', {strict: true}, function (err, col) {
+            db.collection('myfiles.files', {strict: true}, function (err) {
                 expect(err).to.be.equal(null);
-                db.collection('myfiles.chunks', {strict: true}, function (err, col) {
+                db.collection('myfiles.chunks', {strict: true}, function (err) {
                     expect(err).to.be.equal(null);
-                    db.collection('fs.files', {strict: true}, function (err, col) {
+                    db.collection('fs.files', {strict: true}, function (err) {
                         expect(err).not.to.be.equal(null);
-                        db.collection('fs.chunks', {strict: true}, function (err, col) {
+                        db.collection('fs.chunks', {strict: true}, function (err) {
                             expect(err).not.to.be.equal(null);
                             done();
                         });
@@ -160,7 +160,7 @@ describe('module usage', function () {
                     return db.collection('myfiles.chunks').deleteMany({});
                 })
                 .then(function () {
-                    done();
+                    done()
                 })
                 .catch(function (err) {
                     done(err);
@@ -191,7 +191,9 @@ describe('module usage', function () {
 
 
     after(function (done) {
-        db.dropDatabase(done);
+        db.dropDatabase(function () {
+            db.close(true, done);
+        });
     });
 
 });

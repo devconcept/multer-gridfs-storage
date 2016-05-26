@@ -100,7 +100,7 @@ describe('GridFS storage', function () {
                     return db.collection('fs.chunks').deleteMany({});
                 })
                 .then(function () {
-                    done();
+                    db.close(true, done);
                 })
                 .catch(function (err) {
                     done(err);
@@ -192,7 +192,9 @@ describe('GridFS storage', function () {
         });
 
         after(function (done) {
-            db.dropDatabase(done);
+            db.dropDatabase(function () {
+                db.close(true, done);
+            });
         });
     });
 

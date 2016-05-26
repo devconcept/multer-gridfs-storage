@@ -10,9 +10,10 @@ var uploads = require('./utils/uploads');
 var app = express();
 
 describe('error handling', function () {
+    var storage;
 
     it('should throw an error if the identifier function is invoked with an error callback', function (done) {
-        var storage = GridFsStorage({
+        storage = GridFsStorage({
             url: settings.mongoUrl(),
             identifier: function (req, file, cb) {
                 cb(new Error('Identifier error'));
@@ -41,7 +42,7 @@ describe('error handling', function () {
     });
 
     it('should throw an error if the filename function is invoked with an error callback', function (done) {
-        var storage = GridFsStorage({
+        storage = GridFsStorage({
             url: settings.mongoUrl(),
             filename: function (req, file, cb) {
                 cb(new Error('Filename error'));
@@ -70,7 +71,7 @@ describe('error handling', function () {
     });
 
     it('should throw an error if the metadata is invoked with an error callback', function (done) {
-        var storage = GridFsStorage({
+        storage = GridFsStorage({
             url: settings.mongoUrl(),
             metadata: function (req, file, cb) {
                 cb(new Error('Metadata error'));
@@ -105,5 +106,16 @@ describe('error handling', function () {
             });
         }).to.throw();
     });*/
+
+    afterEach(function (done) {
+        storage.removeAllListeners('connection');
+        if (storage.gfs) {
+            storage.gfs.db.close(false, done);
+        } else {
+            storage.once('connection', function (gfs, db) {
+                db.close(false, done);
+            });
+        }
+    });
 
 });
