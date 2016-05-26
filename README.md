@@ -325,7 +325,7 @@ Each file in `req.file` and `req.files` contain the following properties in addi
 to the ones that Multer create by default.
 
 Key | Description
---- | --
+--- | -----------
 `filename` | The name of the file within the database
 `metadata` | The stored metadata of the file
 `id` | The id of the stored file
@@ -411,7 +411,7 @@ $ mocha
 
 ## License
 
-[MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE.md)
+[MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
 
 [travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
 [travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master
