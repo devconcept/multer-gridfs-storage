@@ -32,6 +32,7 @@ describe('module usage', function () {
             identifier: function (req, file, cb) {
                 cb(null, Math.floor(Math.random() * 1000000));
             },
+            chunkSize: 131072,
             log: true,
             logLevel: 'all'
         });
@@ -117,6 +118,13 @@ describe('module usage', function () {
         it('should have the same MD5 signature than the upload', function (done) {
             result.files.forEach(function (file, index) {
                 expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
+            });
+            done();
+        });
+
+        it('should have a different chunkSize than the default 261120 chunkSize value', function (done) {
+            result.files.forEach(function (file) {
+                expect(file.grid.chunkSize).to.be.equal(131072);
             });
             done();
         });
