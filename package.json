@@ -1,6 +1,6 @@
 {
   "name": "multer-gridfs-storage",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Multer storage engine for GridFS",
   "main": "index.js",
   "scripts": {
@@ -18,6 +18,10 @@
     "email": "devconcept@outlook.com"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devconcept/multer-gridfs-storage.git"
+  },
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-interface": "^2.0.3",
@@ -29,8 +33,16 @@
     "multer": "^1.1.0",
     "supertest": "^1.2.0"
   },
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "bugs": {
+    "url": "https://github.com/devconcept/multer-gridfs-storage/issues"
+  },
+  "homepage": "https://github.com/devconcept/multer-gridfs-storage",
   "files": [
     "LICENSE",
+    "README.md",
     "index.js",
     "lib/"
   ],

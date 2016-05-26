@@ -9,9 +9,6 @@ var multer = require('multer');
 var md5File = require('md5-file');
 var path = require('path');
 var crypto = require('crypto');
-var mongo = require('mongodb');
-var MongoClient = mongo.MongoClient;
-var Grid = require('gridfs-stream');
 
 chai.use(require('chai-interface'));
 
@@ -22,44 +19,42 @@ describe('module usage', function () {
         db, gfs;
 
     before(function (done) {
-         MongoClient.connect(setting.mongoUrl(), function (err, database) {
-            if (err) {
-                return done(err);
-            }
+        var storage = GridFsStorage({
+            url: setting.mongoUrl(),
+            filename: function (req, file, cb) {
+                crypto.randomBytes(16, function (err, raw) {
+                    cb(err, err ? undefined : raw.toString('hex') + path.extname(file.originalname));
+                });
+            },
+            metadata: function (req, file, cb) {
+                cb(null, req.body);
+            },
+            identifier: function (req, file, cb) {
+                cb(null, Math.floor(Math.random() * 1000000));
+            },
+            chunkSize: 131072,
+            log: true,
+            logLevel: 'all'
+        });
 
+        var upload = multer({
+            storage: storage
+        });
+
+        app.post('/opts', upload.array('photos', 2), function (req, res) {
+            res.send({headers: req.headers, files: req.files, body: req.body});
+        });
+
+        app.post('/fail', upload.array('photos', 1), function (req, res) {
+            res.send({headers: req.headers, file: req.file, body: req.body});
+        });
+
+        storage.once('connection', function (grid, database) {
+            gfs = grid;
             db = database;
-            gfs = Grid(db, mongo);
-
-            var storage = GridFsStorage({
-                gfs: gfs,
-                filename: function (req, file, cb) {
-                    crypto.randomBytes(16, function (err, raw) {
-                        cb(err, err ? undefined : raw.toString('hex') + path.extname(file.originalname));
-                    });
-                },
-                metadata: function (req, file, cb) {
-                    cb(null, req.body);
-                },
-                identifier: function (req, file, cb) {
-                    cb(null, Math.floor(Math.random() * 1000000));
-                },
-                log: true
-            });
-
-            var upload = multer({
-                storage: storage
-            });
-
-            app.post('/opts', upload.array('photos', 2), function (req, res) {
-                res.send({headers: req.headers, files: req.files, body: req.body});
-            });
-
-            app.post('/fail', upload.array('photos', 1), function (req, res) {
-                res.send({headers: req.headers, file: req.file, body: req.body});
-            });
-
             done();
         });
+
     });
 
     describe('all configuration options', function () {
@@ -124,7 +119,14 @@ describe('module usage', function () {
             result.files.forEach(function (file, index) {
                 expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
             });
-            done()
+            done();
+        });
+
+        it('should have a different chunkSize than the default 261120 chunkSize value', function (done) {
+            result.files.forEach(function (file) {
+                expect(file.grid.chunkSize).to.be.equal(131072);
+            });
+            done();
         });
 
         after(function (done) {
