@@ -1,6 +1,6 @@
 # Multer GridFS storage engine
 
-[![Build Status][travis-image]][travis-url]
+[![Build Status][travis-image]][travis-url] [![Coverage Status](https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master)](https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master)
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb
 
