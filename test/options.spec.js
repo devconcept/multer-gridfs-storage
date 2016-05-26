@@ -22,7 +22,7 @@ describe('module usage', function () {
         db, gfs;
 
     before(function (done) {
-         MongoClient.connect(setting.mongoUrl(), function (err, database) {
+        MongoClient.connect(setting.mongoUrl(), function (err, database) {
             if (err) {
                 return done(err);
             }
@@ -124,7 +124,7 @@ describe('module usage', function () {
             result.files.forEach(function (file, index) {
                 expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
             });
-            done()
+            done();
         });
 
         after(function (done) {

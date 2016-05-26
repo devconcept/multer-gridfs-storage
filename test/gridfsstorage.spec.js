@@ -19,7 +19,7 @@ describe('GridFS storage', function () {
     var result;
 
     describe('url created instance', function () {
-        var db, gfs;
+        var db;
         before(function (done) {
             var storage = GridFsStorage({
                 url: setting.mongoUrl()
@@ -34,7 +34,6 @@ describe('GridFS storage', function () {
             });
 
             storage.on('connection', function (gridfs, database) {
-                gfs = gridfs;
                 db = database;
                 request(app)
                     .post('/url')
@@ -92,7 +91,7 @@ describe('GridFS storage', function () {
             result.files.forEach(function (file, index) {
                 expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
             });
-            done()
+            done();
         });
 
         after(function (done) {
@@ -189,7 +188,7 @@ describe('GridFS storage', function () {
             result.files.forEach(function (file, index) {
                 expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
             });
-            done()
+            done();
         });
 
         after(function (done) {

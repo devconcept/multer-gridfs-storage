@@ -1,11 +1,12 @@
 {
     "env": {
-        "node": true
+        "node": true,
+        "mocha": true
     },
     "extends": "eslint:recommended",
     "rules": {
         "indent": [
-            "error",
+            "warn",
             4
         ],
         "linebreak-style": [
@@ -19,6 +20,9 @@
         "semi": [
             "error",
             "always"
+        ],
+        "no-console": [
+            "warn"
         ]
     }
 }
