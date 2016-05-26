@@ -1,6 +1,6 @@
 # Multer GridFS storage engine
 
-[![Build Status][travis-image]][travis-url] [![Coverage Status](https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master)](https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master)
+[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb
 
@@ -421,3 +421,5 @@ $ npm coverage
 
 [travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
 [travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
+[coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master
