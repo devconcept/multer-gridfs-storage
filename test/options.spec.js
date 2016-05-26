@@ -11,14 +11,16 @@ var path = require('path');
 var crypto = require('crypto');
 
 chai.use(require('chai-interface'));
+chai.use(require('chai-spies'));
 
 var app = express();
 
 describe('module usage', function () {
     var result,
-        db, gfs;
+        db, gfs, spy;
 
     before(function (done) {
+        spy = chai.spy();
         var storage = GridFsStorage({
             url: setting.mongoUrl(),
             filename: function (req, file, cb) {
@@ -37,6 +39,8 @@ describe('module usage', function () {
             log: true,
             logLevel: 'all'
         });
+
+        storage.on('file', spy);
 
         var upload = multer({
             storage: storage
@@ -123,6 +127,10 @@ describe('module usage', function () {
             done();
         });
 
+        it('should emit the file event for every uploaded file', function () {
+            expect(spy).to.be.called.exactly(2);
+        });
+
         it('should have a different chunkSize than the default 261120 chunkSize value', function (done) {
             result.files.forEach(function (file) {
                 expect(file.grid.chunkSize).to.be.equal(131072);
@@ -131,13 +139,13 @@ describe('module usage', function () {
         });
 
         it('should be stored under a different root', function (done) {
-            db.collection('myfiles.files', {strict:true}, function (err, col) {
+            db.collection('myfiles.files', {strict: true}, function (err, col) {
                 expect(err).to.be.equal(null);
-                db.collection('myfiles.chunks', {strict:true}, function (err, col) {
+                db.collection('myfiles.chunks', {strict: true}, function (err, col) {
                     expect(err).to.be.equal(null);
-                    db.collection('fs.files', {strict:true}, function (err, col) {
+                    db.collection('fs.files', {strict: true}, function (err, col) {
                         expect(err).not.to.be.equal(null);
-                        db.collection('fs.chunks', {strict:true}, function (err, col) {
+                        db.collection('fs.chunks', {strict: true}, function (err, col) {
                             expect(err).not.to.be.equal(null);
                             done();
                         });
@@ -178,19 +186,6 @@ describe('module usage', function () {
                 expect(count).to.equal(0);
                 done(err);
             });
-        });
-
-        after(function (done) {
-            db.collection('fs.files').deleteMany({})
-                .then(function () {
-                    return db.collection('fs.chunks').deleteMany({});
-                })
-                .then(function () {
-                    done();
-                })
-                .catch(function (err) {
-                    done(err);
-                });
         });
     });
 
