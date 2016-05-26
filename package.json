@@ -4,8 +4,10 @@
   "description": "Multer storage engine for GridFS",
   "main": "index.js",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha",
-    "lint": "eslint ."
+    "test": "node ./node_modules/mocha/bin/_mocha",
+    "lint": "eslint .",
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "keywords": [
     "multer",
@@ -26,10 +28,12 @@
     "chai": "^3.5.0",
     "chai-interface": "^2.0.3",
     "chai-spies": "^0.7.1",
+    "coveralls": "^2.11.9",
     "eslint": "^2.10.2",
     "express": "^4.13.4",
     "md5-file": "^2.0.4",
     "mocha": "^2.4.5",
+    "mocha-lcov-reporter": "^1.2.0",
     "multer": "^1.1.0",
     "supertest": "^1.2.0"
   },

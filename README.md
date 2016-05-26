@@ -409,6 +409,12 @@ and then run
 $ mocha
 ```
 
+Code coverage thanks to [istanbul](https://github.com/gotwarlost/istanbul)
+
+```bash
+$ npm coverage
+```
+
 ## License
 
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
