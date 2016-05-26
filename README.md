@@ -242,6 +242,24 @@ In this example the contents of the request body are stored with the file.
 This is only for illustrative purposes. If your users send passwords or other sensitive data in the request 
 those will be stored unencrypted in the database as well, inside the metadata of the file.
 
+#### chunkSize
+
+Type: **Number**
+
+Not required
+
+The prefered size of file chunks. Default value is 261120.
+
+Example:
+
+```javascript
+var storage = require('multer-gridfs-storage')({
+   url: 'mongodb://localhost:27017/database',
+   chunkSize: 2048
+});
+var upload = multer({ storage: storage });
+```
+
 #### log
 
 Type: **Boolean**
