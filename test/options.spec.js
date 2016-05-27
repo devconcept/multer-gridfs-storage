@@ -160,7 +160,7 @@ describe('module usage', function () {
                     return db.collection('myfiles.chunks').deleteMany({});
                 })
                 .then(function () {
-                    done()
+                    done();
                 })
                 .catch(function (err) {
                     done(err);
