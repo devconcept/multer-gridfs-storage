@@ -5,6 +5,7 @@ var chai = require('chai');
 var expect = chai.expect;
 var settings = require('./utils/settings');
 var MongoClient = mongo.MongoClient;
+var EventEmitter = require('events').EventEmitter;
 
 chai.use(require('chai-spies'));
 
@@ -12,6 +13,15 @@ describe('module default options', function () {
     this.timeout(4000);
     this.slow(8000);
     var instance;
+
+    it('should have the EventEmitter signature', function () {
+        instance = storage({
+            url: settings.mongoUrl()
+        });
+        expect(instance).to.respondTo('once');
+        expect(instance).to.respondTo('on');
+        expect(instance).to.be.instanceof(EventEmitter);
+    });
 
     it('should emit a connection event when using the url parameter', function (done) {
         var connectionSpy = chai.spy();
@@ -55,18 +65,54 @@ describe('module default options', function () {
         expect(fn).to.throw(Error, /^Missing required configuration$/);
     });
 
+    it('should set the default filename to a 16 bytes hexadecimal string', function () {
+        instance = storage({
+            url: settings.mongoUrl()
+        });
+        instance._getFilename(null, null, function (err, filename) {
+            expect(filename).to.match(/^[0-9a-f]{32}$/);
+        });
+    });
+
+    it('should set the default metadata to null', function () {
+        instance = storage({
+            url: settings.mongoUrl()
+        });
+        instance._getMetadata(null, null, function (err, metadata) {
+            expect(metadata).to.equal(null);
+        });
+    });
+
     it('should disable logging by default', function () {
         instance = storage({
             url: settings.mongoUrl()
         });
-        expect(instance.log).to.equal(false);
+        expect(instance._log).to.equal(false);
     });
 
     it('should set the logLevel to file by default', function () {
         instance = storage({
             url: settings.mongoUrl()
         });
-        expect(instance.logLevel).to.equal('file');
+        expect(instance._logLevel).to.equal('file');
+    });
+
+    it('should set the default chunkSize to 261120', function () {
+        instance = storage({
+            url: settings.mongoUrl()
+        });
+        instance._getChunkSize(null, null, function (err, chunkSize) {
+            expect(chunkSize).to.equal(261120);
+        });
+    });
+
+    it('should set the default root to null', function () {
+        instance = storage({
+            url: settings.mongoUrl()
+        });
+        instance._getRoot(null, null, function (err, root) {
+            expect(root).to.equal(null);
+        });
     });
 
     it('should change the default naming function', function () {
@@ -77,8 +123,8 @@ describe('module default options', function () {
             url: settings.mongoUrl(),
             filename: namingFn
         });
-        expect(instance.getFilename).to.be.a('function');
-        expect(instance.getFilename).to.equal(namingFn);
+        expect(instance._getFilename).to.be.a('function');
+        expect(instance._getFilename).to.equal(namingFn);
     });
 
     it('should change the default metadata function', function () {
@@ -89,8 +135,8 @@ describe('module default options', function () {
             url: settings.mongoUrl(),
             metadata: metadataFn
         });
-        expect(instance.getMetadata).to.be.a('function');
-        expect(instance.getMetadata).to.equal(metadataFn);
+        expect(instance._getMetadata).to.be.a('function');
+        expect(instance._getMetadata).to.equal(metadataFn);
     });
 
     it('should change the default identifier function', function () {
@@ -101,8 +147,20 @@ describe('module default options', function () {
             url: settings.mongoUrl(),
             identifier: identifierFn
         });
-        expect(instance.getIdentifier).to.be.a('function');
-        expect(instance.getIdentifier).to.equal(identifierFn);
+        expect(instance._getIdentifier).to.be.a('function');
+        expect(instance._getIdentifier).to.equal(identifierFn);
+    });
+
+    it('should change the default chunkSize function', function () {
+        var chunkSizeFn = function (req, file, cb) {
+            cb(null, 4567);
+        };
+        instance = storage({
+            url: settings.mongoUrl(),
+            chunkSize: chunkSizeFn
+        });
+        expect(instance._getChunkSize).to.be.a('function');
+        expect(instance._getChunkSize).to.equal(chunkSizeFn);
     });
 
     afterEach(function (done) {

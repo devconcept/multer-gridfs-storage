@@ -13,10 +13,12 @@ var md5File = require('md5-file');
 
 chai.use(require('chai-interface'));
 
-var app = express();
-
 describe('GridFS storage', function () {
-    var result;
+    var result, app;
+
+    before(function () {
+        app = express();
+    });
 
     describe('url created instance', function () {
         var db;
