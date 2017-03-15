@@ -41,7 +41,7 @@ describe('error handling', function () {
         .end(function (err, res) {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/^Error: Identifier error/);
+          expect(res.error.text).to.match(/Error: Identifier error/);
           done();
         });
     });
@@ -70,7 +70,7 @@ describe('error handling', function () {
         .end(function (err, res) {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/^Error: Filename error/);
+          expect(res.error.text).to.match(/Error: Filename error/);
           done();
         });
     });
@@ -99,7 +99,7 @@ describe('error handling', function () {
         .end(function (err, res) {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/^Error: Metadata error/);
+          expect(res.error.text).to.match(/Error: Metadata error/);
           done();
         });
     });
@@ -128,7 +128,7 @@ describe('error handling', function () {
         .end(function (err, res) {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/^Error: ChunkSize error/);
+          expect(res.error.text).to.match(/Error: ChunkSize error/);
           done();
         });
     });
@@ -157,7 +157,7 @@ describe('error handling', function () {
         .end(function (err, res) {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/^Error: Root error/);
+          expect(res.error.text).to.match(/Error: Root error/);
           done();
         });
     });
