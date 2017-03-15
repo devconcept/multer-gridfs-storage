@@ -350,6 +350,7 @@ var storage = require('multer-gridfs-storage')({
       if (error) {
         console.error(err);
       } else {
+        console.log(log.message, log.extra);
       }
    }
 });
