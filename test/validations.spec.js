@@ -11,7 +11,7 @@ describe('error handling', function () {
   var unmute;
   
   function noop() {
-    
+  
   }
   
   before(function () {
@@ -26,7 +26,7 @@ describe('error handling', function () {
   });
   
   it('should not allow objects of different type than GridFs in gfs configuration option', function () {
-    var errorRegexp = /^Expected gfs configuration to be a Grid instance$/;
+    var errorRegexp = /^Expected gfs configuration to be a Grid instance or a promise$/;
     
     function errorFn1() {
       validate({ gfs: [] });

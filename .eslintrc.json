@@ -24,5 +24,8 @@
     "no-console": [
       "warn"
     ]
+  },
+  "globals": {
+    "Promise": true
   }
 }

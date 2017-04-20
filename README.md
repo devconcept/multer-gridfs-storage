@@ -1,4 +1,4 @@
-# Multer GridFS storage engine
+# Multer's GridFS storage engine
 
 [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
 
@@ -53,15 +53,13 @@ The options parameter is an object with the following properties.
 
 #### gfs
 
-Type: **Object**
+Type: **Object** or **Promise**
 
 Required if [`url`][url-option] option is not present
 
-The [gridfs-stream](https://github.com/aheckmann/gridfs-stream/) instance to use.
+The [gridfs-stream](https://github.com/aheckmann/gridfs-stream/) instance to use or a promise that resolves with the instance.
 
-If this option is provided files are stored using this stream. The connection should be open or
-the module might fail to store incoming files since no connection test is made. 
-This option is useful when you have an existing GridFS object and want to reuse it to upload your files.
+If this option is provided, files are stored using this stream. This is useful when you have an existing GridFS object and want to reuse it to upload your files.
 
 Example:
 
@@ -160,7 +158,7 @@ var upload = multer({ storage: storage });
 
 In this example the original filename and extension in the user's computer are used 
 to name each of the uploaded files. Please note that this will not guarantee that file
-names are unique and you might have files with duplicate names or overwritten in your database.
+names are unique and you might have files with duplicate names in your database.
 
 ```javascript
 var crypto = require('crypto');
@@ -193,6 +191,8 @@ parameters and can be used to change the default identifier ( the `_id` property
 created by MongoDb. You must guarantee that this value is unique 
 otherwise you will get an error.
 
+Please note that the identifiers must conform to the MongoDb spec for ObjectID, that is, a 24 bytes hex string, 12 byte binary string or a Number.
+
 To use the default generated identifier invoke the callback with a [falsey](http://james.padolsey.com/javascript/truthy-falsey/) value like `null` or `undefined`.  
 
 Example:
@@ -215,15 +215,13 @@ In this example a random number is used for the file identifier.
 > Normally you shouldn't use this function
 unless you want granular control of your file ids because auto-generated identifiers are guaranteed to be unique.
 
-Please note that the identifiers must conform to the MongoDb spec for ObjectID, that is, a 24 bytes hex string, 12 byte binary string or a Number.
-
 #### metadata
 
 Type: **Function**
 
 Not required
 
-A function to control the metadata associated to the file. 
+A function to control the metadata object associated to the file. 
 
 This function is called with the `req`, `file` and `callback` parameters and is used
 to store metadata with the file. 
@@ -327,61 +325,6 @@ var upload = multer({ storage: storage });
 
 This will create two collections of files for animals and plants based on the fieldname used to upload the file.
 
-#### log
-
-Type: **Boolean** or **Function**
-Default: `false`
-
-Not required
-
-Enable or disable logging.
-
-By default the module will not output anything. Set this option to `true` to log when the connection is opened,
-files are stored or an error occurs. This is useful when you are not in production and want to see logging about incoming files.
-
-If a function is provided it will be called in every log event with two arguments `err` y `log` with the error or
-the message respectively. The `log` object contains two properties `message` and `extra` corresponding to the
-event that triggered the log and any additional info, eg. the uploaded file
-
-```javascript
-var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
-   log: function(err, log) {
-      if (error) {
-        console.error(err);
-      } else {
-        console.log(log.message, log.extra);
-      }
-   }
-});
-var upload = multer({ storage: storage });
-```
-
-See [`logLevel`][logLevel-option] for more information on how logging behaves on different options.
-
-The console is used to log information to `stdout` or `stderr`
-
-#### logLevel
-
-Not required
-
-The events to be logged out. Only applies if logging is enabled.
-
-Type: **string**
-Default: `'file'`
-Possible values: `'all'` and `'file'`
-
-If set to `'all'` and the connection is established using the [`url`][url-option] option 
-some events are attached to the MongoDb connection to output to `stdout` and `stderr`
-when the connection is established and files are uploaded.
-
-If set to `'file'` only successful file uploads will be registered. This setting applies to
-both the `gfs` and the `url` configuration.
-
-This option is useful when you also want to log when the connection is opened
-or an error has occurs. Setting it to `'all'` and using the [`gfs`][gfs-option] option
-has no effect and behaves like if it were set to `'file'`.
-
 ### File information
 
 Each file in `req.file` and `req.files` contain the following properties in addition
@@ -393,10 +336,11 @@ Key | Description
 `metadata` | The stored metadata of the file
 `id` | The id of the stored file
 `grid` | The GridFS information of the stored file
+`size` | The size of the stored file
 
 To see all the other properties of the file object check the Multer's [documentation](https://github.com/expressjs/multer#file-information).
 
-## Events
+### Events
 
 Each storage object is also a standard Node.js Event Emitter. This is done to ensure that some 
 objects are made available after they are instantiated since some options
@@ -449,6 +393,68 @@ storage.on('file', function(file) {
 });
 ```
 
+## Debugging
+
+To make debugging easy you can use any of the logging options in the storage constructor. 
+
+### log
+
+Type: **Boolean** or **Function**
+
+Default: `false`
+
+Not required
+
+Enable or disable logging.
+
+By default the module will not output anything. Set this option to `true` to log when the connection is opened,
+files are stored or an error occurs. This is useful when you want to see logging about incoming files.
+
+If a function is provided it will be called in every log event with two arguments `err` y `log` with the error or
+the message respectively. The `log` object contains two properties `message` and `extra` corresponding to the
+event that triggered the log and any additional info, eg. the uploaded file
+
+```javascript
+var storage = require('multer-gridfs-storage')({
+   url: 'mongodb://localhost:27017/database',
+   log: function(err, log) {
+      if (error) {
+        console.error(err);
+      } else {
+        console.log(log.message, log.extra);
+      }
+   }
+});
+var upload = multer({ storage: storage });
+```
+
+See [`logLevel`][logLevel-option] for more information on how logging behaves on different options.
+
+The console is used to log information to `stdout` or `stderr`
+
+### logLevel
+
+Not required
+
+The events to be logged out. Only applies if logging is enabled.
+
+Type: **string**
+
+Default: `'file'`
+
+Possible values: `'all'` or `'file'`
+
+If set to `'all'` and the connection is established using the [`url`][url-option] option 
+some events are attached to the MongoDb connection to output to `stdout` and `stderr`
+when the connection is established and files are uploaded.
+
+If set to `'file'` only successful file uploads will be registered. This setting applies to
+both the `gfs` and the `url` configuration.
+
+This option is useful when you also want to log when the connection is opened
+or an error has occurs. Setting it to `'all'` and using the [`gfs`][gfs-option] option
+has no effect and behaves like if it were set to `'file'`.
+
 ## Test
 
 To run the test suite, first install the dependencies, then run `npm test`:
@@ -487,12 +493,12 @@ $ npm coverage
 [coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master
 
-[url-option]: https://github.com/devconcept/multer-gridfs-storage#url
-[gfs-option]: https://github.com/devconcept/multer-gridfs-storage#gfs
-[filename-option]: https://github.com/devconcept/multer-gridfs-storage#filename
-[identifier-option]: https://github.com/devconcept/multer-gridfs-storage#identifier
-[metadata-option]: https://github.com/devconcept/multer-gridfs-storage#metadata
-[chunkSize-option]: https://github.com/devconcept/multer-gridfs-storage#chunkSize
-[root-option]: https://github.com/devconcept/multer-gridfs-storage#root
-[log-option]: https://github.com/devconcept/multer-gridfs-storage#log
-[logLevel-option]: https://github.com/devconcept/multer-gridfs-storage#loglevel
+[url-option]: #url
+[gfs-option]: #gfs
+[filename-option]: #filename
+[identifier-option]: #identifier
+[metadata-option]: #metadata
+[chunkSize-option]: #chunkSize
+[root-option]: #root
+[log-option]: #log
+[logLevel-option]: #loglevel

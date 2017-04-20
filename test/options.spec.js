@@ -27,6 +27,7 @@ describe('module usage', function () {
   });
   
   describe('all configuration options', function () {
+    var messages = [];
     before(function (done) {
       var counter = 0;
       var storage = GridFsStorage({
@@ -53,9 +54,9 @@ describe('module usage', function () {
         log: function (err, log) {
           logSpy(err, log);
           if (err) {
-            return console.error(err);
+            return messages.push({type: 'error', data: err});
           }
-          console.log(log.message, log.extra || '');
+          messages.push({type: 'log', data: [log.message, log.extra || '']});
         },
         logLevel: 'all'
       });
@@ -146,6 +147,7 @@ describe('module usage', function () {
     
     it('should execute the log function 3 times', function () {
       expect(logSpy).to.be.called.exactly(3);
+      expect(messages).to.have.lengthOf(3);
     });
     
     it('should have a different chunkSize between 10000 and 30000', function (done) {
