@@ -3,6 +3,7 @@
 
   * Added support for connection promises
   * Added file size information
+  * Allow the api to be called with the `new` operator
 
 1.0.3
 ==================

@@ -54,11 +54,9 @@ describe('module default options', function () {
       instance = storage({
         gfs: gfs
       });
-      setTimeout(function () {
-        expect(instance.gfs).to.be.an.instanceof(Grid);
-        expect(instance.gfs).to.be.equal(gfs);
-        done();
-      });
+      expect(instance.gfs).to.be.an.instanceof(Grid);
+      expect(instance.gfs).to.be.equal(gfs);
+      done();
     });
   });
   

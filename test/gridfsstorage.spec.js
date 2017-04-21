@@ -11,6 +11,7 @@ var MongoClient = mongo.MongoClient;
 var Grid = require('gridfs-stream');
 var md5File = require('md5-file');
 var fs = require('fs');
+var Promise = require('bluebird');
 
 chai.use(require('chai-interface'));
 
@@ -175,12 +176,16 @@ describe('GridFS storage', function () {
       done();
     });
     
-    it('should log an error if the connection promise is rejected', function (done) {
+    it('should log an error if the connection promise is rejected and rethrow the error', function (done) {
+      var promise = Promise.reject('reason');
       GridFsStorage({
-        gfs: Promise.reject('reason'),
+        gfs: promise,
         log: function (err) {
           expect(err).to.equal('reason');
-          done();
+          promise.catch(function (err) {
+            expect(err).to.equal('reason');
+            done();
+          });
         }
       });
     });
@@ -223,22 +228,22 @@ describe('GridFS storage', function () {
       expect(result.file.filename).to.be.a('string');
       expect(result.file.filename).to.match(/^[0-9a-f]{32}$/);
     });
-  
+    
     it('should have a metadata property', function () {
       expect(result.file).to.have.a.property('metadata');
       expect(result.file.metadata).to.equal(null);
     });
-  
+    
     it('should have a id property', function () {
       expect(result.file).to.have.a.property('id');
       expect(result.file.id).to.match(/^[0-9a-f]{24}$/);
     });
-  
+    
     it('should have a grid property that matches the gridfs spec', function () {
       expect(result.file).to.have.a.property('grid');
       expect(result.file.grid).to.have.all.keys(['chunkSize', 'contentType', 'filename', 'length', 'md5', 'uploadDate', '_id']);
     });
-  
+    
     it('should have a size property with the length of the file', function () {
       expect(result.file).to.have.a.property('size');
       expect(result.file.size).to.equal(size);

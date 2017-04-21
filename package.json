@@ -24,7 +24,12 @@
     "type": "git",
     "url": "git+https://github.com/devconcept/multer-gridfs-storage.git"
   },
+  "dependencies": {
+    "gridfs-stream": "^1.1.1",
+    "mongodb": "^2.1.19"
+  },
   "devDependencies": {
+    "bluebird": "^3.5.0",
     "chai": "^3.5.0",
     "chai-interface": "^2.0.3",
     "chai-spies": "^0.7.1",
@@ -48,12 +53,9 @@
   "homepage": "https://github.com/devconcept/multer-gridfs-storage",
   "files": [
     "LICENSE",
+    "CHANGELOG.md",
     "README.md",
     "index.js",
     "lib/"
-  ],
-  "dependencies": {
-    "gridfs-stream": "^1.1.1",
-    "mongodb": "^2.1.19"
-  }
+  ]
 }

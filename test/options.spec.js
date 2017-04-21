@@ -16,13 +16,12 @@ chai.use(require('chai-spies'));
 
 describe('module usage', function () {
   this.timeout(4000);
-  var result, app, unmute,
+  var result, app,
     db, gfs, spy, logSpy;
   
   before(function () {
     spy = chai.spy();
     logSpy = chai.spy();
-    unmute = mute(process.stderr);
     app = express();
   });
   
@@ -188,7 +187,10 @@ describe('module usage', function () {
   });
   
   describe('fixed value configuration options', function () {
+    var unmute;
+    
     before(function (done) {
+      unmute = mute();
       var storage = GridFsStorage({
         url: setting.mongoUrl(),
         chunkSize: 131072,
@@ -215,6 +217,7 @@ describe('module usage', function () {
           .field('field', 'field')
           .end(function (err, res) {
             result = res.body;
+            unmute();
             done();
           });
       });
@@ -258,7 +261,9 @@ describe('module usage', function () {
   });
   
   describe('failed request', function () {
+    var unmute;
     before(function (done) {
+      unmute = mute();
       var storage = GridFsStorage({
         url: setting.mongoUrl()
       });
@@ -279,6 +284,7 @@ describe('module usage', function () {
           .field('field', 'field')
           .end(function (err, res) {
             result = res.body;
+            unmute();
             done();
           });
       });
@@ -296,7 +302,6 @@ describe('module usage', function () {
     db.dropDatabase(function () {
       db.close(true, done);
     });
-    unmute();
   });
   
 });
