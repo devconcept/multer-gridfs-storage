@@ -216,7 +216,7 @@ describe('GridFS storage', function () {
           .end(function (err, res) {
             result = res.body;
             fs.readFile(uploads.files[0], function (err, f) {
-              size = f.byteLength;
+              size = f.length;
               done();
             });
           });
@@ -245,7 +245,6 @@ describe('GridFS storage', function () {
     });
     
     it('should have a size property with the length of the file', function () {
-      console.log(result.file);
       expect(result.file).to.have.a.property('size');
       expect(result.file.size).to.equal(size);
     });
