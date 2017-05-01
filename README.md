@@ -49,6 +49,22 @@ app.post('/cool-profile', fUpload, function (req, res, next) {
 
 The module returns a function that can be invoked with options to create a Multer storage engine.
 
+Starting from version 1.1.0 the module function can be called with 
+or without the javascript `new` operator like this
+
+```javascript
+var storage = require('multer-gridfs-storage')(options);
+var upload = multer({ storage: storage });
+
+//or
+
+var GridFSStorage = require('multer-gridfs-storage');
+var storage = new GridFSStorage(options)
+var upload = multer({ storage: storage });
+```
+
+### Options
+
 The options parameter is an object with the following properties.
 
 #### gfs
@@ -66,7 +82,7 @@ Example:
 ```javascript
 var Grid = require('gridfs-stream');
 var mongo = require('mongodb');
-var GridFsStorage = require('multer-gridfs-storage');
+var GridFSStorage = require('multer-gridfs-storage');
 
 var db = new mongo.Db('database', new mongo.Server("127.0.0.1", 27017));
 
@@ -74,7 +90,7 @@ db.open(function (err) {
   if (err) return handleError(err);
   var gfs = Grid(db, mongo);
 
-  var storage = GridFsStorage({
+  var storage = GridFSStorage({
      gfs: gfs
   });
   var upload = multer({ storage: storage });
@@ -210,7 +226,7 @@ var upload = multer({ storage: storage });
 
 In this example a random number is used for the file identifier. 
 
-***Important note***
+***Note:***
 
 > Normally you shouldn't use this function
 unless you want granular control of your file ids because auto-generated identifiers are guaranteed to be unique.
@@ -250,8 +266,11 @@ Type: **Number** or **Function**
 
 Not required
 
-The preferred size of file chunks. Default value is 261120. You can use a 
-fixed number as the value or a function to use different values per file.
+The preferred size of file chunks in bytes. 
+
+Default value is 261120 (255kb). 
+
+You can use a fixed number as the value or a function to use different values per upload.
 
 Example using fixed value:
 
@@ -438,7 +457,7 @@ Not required
 
 The events to be logged out. Only applies if logging is enabled.
 
-Type: **string**
+Type: **String**
 
 Default: `'file'`
 
