@@ -4,6 +4,6 @@ engines:
 
 ratings:
    paths:
-   - "lib/**"
+   - "/lib/**.js"
    - "index.js"
 

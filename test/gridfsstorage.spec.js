@@ -13,6 +13,12 @@ var md5File = require('md5-file');
 var fs = require('fs');
 var Promise = require('bluebird');
 
+Promise.onPossiblyUnhandledRejection(function () {
+  // This blocks swallows the unhandled promise rejection warning in tests
+  // When providing a connection as a promise the user is responsible for handling the error with a catch clause
+  // If this module does not rethrow the error then whatever recovery or logging mechanism being used in user code will not fire
+});
+
 chai.use(require('chai-interface'));
 
 describe('GridFS storage', function () {

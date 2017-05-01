@@ -25,6 +25,8 @@
       "warn"
     ]
   },
+  "complexity": [2, 6],
+  "max-statements": [2, 30],
   "globals": {
     "Promise": true
   }
