@@ -9,7 +9,9 @@ var settings = require('./utils/settings');
 var MongoClient = mongo.MongoClient;
 var EventEmitter = require('events').EventEmitter;
 
-chai.use(require('chai-spies'));
+var sinon = require("sinon");
+var sinonChai = require("sinon-chai");
+chai.use(sinonChai);
 
 describe('module default options', function () {
   this.timeout(4000);
@@ -26,13 +28,13 @@ describe('module default options', function () {
   });
   
   it('should emit a connection event when using the url parameter', function (done) {
-    var connectionSpy = chai.spy();
+    var connectionSpy = sinon.spy();
     instance = storage({
       url: settings.mongoUrl()
     });
     instance.once('connection', connectionSpy);
     setTimeout(function () {
-      expect(connectionSpy).to.have.been.called.exactly(1);
+      expect(connectionSpy).to.have.callCount(1);
       done();
     }, 3000);
   });

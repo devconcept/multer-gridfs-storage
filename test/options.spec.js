@@ -10,9 +10,12 @@ var md5File = require('md5-file');
 var path = require('path');
 var crypto = require('crypto');
 var mute = require('mute');
+var sinon = require("sinon");
+var sinonChai = require("sinon-chai");
 
 chai.use(require('chai-interface'));
-chai.use(require('chai-spies'));
+
+chai.use(sinonChai);
 
 describe('module usage', function () {
   this.timeout(4000);
@@ -20,8 +23,8 @@ describe('module usage', function () {
     db, gfs, spy, logSpy;
   
   before(function () {
-    spy = chai.spy();
-    logSpy = chai.spy();
+    spy = sinon.spy();
+    logSpy = sinon.spy();
     app = express();
   });
   
@@ -141,11 +144,11 @@ describe('module usage', function () {
     });
     
     it('should emit the file event for every uploaded file', function () {
-      expect(spy).to.be.called.exactly(2);
+      expect(spy).to.be.have.callCount(2);
     });
     
     it('should execute the log function 3 times', function () {
-      expect(logSpy).to.be.called.exactly(3);
+      expect(logSpy).to.have.callCount(3);
       expect(messages).to.have.lengthOf(3);
     });
     
