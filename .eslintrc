@@ -4,6 +4,9 @@
     "node": true
   },
   "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
   "rules": {
     "indent": [
       "warn",
@@ -25,9 +28,16 @@
       "warn"
     ]
   },
-  "complexity": [2, 6],
-  "max-statements": [2, 30],
+  "complexity": [
+    2,
+    10
+  ],
+  "max-statements": [
+    2,
+    30
+  ],
   "globals": {
-    "Promise": true
+    "Promise": true,
+    "Symbol": true
   }
 }
