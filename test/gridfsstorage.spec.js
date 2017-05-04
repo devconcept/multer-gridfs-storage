@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express');
 var chai = require('chai');
 var expect = chai.expect;
@@ -132,16 +134,11 @@ describe('GridFS storage', function () {
   describe('gfs promise based instance', function () {
     var db, gfs;
     before(function (done) {
-      var promised = new Promise(function (resolve, reject) {
-        MongoClient.connect(setting.mongoUrl(), function (err, database) {
-          var grid;
-          if (err) {
-            return reject(err);
-          }
-          grid = Grid(database, mongo);
-          resolve(grid);
+      var promised = MongoClient
+        .connect(setting.mongoUrl())
+        .then(function (database) {
+          return Grid(database, mongo);
         });
-      });
       
       var storage = GridFsStorage({ gfs: promised });
       var upload = multer({ storage: storage });
@@ -255,10 +252,12 @@ describe('GridFS storage', function () {
       expect(result.file.size).to.equal(size);
     });
     
-    after(function (done) {
-      db.dropDatabase(function () {
-        db.close(true, done);
-      });
+    after(function () {
+      return db
+        .dropDatabase()
+        .then(function () {
+          return db.close(true);
+        });
     });
   });
   

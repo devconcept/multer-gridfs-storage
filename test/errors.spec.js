@@ -1,3 +1,5 @@
+'use strict';
+
 var GridFsStorage = require('../index');
 var chai = require('chai');
 var multer = require('multer');
@@ -163,13 +165,21 @@ describe('error handling', function () {
     });
   });
   
-  afterEach(function (done) {
+  afterEach(function () {
+    function drop(db) {
+      return db.dropDatabase()
+        .then(function () {
+          return db.close(true);
+        });
+    }
+  
     storage.removeAllListeners('connection');
     if (storage.gfs) {
-      storage.gfs.db.close(false, done);
+      var db = storage.gfs.db;
+      return drop(db);
     } else {
       storage.once('connection', function (gfs, db) {
-        db.close(false, done);
+        return drop(db);
       });
     }
   });
