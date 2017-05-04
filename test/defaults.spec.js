@@ -1,6 +1,7 @@
 'use strict';
 
-var storage = require('../index');
+var storage, MulterGridFSStorage;
+storage = MulterGridFSStorage = require('../index');
 var Grid = require('gridfs-stream');
 var mongo = require('mongodb');
 var chai = require('chai');
@@ -9,8 +10,8 @@ var settings = require('./utils/settings');
 var MongoClient = mongo.MongoClient;
 var EventEmitter = require('events').EventEmitter;
 
-var sinon = require("sinon");
-var sinonChai = require("sinon-chai");
+var sinon = require('sinon');
+var sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
 describe('module default options', function () {
@@ -24,7 +25,24 @@ describe('module default options', function () {
     });
     expect(instance).to.respondTo('once');
     expect(instance).to.respondTo('on');
-    expect(instance).to.be.instanceof(EventEmitter);
+    expect(instance).to.be.a.instanceOf(EventEmitter);
+  });
+  
+  it('should implement Multer plugin definition', function () {
+    instance = storage({
+      url: settings.mongoUrl()
+    });
+    expect(instance).to.respondTo('_handleFile');
+    expect(instance).to.respondTo('_removeFile');
+  });
+  
+  it('should allow to create the instance with the new operator', function () {
+    instance = new MulterGridFSStorage({
+      url: settings.mongoUrl()
+    });
+    expect(instance).to.be.a.instanceOf(EventEmitter);
+    expect(instance).to.respondTo('_handleFile');
+    expect(instance).to.respondTo('_removeFile');
   });
   
   it('should emit a connection event when using the url parameter', function (done) {
@@ -184,13 +202,29 @@ describe('module default options', function () {
     expect(instance._log).to.equal(logFn);
   });
   
-  afterEach(function (done) {
+  it('should allow to change the log level', function () {
+    instance = storage({
+      url: settings.mongoUrl(),
+      logLevel: 'all'
+    });
+    expect(instance._logLevel).to.equal('all');
+  });
+  
+  afterEach(function () {
+    function drop(db) {
+      return db.dropDatabase()
+        .then(function () {
+          return db.close(true);
+        });
+    }
+    
     instance.removeAllListeners('connection');
     if (instance.gfs) {
-      instance.gfs.db.close(false, done);
+      var db = instance.gfs.db;
+      return drop(db);
     } else {
       instance.once('connection', function (gfs, db) {
-        db.close(false, done);
+        return drop(db);
       });
     }
   });

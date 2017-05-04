@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express');
 var chai = require('chai');
 var expect = chai.expect;
@@ -10,8 +12,8 @@ var md5File = require('md5-file');
 var path = require('path');
 var crypto = require('crypto');
 var mute = require('mute');
-var sinon = require("sinon");
-var sinonChai = require("sinon-chai");
+var sinon = require('sinon');
+var sinonChai = require('sinon-chai');
 
 chai.use(require('chai-interface'));
 
@@ -56,9 +58,9 @@ describe('module usage', function () {
         log: function (err, log) {
           logSpy(err, log);
           if (err) {
-            return messages.push({type: 'error', data: err});
+            return messages.push({ type: 'error', data: err });
           }
-          messages.push({type: 'log', data: [log.message, log.extra || '']});
+          messages.push({ type: 'log', data: [log.message, log.extra || ''] });
         },
         logLevel: 'all'
       });
@@ -301,10 +303,12 @@ describe('module usage', function () {
     });
   });
   
-  after(function (done) {
-    db.dropDatabase(function () {
-      db.close(true, done);
-    });
+  after(function () {
+    return db
+      .dropDatabase()
+      .then(function () {
+        return db.close(true);
+      });
   });
   
 });
