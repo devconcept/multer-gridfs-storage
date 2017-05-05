@@ -1,6 +1,6 @@
 # Multer's GridFS storage engine
 
-[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
+[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] ![Downloads][downloads-image]
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb
 
@@ -63,7 +63,7 @@ var storage = new GridFSStorage(options)
 var upload = multer({ storage: storage });
 ```
 
-ES6 users can check the wiki article [using generator functions][generator-functions]
+ES6 users that want to use the `function*` syntax can check the wiki article [using generator functions][generator-functions]
 
 ### Options
 
@@ -71,7 +71,7 @@ The options parameter is an object with the following properties.
 
 #### gfs
 
-Type: **Object** or **Promise**
+Type: `object` or `Promise`
 
 Required if [`url`][url-option] option is not present
 
@@ -101,7 +101,7 @@ db.open(function (err) {
 
 #### url
 
-Type: **String**
+Type: `string`
 
 Required if [`gfs`][gfs-option] option is not present
 
@@ -510,9 +510,10 @@ $ npm coverage
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
 
 [travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
-[travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master
+[travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master "Build status"
 [coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
-[coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master
+[coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
+[downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 
 [url-option]: #url
 [gfs-option]: #gfs
