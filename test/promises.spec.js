@@ -9,7 +9,6 @@ var uploads = require('./utils/uploads');
 var request = require('supertest');
 var multer = require('multer');
 var md5File = require('md5-file');
-var fs = require('fs');
 var Promise = require('bluebird');
 var mute = require('mute');
 
@@ -22,7 +21,7 @@ describe('Promises', function () {
   });
   
   describe('return promises from configuration options', function () {
-    var db, counter = 0;
+    var counter = 0;
     var roots = ['plants', 'animals'];
     var sizes = [102400, 204800];
     before(function (done) {
@@ -52,8 +51,7 @@ describe('Promises', function () {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.on('connection', function (gridfs, database) {
-        db = database;
+      storage.on('connection', function () {
         request(app)
           .post('/promise')
           .attach('photos', uploads.files[0])
@@ -99,7 +97,7 @@ describe('Promises', function () {
   });
   
   describe('promise rejection', function () {
-    var db, status, unmute;
+    var status, unmute;
     
     before(function (done) {
       unmute = mute(process.stderr);
@@ -117,8 +115,7 @@ describe('Promises', function () {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.on('connection', function (gridfs, database) {
-        db = database;
+      storage.on('connection', function () {
         request(app)
           .post('/rejection')
           .attach('photos', uploads.files[0])

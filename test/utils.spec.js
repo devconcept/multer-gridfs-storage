@@ -10,7 +10,7 @@ var mongo = require('mongodb');
 var MongoClient = mongo.MongoClient;
 var settings = require('./utils/settings');
 var testutils = require('./utils/testutils');
-var getNodeVersion = testutils.getNodeVersion();
+var version = testutils.getNodeVersion();
 
 describe('utility functions', function () {
   var unmute;
@@ -119,7 +119,7 @@ describe('utility functions', function () {
     });
     
     it('should return true for generator functions', function () {
-      if (getNodeVersion.major < 6) {
+      if (version.major < 6) {
         return this.skip();
       }
       var GeneratorFunction = Object.getPrototypeOf(function*() {
@@ -198,6 +198,9 @@ describe('utility functions', function () {
   });
   
   describe('isGeneratorFunction', function () {
+    if (version.major < 6) {
+      return this.skip();
+    }
     var genFn = function*() {
     
     };
@@ -219,6 +222,9 @@ describe('utility functions', function () {
   });
   
   describe('isGenerator', function () {
+    if (version.major < 6) {
+      return this.skip();
+    }
     var genFn = function*() {
     
     };

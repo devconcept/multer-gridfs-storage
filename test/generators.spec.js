@@ -1,27 +1,27 @@
 'use strict';
 
-var express = require('express');
-var chai = require('chai');
-var expect = chai.expect;
-var GridFsStorage = require('../index');
-var setting = require('./utils/settings');
-var uploads = require('./utils/uploads');
-var request = require('supertest');
-var multer = require('multer');
-var getNodeVersion = require('./utils/testutils').getNodeVersion;
-var Promise = require('bluebird');
+const express = require('express');
+const chai = require('chai');
+const expect = chai.expect;
+const GridFsStorage = require('../index');
+const setting = require('./utils/settings');
+const uploads = require('./utils/uploads');
+const request = require('supertest');
+const multer = require('multer');
+const testutils = require('./utils/testutils');
+const version = testutils.getNodeVersion();
+const Promise = require('bluebird');
 
 describe('ES6 generators', function () {
-  var app;
+  let app;
   
   before(function () {
     app = express();
   });
   
   describe('all options with generators', function () {
-    var db, storage, result;
+    let db, storage, result;
     before(function (done) {
-      var version = getNodeVersion();
       if (version.major < 6) {
         return this.skip();
       }
@@ -29,7 +29,7 @@ describe('ES6 generators', function () {
       storage = GridFsStorage({
         url: setting.mongoUrl(),
         filename: function*() {
-          var counter = 0;
+          let counter = 0;
           while (true) {
             counter++;
             yield 'file' + counter;
@@ -41,23 +41,23 @@ describe('ES6 generators', function () {
           }
         },
         identifier: function*() {
-          var counter = 0;
+          let counter = 0;
           while (true) {
             counter++;
             yield counter;
           }
         },
         chunkSize: function*() {
-          var sizes = [102400, 204800];
-          var counter = 0;
+          const sizes = [102400, 204800];
+          let counter = 0;
           while (true) {
             yield sizes[counter];
             counter++;
           }
         },
         root: function*() {
-          var names = ['plants', 'animals'];
-          var counter = 0;
+          const names = ['plants', 'animals'];
+          let counter = 0;
           while (true) {
             yield names[counter];
             counter++;
@@ -66,7 +66,7 @@ describe('ES6 generators', function () {
       });
       /*eslint-enable no-constant-condition */
       
-      var upload = multer({ storage: storage });
+      const upload = multer({ storage: storage });
       
       app.post('/gen1', upload.array('photos', 2), function (req, res) {
         res.send({ headers: req.headers, files: req.files, body: req.body });
@@ -135,10 +135,9 @@ describe('ES6 generators', function () {
   });
   
   describe('generator parameters', function () {
-    var db, storage;
-    var parameters;
+    let db, storage;
+    let parameters;
     before(function (done) {
-      var version = getNodeVersion();
       if (version.major < 6) {
         return this.skip();
       }
@@ -155,59 +154,54 @@ describe('ES6 generators', function () {
       storage = GridFsStorage({
         url: setting.mongoUrl(),
         filename: function*(req, file) {
-          var counter = 0;
-          var result;
+          let counter = 0;
           parameters.filename.push({req: req, file: file});
           while (true) {
             counter++;
-            result = yield 'file' + counter;
-            parameters.filename.push({req: result.req, file: result.file});
+            [req, file] = yield 'file' + counter;
+            parameters.filename.push({req: req, file: file});
           }
         },
         metadata: function*(req, file) {
-          var result;
           parameters.metadata.push({req: req, file: file});
           while (true) {
-            result = yield { data: Math.random() };
-            parameters.metadata.push({req: result.req, file: result.file});
+            [req, file] = yield { data: Math.random() };
+            parameters.metadata.push({req: req, file: file});
           }
         },
         identifier: function*(req, file) {
-          var counter = 0;
-          var result;
+          let counter = 0;
           parameters.identifier.push({req: req, file: file});
           while (true) {
             counter++;
-            result = yield counter;
-            parameters.identifier.push({req: result.req, file: result.file});
+            [req, file] = yield counter;
+            parameters.identifier.push({req: req, file: file});
           }
         },
         chunkSize: function*(req, file) {
-          var sizes = [102400, 204800];
-          var counter = 0;
-          var result;
+          const sizes = [102400, 204800];
+          let counter = 0;
           parameters.chunkSize.push({req: req, file: file});
           while (true) {
-            result = yield sizes[counter];
+            [req, file] = yield sizes[counter];
             counter++;
-            parameters.chunkSize.push({req: result.req, file: result.file});
+            parameters.chunkSize.push({req: req, file: file});
           }
         },
         root: function*(req, file) {
-          var names = ['plants', 'animals'];
-          var counter = 0;
-          var result;
+          const names = ['plants', 'animals'];
+          let counter = 0;
           parameters.root.push({req: req, file: file});
           while (true) {
-            result = yield names[counter];
+            [req, file] = yield names[counter];
             counter++;
-            parameters.root.push({req: result.req, file: result.file});
+            parameters.root.push({req: req, file: file});
           }
         }
       });
       /*eslint-enable no-constant-condition */
       
-      var upload = multer({ storage: storage });
+      const upload = multer({ storage: storage });
       
       app.post('/gen2', upload.array('photos', 2), function (req, res) {
         res.send({ headers: req.headers, files: req.files, body: req.body });
@@ -274,9 +268,8 @@ describe('ES6 generators', function () {
   });
   
   describe('promises and generators', function () {
-    var db, storage, result;
+    let db, storage, result;
     before(function (done) {
-      var version = getNodeVersion();
       if (version.major < 6) {
         return this.skip();
       }
@@ -284,7 +277,7 @@ describe('ES6 generators', function () {
       storage = GridFsStorage({
         url: setting.mongoUrl(),
         filename: function*() {
-          var counter = 0;
+          let counter = 0;
           while (true) {
             counter++;
             yield Promise.resolve('file' + counter);
@@ -296,23 +289,23 @@ describe('ES6 generators', function () {
           }
         },
         identifier: function*() {
-          var counter = 0;
+          let counter = 0;
           while (true) {
             counter++;
             yield Promise.resolve(counter);
           }
         },
         chunkSize: function*() {
-          var sizes = [102400, 204800];
-          var counter = 0;
+          const sizes = [102400, 204800];
+          let counter = 0;
           while (true) {
             yield Promise.resolve(sizes[counter]);
             counter++;
           }
         },
         root: function*() {
-          var names = ['plants', 'animals'];
-          var counter = 0;
+          const names = ['plants', 'animals'];
+          let counter = 0;
           while (true) {
             yield Promise.resolve(names[counter]);
             counter++;
@@ -321,7 +314,7 @@ describe('ES6 generators', function () {
       });
       /*eslint-enable no-constant-condition */
       
-      var upload = multer({ storage: storage });
+      const upload = multer({ storage: storage });
       
       app.post('/gen3', upload.array('photos', 2), function (req, res) {
         res.send({ headers: req.headers, files: req.files, body: req.body });
