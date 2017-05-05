@@ -9,6 +9,7 @@ var uploads = require('./utils/uploads');
 var request = require('supertest');
 var multer = require('multer');
 var getNodeVersion = require('./utils/testutils').getNodeVersion;
+var Promise = require('bluebird');
 
 describe('ES6 generators', function () {
   var app;
@@ -21,7 +22,7 @@ describe('ES6 generators', function () {
     var db, storage, result;
     before(function (done) {
       var version = getNodeVersion();
-      if (version.major < 4) {
+      if (version.major < 6) {
         return this.skip();
       }
       /*eslint-disable no-constant-condition */
@@ -131,7 +132,6 @@ describe('ES6 generators', function () {
           });
       }
     });
-    
   });
   
   describe('generator parameters', function () {
@@ -139,7 +139,7 @@ describe('ES6 generators', function () {
     var parameters;
     before(function (done) {
       var version = getNodeVersion();
-      if (version.major < 4) {
+      if (version.major < 6) {
         return this.skip();
       }
       
@@ -271,5 +271,121 @@ describe('ES6 generators', function () {
       }
     });
     
+  });
+  
+  describe('promises and generators', function () {
+    var db, storage, result;
+    before(function (done) {
+      var version = getNodeVersion();
+      if (version.major < 6) {
+        return this.skip();
+      }
+      /*eslint-disable no-constant-condition */
+      storage = GridFsStorage({
+        url: setting.mongoUrl(),
+        filename: function*() {
+          var counter = 0;
+          while (true) {
+            counter++;
+            yield Promise.resolve('file' + counter);
+          }
+        },
+        metadata: function*() {
+          while (true) {
+            yield Promise.resolve({ data: Math.random() });
+          }
+        },
+        identifier: function*() {
+          var counter = 0;
+          while (true) {
+            counter++;
+            yield Promise.resolve(counter);
+          }
+        },
+        chunkSize: function*() {
+          var sizes = [102400, 204800];
+          var counter = 0;
+          while (true) {
+            yield Promise.resolve(sizes[counter]);
+            counter++;
+          }
+        },
+        root: function*() {
+          var names = ['plants', 'animals'];
+          var counter = 0;
+          while (true) {
+            yield Promise.resolve(names[counter]);
+            counter++;
+          }
+        }
+      });
+      /*eslint-enable no-constant-condition */
+      
+      var upload = multer({ storage: storage });
+      
+      app.post('/gen3', upload.array('photos', 2), function (req, res) {
+        res.send({ headers: req.headers, files: req.files, body: req.body });
+      });
+      
+      storage.on('connection', function (gridfs, database) {
+        db = database;
+        request(app)
+          .post('/gen3')
+          .attach('photos', uploads.files[0])
+          .attach('photos', uploads.files[1])
+          .end(function (err, res) {
+            result = res.body;
+            done();
+          });
+      });
+    });
+    
+    it('should the request contain the two uploaded files', function () {
+      expect(result.files).to.be.an('array');
+      expect(result.files).to.have.length(2);
+    });
+    
+    it('should be named with the yielded value', function () {
+      expect(result.files[0].filename).to.equal('file1');
+      expect(result.files[1].filename).to.equal('file2');
+    });
+    
+    it('should contain a metadata object with the yielded object', function () {
+      expect(result.files[0].metadata).to.have.property('data').and.to.be.a('number');
+      expect(result.files[1].metadata).to.have.property('data').and.to.be.a('number');
+    });
+    
+    it('should be stored with the yielded chunkSize value', function () {
+      expect(result.files[0].grid.chunkSize).to.equal(102400);
+      expect(result.files[1].grid.chunkSize).to.equal(204800);
+    });
+    
+    it('should change the id with the yielded value', function () {
+      expect(result.files[0].id).to.match(/^00000001/);
+      expect(result.files[1].id).to.match(/^00000002/);
+    });
+    
+    it('should be stored under in a collection with the yielded value', function (done) {
+      db.collection('plants.files', { strict: true }, function (err) {
+        expect(err).to.be.equal(null);
+        db.collection('animals.files', { strict: true }, function (err) {
+          expect(err).to.be.equal(null);
+          done();
+        });
+      });
+    });
+    
+    after(function () {
+      if (storage) {
+        storage.removeAllListeners();
+      }
+      if (db) {
+        return db
+          .dropDatabase()
+          .then(function () {
+            return db.close(true);
+          });
+      }
+    });
   });
 });

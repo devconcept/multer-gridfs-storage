@@ -30,6 +30,7 @@
     "mongodb": "^2.1.19"
   },
   "devDependencies": {
+    "babel-register": "^6.24.1",
     "bluebird": "^3.5.0",
     "chai": "^3.5.0",
     "chai-interface": "^2.0.3",
