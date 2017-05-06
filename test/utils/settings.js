@@ -1,14 +1,14 @@
 'use strict';
 
-var url = require('url');
+const url = require('url');
 
-var connection = {
+const connection = {
   host: process.env.MONGO_HOST || '127.0.0.1',
   port: process.env.MONGO_PORT || 27017,
   database: 'gridfsstorage'
 };
 
-var mongoUrl = function () {
+const mongoUrl = function () {
   return url.format({
     protocol: 'mongodb',
     slashes: true,

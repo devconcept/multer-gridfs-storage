@@ -1,19 +1,19 @@
 'use strict';
 
-var express = require('express');
-var chai = require('chai');
-var expect = chai.expect;
-var GridFsStorage = require('../index');
-var setting = require('./utils/settings');
-var uploads = require('./utils/uploads');
-var request = require('supertest');
-var multer = require('multer');
-var mongo = require('mongodb');
-var MongoClient = mongo.MongoClient;
-var Grid = require('gridfs-stream');
-var md5File = require('md5-file');
-var fs = require('fs');
-var Promise = require('bluebird');
+const express = require('express');
+const chai = require('chai');
+const expect = chai.expect;
+const GridFsStorage = require('../index');
+const setting = require('./utils/settings');
+const uploads = require('./utils/uploads');
+const request = require('supertest');
+const multer = require('multer');
+const mongo = require('mongodb');
+const MongoClient = mongo.MongoClient;
+const Grid = require('gridfs-stream');
+const md5File = require('md5-file');
+const fs = require('fs');
+const Promise = require('bluebird');
 
 Promise.onPossiblyUnhandledRejection(function () {
   // This blocks swallows the unhandled promise rejection warning in tests
@@ -24,31 +24,29 @@ Promise.onPossiblyUnhandledRejection(function () {
 chai.use(require('chai-interface'));
 
 describe('GridFS storage', function () {
-  var result, app;
+  let result, app, storage;
   this.timeout(4000);
   
-  before(function () {
+  before(() => {
     app = express();
   });
   
   describe('url created instance', function () {
-    var db;
-    before(function (done) {
-      var storage = GridFsStorage({ url: setting.mongoUrl() });
+    before((done) => {
+      storage = GridFsStorage({ url: setting.mongoUrl() });
       
-      var upload = multer({ storage: storage });
+      const upload = multer({ storage });
       
-      app.post('/url', upload.array('photos', 2), function (req, res) {
+      app.post('/url', upload.array('photos', 2), (req, res) => {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.on('connection', function (gridfs, database) {
-        db = database;
+      storage.on('connection', () => {
         request(app)
           .post('/url')
           .attach('photos', uploads.files[0])
           .attach('photos', uploads.files[1])
-          .end(function (err, res) {
+          .end((err, res) => {
             result = res.body;
             done();
           });
@@ -61,31 +59,18 @@ describe('GridFS storage', function () {
     });
     
     it('should have each stored file the same MD5 signature than the uploaded file', function (done) {
-      result.files.forEach(function (file, index) {
+      result.files.forEach((file, index) => {
         expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
       });
       done();
     });
     
-    after(function (done) {
-      db.collection('fs.files').deleteMany({})
-        .then(function () {
-          return db.collection('fs.chunks').deleteMany({});
-        })
-        .then(function () {
-          db.close(true, done);
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
-    
   });
   
   describe('gfs created instance', function () {
-    var db, gfs;
-    before(function (done) {
-      MongoClient.connect(setting.mongoUrl(), function (err, database) {
+    let db, gfs;
+    before((done) => {
+      MongoClient.connect(setting.mongoUrl(), (err, database) => {
         if (err) {
           return done(err);
         }
@@ -93,11 +78,11 @@ describe('GridFS storage', function () {
         db = database;
         gfs = Grid(db, mongo);
         
-        var storage = GridFsStorage({ gfs: gfs });
+        storage = GridFsStorage({ gfs });
         
-        var upload = multer({ storage: storage });
+        const upload = multer({ storage });
         
-        app.post('/gfs', upload.array('photos', 2), function (req, res) {
+        app.post('/gfs', upload.array('photos', 2), (req, res) => {
           res.send({ headers: req.headers, files: req.files, body: req.body });
         });
         
@@ -105,7 +90,7 @@ describe('GridFS storage', function () {
           .post('/gfs')
           .attach('photos', uploads.files[0])
           .attach('photos', uploads.files[1])
-          .end(function (err, res) {
+          .end((err, res) => {
             result = res.body;
             done();
           });
@@ -118,37 +103,29 @@ describe('GridFS storage', function () {
     });
     
     it('should have each stored file the same MD5 signature than the uploaded file', function (done) {
-      result.files.forEach(function (file, index) {
+      result.files.forEach((file, index) => {
         expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
       });
       done();
     });
-    
-    after(function (done) {
-      db.dropDatabase(function () {
-        db.close(true, done);
-      });
-    });
   });
   
   describe('gfs promise based instance', function () {
-    var db, gfs;
-    before(function (done) {
-      var promised = MongoClient
+    let gfs, db;
+    before((done) => {
+      const promised = MongoClient
         .connect(setting.mongoUrl())
-        .then(function (database) {
-          return Grid(database, mongo);
-        });
+        .then((database) => Grid(database, mongo));
       
-      var storage = GridFsStorage({ gfs: promised });
-      var upload = multer({ storage: storage });
+      const storage = GridFsStorage({ gfs: promised });
+      const upload = multer({ storage });
       
       
-      app.post('/promise', upload.array('photos', 2), function (req, res) {
+      app.post('/promise', upload.array('photos', 2), (req, res) => {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.on('connection', function (grid, database) {
+      storage.on('connection', (grid, database) => {
         gfs = grid;
         db = database;
         
@@ -156,7 +133,7 @@ describe('GridFS storage', function () {
           .post('/promise')
           .attach('photos', uploads.files[0])
           .attach('photos', uploads.files[1])
-          .end(function (err, res) {
+          .end((err, res) => {
             result = res.body;
             done();
           });
@@ -165,6 +142,7 @@ describe('GridFS storage', function () {
     
     it('should emit the event with a gfs instance, not a promise', function () {
       expect(gfs).to.be.an.instanceof(Grid);
+      expect(db).to.be.an.instanceof(mongo.Db);
     });
     
     it('should store the files on upload', function () {
@@ -173,52 +151,46 @@ describe('GridFS storage', function () {
     });
     
     it('should have each stored file the same MD5 signature than the uploaded file', function (done) {
-      result.files.forEach(function (file, index) {
+      result.files.forEach((file, index) => {
         expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
       });
       done();
     });
     
     it('should log an error if the connection promise is rejected and rethrow the error', function (done) {
-      var promise = Promise.reject('reason');
+      const promise = Promise.reject('reason');
       GridFsStorage({
         gfs: promise,
-        log: function (err) {
+        log: (err) => {
           expect(err).to.equal('reason');
-          promise.catch(function (err) {
+          promise.catch((err) => {
             expect(err).to.equal('reason');
             done();
           });
         }
       });
     });
-    
-    after(function (done) {
-      db.dropDatabase(function () {
-        db.close(true, done);
-      });
-    });
   });
   
   describe('default uploaded file spec', function () {
-    var db, size;
-    before(function (done) {
-      var storage = GridFsStorage({ url: setting.mongoUrl() });
-      var upload = multer({ storage: storage });
+    let db, size;
+    before((done) => {
+      const storage = GridFsStorage({ url: setting.mongoUrl() });
+      const upload = multer({ storage });
       
       
-      app.post('/spec', upload.single('photo'), function (req, res) {
+      app.post('/spec', upload.single('photo'), (req, res) => {
         res.send({ headers: req.headers, file: req.file, body: req.body });
       });
       
-      storage.on('connection', function (grid, database) {
+      storage.on('connection', (grid, database) => {
         db = database;
         request(app)
           .post('/spec')
           .attach('photo', uploads.files[0])
-          .end(function (err, res) {
+          .end((err, res) => {
             result = res.body;
-            fs.readFile(uploads.files[0], function (err, f) {
+            fs.readFile(uploads.files[0], (err, f) => {
               size = f.length;
               done();
             });
@@ -252,12 +224,15 @@ describe('GridFS storage', function () {
       expect(result.file.size).to.equal(size);
     });
     
-    after(function () {
-      return db
-        .dropDatabase()
-        .then(function () {
-          return db.close(true);
-        });
+    afterEach(() => {
+      if (storage) {
+        storage.removeAllListeners();
+      }
+      if (db) {
+        return db
+          .dropDatabase()
+          .then(() => db.close(true));
+      }
     });
   });
   

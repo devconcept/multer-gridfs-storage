@@ -1,23 +1,23 @@
 'use strict';
 
-var storage, MulterGridFSStorage;
-storage = MulterGridFSStorage = require('../index');
-var Grid = require('gridfs-stream');
-var mongo = require('mongodb');
-var chai = require('chai');
-var expect = chai.expect;
-var settings = require('./utils/settings');
-var MongoClient = mongo.MongoClient;
-var EventEmitter = require('events').EventEmitter;
+let GridFSStorage;
+const storage = GridFSStorage = require('../index');
+const Grid = require('gridfs-stream');
+const chai = require('chai');
+const expect = chai.expect;
+const settings = require('./utils/settings');
+const mongo = require('mongodb');
+const MongoClient = mongo.MongoClient;
+const { EventEmitter } = require('events');
 
-var sinon = require('sinon');
-var sinonChai = require('sinon-chai');
+const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
 describe('module default options', function () {
   this.timeout(4000);
   this.slow(8000);
-  var instance;
+  let instance;
   
   it('should have the EventEmitter signature', function () {
     instance = storage({
@@ -37,7 +37,7 @@ describe('module default options', function () {
   });
   
   it('should allow to create the instance with the new operator', function () {
-    instance = new MulterGridFSStorage({
+    instance = new GridFSStorage({
       url: settings.mongoUrl()
     });
     expect(instance).to.be.a.instanceOf(EventEmitter);
@@ -46,12 +46,12 @@ describe('module default options', function () {
   });
   
   it('should emit a connection event when using the url parameter', function (done) {
-    var connectionSpy = sinon.spy();
+    const connectionSpy = sinon.spy();
     instance = storage({
       url: settings.mongoUrl()
     });
     instance.once('connection', connectionSpy);
-    setTimeout(function () {
+    setTimeout(() => {
       expect(connectionSpy).to.have.callCount(1);
       done();
     }, 3000);
@@ -62,7 +62,7 @@ describe('module default options', function () {
       url: settings.mongoUrl()
     });
     
-    setTimeout(function () {
+    setTimeout(() => {
       expect(instance.gfs).to.be.an.instanceof(Grid);
       done();
     }, 3000);
@@ -70,7 +70,7 @@ describe('module default options', function () {
   
   it('should use an existing GridFS connection when using the gfs parameter', function (done) {
     MongoClient.connect(settings.mongoUrl(), function (err, db) {
-      var gfs = Grid(db, mongo);
+      const gfs = Grid(db, mongo);
       instance = storage({
         gfs: gfs
       });
@@ -84,7 +84,7 @@ describe('module default options', function () {
     instance = storage({
       url: settings.mongoUrl()
     });
-    instance._getFilename(null, null, function (err, filename) {
+    instance._getFilename(null, null, (err, filename) => {
       expect(filename).to.match(/^[0-9a-f]{32}$/);
     });
   });
@@ -93,7 +93,7 @@ describe('module default options', function () {
     instance = storage({
       url: settings.mongoUrl()
     });
-    instance._getMetadata(null, null, function (err, metadata) {
+    instance._getMetadata(null, null, (err, metadata) => {
       expect(metadata).to.equal(null);
     });
   });
@@ -116,7 +116,7 @@ describe('module default options', function () {
     instance = storage({
       url: settings.mongoUrl()
     });
-    instance._getChunkSize(null, null, function (err, chunkSize) {
+    instance._getChunkSize(null, null, (err, chunkSize) => {
       expect(chunkSize).to.equal(261120);
     });
   });
@@ -125,13 +125,13 @@ describe('module default options', function () {
     instance = storage({
       url: settings.mongoUrl()
     });
-    instance._getRoot(null, null, function (err, root) {
+    instance._getRoot(null, null, (err, root) => {
       expect(root).to.equal(null);
     });
   });
   
   it('should change the default naming function', function () {
-    var namingFn = function (req, file, cb) {
+    const namingFn = function (req, file, cb) {
       cb(null, 'foo' + Date.now());
     };
     instance = storage({
@@ -143,7 +143,7 @@ describe('module default options', function () {
   });
   
   it('should change the default metadata function', function () {
-    var metadataFn = function (req, file, cb) {
+    const metadataFn = function (req, file, cb) {
       cb(null, 'foo' + Date.now());
     };
     instance = storage({
@@ -155,7 +155,7 @@ describe('module default options', function () {
   });
   
   it('should change the default identifier function', function () {
-    var identifierFn = function (req, file, cb) {
+    const identifierFn = function (req, file, cb) {
       cb(null, 'foo');
     };
     instance = storage({
@@ -167,7 +167,7 @@ describe('module default options', function () {
   });
   
   it('should change the default chunkSize function', function () {
-    var chunkSizeFn = function (req, file, cb) {
+    const chunkSizeFn = function (req, file, cb) {
       cb(null, 4567);
     };
     instance = storage({
@@ -179,7 +179,7 @@ describe('module default options', function () {
   });
   
   it('should change the default root function', function () {
-    var rootFn = function (req, file, cb) {
+    const rootFn = function (req, file, cb) {
       cb(null, 4567);
     };
     instance = storage({
@@ -191,7 +191,7 @@ describe('module default options', function () {
   });
   
   it('should allow to set the logging to a function', function () {
-    var logFn = function (err, log) {
+    const logFn = function (err, log) {
       console.log(err, log);
     };
     instance = storage({
@@ -210,22 +210,18 @@ describe('module default options', function () {
     expect(instance._logLevel).to.equal('all');
   });
   
-  afterEach(function () {
+  afterEach(() => {
     function drop(db) {
       return db.dropDatabase()
-        .then(function () {
-          return db.close(true);
-        });
+        .then(() => db.close(true));
     }
     
     instance.removeAllListeners('connection');
     if (instance.gfs) {
-      var db = instance.gfs.db;
+      const db = instance.gfs.db;
       return drop(db);
     } else {
-      instance.once('connection', function (gfs, db) {
-        return drop(db);
-      });
+      instance.once('connection', (gfs, db) => drop(db));
     }
   });
   

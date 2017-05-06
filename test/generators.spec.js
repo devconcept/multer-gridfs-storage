@@ -8,20 +8,19 @@ const setting = require('./utils/settings');
 const uploads = require('./utils/uploads');
 const request = require('supertest');
 const multer = require('multer');
-const testutils = require('./utils/testutils');
-const version = testutils.getNodeVersion();
+const { version } = require('./utils/testutils');
 const Promise = require('bluebird');
 
 describe('ES6 generators', function () {
   let app;
   
-  before(function () {
+  before(() => {
     app = express();
   });
   
   describe('all options with generators', function () {
     let db, storage, result;
-    before(function (done) {
+    before((done) => {
       if (version.major < 6) {
         return this.skip();
       }
@@ -155,47 +154,47 @@ describe('ES6 generators', function () {
         url: setting.mongoUrl(),
         filename: function*(req, file) {
           let counter = 0;
-          parameters.filename.push({req: req, file: file});
+          parameters.filename.push({ req: req, file: file });
           while (true) {
             counter++;
             [req, file] = yield 'file' + counter;
-            parameters.filename.push({req: req, file: file});
+            parameters.filename.push({ req: req, file: file });
           }
         },
         metadata: function*(req, file) {
-          parameters.metadata.push({req: req, file: file});
+          parameters.metadata.push({ req: req, file: file });
           while (true) {
             [req, file] = yield { data: Math.random() };
-            parameters.metadata.push({req: req, file: file});
+            parameters.metadata.push({ req: req, file: file });
           }
         },
         identifier: function*(req, file) {
           let counter = 0;
-          parameters.identifier.push({req: req, file: file});
+          parameters.identifier.push({ req: req, file: file });
           while (true) {
             counter++;
             [req, file] = yield counter;
-            parameters.identifier.push({req: req, file: file});
+            parameters.identifier.push({ req: req, file: file });
           }
         },
         chunkSize: function*(req, file) {
           const sizes = [102400, 204800];
           let counter = 0;
-          parameters.chunkSize.push({req: req, file: file});
+          parameters.chunkSize.push({ req: req, file: file });
           while (true) {
             [req, file] = yield sizes[counter];
             counter++;
-            parameters.chunkSize.push({req: req, file: file});
+            parameters.chunkSize.push({ req: req, file: file });
           }
         },
         root: function*(req, file) {
           const names = ['plants', 'animals'];
           let counter = 0;
-          parameters.root.push({req: req, file: file});
+          parameters.root.push({ req: req, file: file });
           while (true) {
             [req, file] = yield names[counter];
             counter++;
-            parameters.root.push({req: req, file: file});
+            parameters.root.push({ req: req, file: file });
           }
         }
       });
@@ -223,28 +222,28 @@ describe('ES6 generators', function () {
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
-  
+    
     it('should the metadata parameters be a request and a file objects', function () {
       parameters.metadata.forEach(function (param) {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
-  
+    
     it('should the identifier parameters be a request and a file objects', function () {
       parameters.identifier.forEach(function (param) {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
-  
+    
     it('should the chunkSize parameters be a request and a file objects', function () {
       parameters.chunkSize.forEach(function (param) {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
-  
+    
     it('should the root parameters be a request and a file objects', function () {
       parameters.root.forEach(function (param) {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
