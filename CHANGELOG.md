@@ -1,14 +1,22 @@
+1.2.0
+=====
+
+  * Added generator function support
+  * Allow to use promises in configuration options instead of callbacks
+
 1.1.1
 =====
 
   * Fixed UnhandledPromiseRejection error
   
+
 1.1.0
 ==================
 
   * Added support for connection promises
   * Added file size information
   * Allow the api to be called with the `new` operator
+  * Added Typescript support
 
 1.0.3
 ==================

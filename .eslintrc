@@ -5,6 +5,11 @@
   },
   "extends": "eslint:recommended",
   "rules": {
+    "strict": "error",
+    "callback-return": "warn",
+    "global-require": "error",
+    "new-cap": "warn",
+    "new-parens": "warn",
     "indent": [
       "warn",
       2
@@ -21,11 +26,18 @@
       "error",
       "always"
     ],
-    "no-console": [
-      "warn"
+    "no-console": "warn",
+    "complexity": [
+      2,
+      10
+    ],
+    "max-statements": [
+      2,
+      30
     ]
   },
   "globals": {
-    "Promise": true
+    "Promise": true,
+    "Symbol": true
   }
 }

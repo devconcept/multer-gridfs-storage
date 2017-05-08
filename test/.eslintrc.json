@@ -4,7 +4,12 @@
     "mocha": true
   },
   "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
   "rules": {
+    "prefer-const": "error",
+    "no-var": "error",
     "indent": [
       "warn",
       2

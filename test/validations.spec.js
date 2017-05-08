@@ -1,42 +1,40 @@
 'use strict';
 
-var utils = require('../lib/utils');
-var chai = require('chai');
-var expect = chai.expect;
-var mute = require('mute');
-var validate = utils.validateOptions;
-var settings = require('./utils/settings');
+const __ = require('../lib/utils');
+const chai = require('chai');
+const expect = chai.expect;
+const mute = require('mute');
+const validate = __.validateOptions;
+const settings = require('./utils/settings');
+const { noop } = require('./utils/testutils');
 
-describe('error handling', function () {
-  var unmute;
+describe('validation function', function () {
+  let unmute;
   
-  function noop() {
-  
-  }
-  
-  before(function () {
-    unmute = mute(process.stderr);
-  });
+  before(() => unmute = mute(process.stderr));
   
   it('should throw an error when no url and gfs parameters are passed in', function () {
-    var fn = function () {
+    const fn = () => {
       validate({});
     };
     expect(fn).to.throw(Error, /^Missing required configuration$/);
   });
   
   it('should not allow objects of different type than GridFs in gfs configuration option', function () {
-    var errorRegexp = /^Expected gfs configuration to be a Grid instance or a promise$/;
+    const errorRegexp = /^Expected gfs configuration to be a Grid instance or a promise$/;
     
     function errorFn1() {
       validate({ gfs: [] });
     }
+    
     function errorFn2() {
       validate({ gfs: '' });
     }
+    
     function errorFn3() {
       validate({ gfs: {} });
     }
+    
     function errorFn4() {
       validate({ gfs: 10 });
     }
@@ -47,18 +45,21 @@ describe('error handling', function () {
     expect(errorFn4).to.throw(Error, errorRegexp);
   });
   
-  it('should only allow functions in the filename option', function () {
-    var errorRegexp = /^Expected filename configuration to be a function$/;
+  it('should only allow functions and generator functions in the filename option', function () {
+    const errorRegexp = /^Expected filename configuration to be a function or a generator function$/;
     
     function errorFn1() {
       validate({ url: settings.mongoUrl(), filename: [] });
     }
+    
     function errorFn2() {
       validate({ url: settings.mongoUrl(), filename: '' });
     }
+    
     function errorFn3() {
       validate({ url: settings.mongoUrl(), filename: {} });
     }
+    
     function errorFn4() {
       validate({ url: settings.mongoUrl(), filename: 10 });
     }
@@ -74,17 +75,21 @@ describe('error handling', function () {
     expect(successFn).not.to.throw();
   });
   
-  it('should only allow functions in the identifier option', function () {
-    var errorRegexp = /^Expected identifier configuration to be a function$/;
+  it('should only allow functions and generator functions in the identifier option', function () {
+    const errorRegexp = /^Expected identifier configuration to be a function or a generator function$/;
+    
     function errorFn1() {
       validate({ url: settings.mongoUrl(), identifier: [] });
     }
+    
     function errorFn2() {
       validate({ url: settings.mongoUrl(), identifier: '' });
     }
+    
     function errorFn3() {
       validate({ url: settings.mongoUrl(), identifier: {} });
     }
+    
     function errorFn4() {
       validate({ url: settings.mongoUrl(), identifier: 10 });
     }
@@ -100,17 +105,21 @@ describe('error handling', function () {
     expect(successFn).not.to.throw();
   });
   
-  it('should only allow functions in the metadata option', function () {
-    var errorRegexp = /^Expected metadata configuration to be a function$/;
+  it('should only allow functions and generator functions in the metadata option', function () {
+    const errorRegexp = /^Expected metadata configuration to be a function or a generator function$/;
+    
     function errorFn1() {
       validate({ url: settings.mongoUrl(), metadata: [] });
     }
+    
     function errorFn2() {
       validate({ url: settings.mongoUrl(), metadata: '' });
     }
+    
     function errorFn3() {
       validate({ url: settings.mongoUrl(), metadata: {} });
     }
+    
     function errorFn4() {
       validate({ url: settings.mongoUrl(), metadata: 10 });
     }
@@ -126,14 +135,17 @@ describe('error handling', function () {
     expect(successFn).not.to.throw();
   });
   
-  it('should only allow functions or numbers in the chunkSize option', function () {
-    var errorRegexp = /^Expected chunkSize configuration to be a function or a Number$/;
+  it('should only allow functions, generator functions or numbers in the chunkSize option', function () {
+    const errorRegexp = /^Expected chunkSize configuration to be a function, a generator function or a Number$/;
+    
     function errorFn1() {
       validate({ url: settings.mongoUrl(), chunkSize: [] });
     }
+    
     function errorFn2() {
       validate({ url: settings.mongoUrl(), chunkSize: '' });
     }
+    
     function errorFn3() {
       validate({ url: settings.mongoUrl(), chunkSize: {} });
     }
@@ -141,7 +153,7 @@ describe('error handling', function () {
     function successFn1() {
       validate({ url: settings.mongoUrl(), chunkSize: noop });
     }
-  
+    
     function successFn2() {
       validate({ url: settings.mongoUrl(), chunkSize: 10 });
     }
@@ -153,14 +165,17 @@ describe('error handling', function () {
     expect(successFn2).not.to.throw();
   });
   
-  it('should only allow functions or strings in the root option', function () {
-    var errorRegexp = /^Expected root configuration to be a function or a String/;
+  it('should only allow functions, generator functions or strings in the root option', function () {
+    const errorRegexp = /^Expected root configuration to be a function, a generator function or a String/;
+    
     function errorFn1() {
       validate({ url: settings.mongoUrl(), root: [] });
     }
+    
     function errorFn2() {
       validate({ url: settings.mongoUrl(), root: {} });
     }
+    
     function errorFn3() {
       validate({ url: settings.mongoUrl(), root: 10 });
     }
@@ -180,14 +195,17 @@ describe('error handling', function () {
     expect(successFn2).not.to.throw();
   });
   
-  it('should only allow functions or booleans in the root option', function () {
-    var errorRegexp = /^Expected log configuration to be a function or a Boolean/;
+  it('should only allow functions or booleans in the log option', function () {
+    const errorRegexp = /^Expected log configuration to be a function or a Boolean/;
+    
     function errorFn1() {
       validate({ url: settings.mongoUrl(), log: [] });
     }
+    
     function errorFn2() {
       validate({ url: settings.mongoUrl(), log: {} });
     }
+    
     function errorFn3() {
       validate({ url: settings.mongoUrl(), log: 10 });
     }
@@ -199,7 +217,7 @@ describe('error handling', function () {
     function successFn2() {
       validate({ url: settings.mongoUrl(), log: true });
     }
-  
+    
     function successFn3() {
       validate({ url: settings.mongoUrl(), log: false });
     }
@@ -213,16 +231,20 @@ describe('error handling', function () {
   });
   
   it('should only allow logLevel with the value "file" or "all"', function () {
-    var errorRegexp = /^Invalid log level configuration. Must be either "file" or "all"/;
+    const errorRegexp = /^Invalid log level configuration. Must be either "file" or "all"/;
+    
     function errorFn1() {
       validate({ url: settings.mongoUrl(), logLevel: [] });
     }
+    
     function errorFn2() {
       validate({ url: settings.mongoUrl(), logLevel: {} });
     }
+    
     function errorFn3() {
       validate({ url: settings.mongoUrl(), logLevel: 10 });
     }
+    
     function errorFn4() {
       validate({ url: settings.mongoUrl(), logLevel: '' });
     }
@@ -244,8 +266,6 @@ describe('error handling', function () {
     expect(successFn2).not.to.throw();
   });
   
-  after(function () {
-    unmute();
-  });
+  after(() => unmute());
   
 });

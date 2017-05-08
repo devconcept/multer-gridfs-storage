@@ -1,6 +1,6 @@
 # Multer's GridFS storage engine
 
-[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
+[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] ![Downloads][downloads-image]
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb
 
@@ -49,11 +49,29 @@ app.post('/cool-profile', fUpload, function (req, res, next) {
 
 The module returns a function that can be invoked with options to create a Multer storage engine.
 
+Starting from version 1.1.0 the module function can be called with 
+or without the javascript `new` operator like this
+
+```javascript
+var storage = require('multer-gridfs-storage')(options);
+var upload = multer({ storage: storage });
+
+//or
+
+var GridFSStorage = require('multer-gridfs-storage');
+var storage = new GridFSStorage(options)
+var upload = multer({ storage: storage });
+```
+
+ES6 users that want to use the `function*` syntax can check the wiki article [using generator functions][generator-functions]
+
+### Options
+
 The options parameter is an object with the following properties.
 
 #### gfs
 
-Type: **Object** or **Promise**
+Type: `object` or `Promise`
 
 Required if [`url`][url-option] option is not present
 
@@ -66,7 +84,7 @@ Example:
 ```javascript
 var Grid = require('gridfs-stream');
 var mongo = require('mongodb');
-var GridFsStorage = require('multer-gridfs-storage');
+var GridFSStorage = require('multer-gridfs-storage');
 
 var db = new mongo.Db('database', new mongo.Server("127.0.0.1", 27017));
 
@@ -74,7 +92,7 @@ db.open(function (err) {
   if (err) return handleError(err);
   var gfs = Grid(db, mongo);
 
-  var storage = GridFsStorage({
+  var storage = GridFSStorage({
      gfs: gfs
   });
   var upload = multer({ storage: storage });
@@ -83,7 +101,7 @@ db.open(function (err) {
 
 #### url
 
-Type: **String**
+Type: `string`
 
 Required if [`gfs`][gfs-option] option is not present
 
@@ -131,7 +149,7 @@ var upload = multer({ storage: storage });
 
 #### filename
 
-Type: **Function**
+Type: `function` or `function*`
 
 Not required
 
@@ -139,7 +157,7 @@ A function to control the file naming in the database. Is invoked with
 the parameters `req`, `file` and `callback`, in that order, like all the Multer configuration
 functions.
 
-By default this module behaves exactly like the default Multer disk storage does.
+By default, this module behaves exactly like the default Multer disk storage does.
 It generates a 16 bytes long name in hexadecimal format with no extension for the file
 to guarantee that there are very low probabilities of naming collisions. You can override this 
 by passing your own function.
@@ -180,7 +198,7 @@ You could also use the user's file name plus a timestamp to generate unique name
 
 #### identifier
 
-Type: **Function**
+Type: `function` or `function*`
 
 Not required
 
@@ -210,14 +228,14 @@ var upload = multer({ storage: storage });
 
 In this example a random number is used for the file identifier. 
 
-***Important note***
+***Note:***
 
 > Normally you shouldn't use this function
 unless you want granular control of your file ids because auto-generated identifiers are guaranteed to be unique.
 
 #### metadata
 
-Type: **Function**
+Type: `function` or `function*`
 
 Not required
 
@@ -226,7 +244,7 @@ A function to control the metadata object associated to the file.
 This function is called with the `req`, `file` and `callback` parameters and is used
 to store metadata with the file. 
 
-By default the stored metadata value for uploaded files is `null`.
+By default, the stored metadata value for uploaded files is `null`.
 
 Example:
 
@@ -246,12 +264,15 @@ those will be stored unencrypted in the database as well, inside the metadata of
 
 #### chunkSize
 
-Type: **Number** or **Function**
+Type: `number`, `function` or `function*`
 
 Not required
 
-The preferred size of file chunks. Default value is 261120. You can use a 
-fixed number as the value or a function to use different values per file.
+The preferred size of file chunks in bytes. 
+
+Default value is 261120 (255kb). 
+
+You can use a fixed number as the value or a function to use different values per upload.
 
 Example using fixed value:
 
@@ -281,11 +302,11 @@ var upload = multer({ storage: storage });
 
 #### root
 
-Type: **String** or **Function**
+Type: `string`, `function` or `function*`
 
 Not required
 
-The root collection to store the files. By default this value is `null`.
+The root collection to store the files. By default, this value is `null`.
 When the value of this property is `null` MongoDb will use the default collection name `'fs'`
 to store files. This value can be changed with this option and you can use a different fixed value
 or a dynamic one per file.
@@ -378,7 +399,7 @@ This event is only triggered once. Note that if you only want to log events ther
 
 #### Event: `'file'`
 
-This event is ememitted every time a new file is stored in the db. This is useful when you have
+This event is emitted every time a new file is stored in the db. This is useful when you have
 a custom logging mechanism and want to record every uploaded file.
 
 ```javascript
@@ -399,7 +420,7 @@ To make debugging easy you can use any of the logging options in the storage con
 
 ### log
 
-Type: **Boolean** or **Function**
+Type: `boolean` or `function`
 
 Default: `false`
 
@@ -407,7 +428,7 @@ Not required
 
 Enable or disable logging.
 
-By default the module will not output anything. Set this option to `true` to log when the connection is opened,
+By default, the module will not output anything. Set this option to `true` to log when the connection is opened,
 files are stored or an error occurs. This is useful when you want to see logging about incoming files.
 
 If a function is provided it will be called in every log event with two arguments `err` y `log` with the error or
@@ -438,7 +459,7 @@ Not required
 
 The events to be logged out. Only applies if logging is enabled.
 
-Type: **string**
+Type: `string`
 
 Default: `'file'`
 
@@ -489,9 +510,10 @@ $ npm coverage
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
 
 [travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
-[travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master
+[travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master "Build status"
 [coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
-[coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master
+[coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
+[downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 
 [url-option]: #url
 [gfs-option]: #gfs
@@ -502,3 +524,4 @@ $ npm coverage
 [root-option]: #root
 [log-option]: #log
 [logLevel-option]: #loglevel
+[generator-functions]: https://github.com/devconcept/multer-gridfs-storage/wiki

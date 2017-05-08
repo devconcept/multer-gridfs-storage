@@ -1,9 +1,10 @@
 engines:
   eslint:
     enabled: true
+    config: .eslintrc
 
 ratings:
    paths:
-   - "lib/**"
+   - "/lib/**.js"
    - "index.js"
 
