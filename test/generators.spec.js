@@ -446,7 +446,7 @@ describe('ES6 generators', function () {
     });
     
     it('should be failed with an error "reason"', function () {
-      expect(error.text).to.match(/reason/);
+      expect(error.text).to.match(/reason/m);
     });
     
     after(() => {
