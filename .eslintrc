@@ -29,7 +29,7 @@
     "no-console": "warn",
     "complexity": [
       2,
-      15
+      10
     ],
     "max-statements": [
       2,
