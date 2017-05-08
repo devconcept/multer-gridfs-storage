@@ -4,7 +4,7 @@
   "description": "Multer storage engine for GridFS",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --require babel-register",
     "lint": "eslint .",
     "cover": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "docs": "./node_modules/.bin/jsdoc -c ./conf.json --readme ./README.md",
