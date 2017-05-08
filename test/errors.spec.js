@@ -7,7 +7,7 @@ const { expect } = require('chai');
 const request = require('supertest');
 const express = require('express');
 const settings = require('./utils/settings');
-const uploads = require('./utils/uploads');
+const { files, cleanDb } = require('./utils/testutils');
 const mute = require('mute');
 
 describe('error handling', function () {
@@ -36,7 +36,7 @@ describe('error handling', function () {
     storage.on('connection', () => {
       request(app)
         .post('/identifier')
-        .attach('photo', uploads.files[0])
+        .attach('photo', files[0])
         .end((err, res) => {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
@@ -63,7 +63,7 @@ describe('error handling', function () {
     storage.on('connection', () => {
       request(app)
         .post('/filename')
-        .attach('photo', uploads.files[0])
+        .attach('photo', files[0])
         .end((err, res) => {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
@@ -90,7 +90,7 @@ describe('error handling', function () {
     storage.on('connection', function () {
       request(app)
         .post('/metadata')
-        .attach('photo', uploads.files[0])
+        .attach('photo', files[0])
         .end((err, res) => {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
@@ -117,7 +117,7 @@ describe('error handling', function () {
     storage.on('connection', () => {
       request(app)
         .post('/chunksize')
-        .attach('photo', uploads.files[0])
+        .attach('photo', files[0])
         .end((err, res) => {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
@@ -145,7 +145,7 @@ describe('error handling', function () {
     storage.on('connection', () => {
       request(app)
         .post('/root')
-        .attach('photo', uploads.files[0])
+        .attach('photo', files[0])
         .end((err, res) => {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
@@ -155,21 +155,9 @@ describe('error handling', function () {
     });
   });
   
-  afterEach(() => {
-    function drop(db) {
-      return db.dropDatabase()
-        .then(() => db.close(true));
-    }
-    
-    storage.removeAllListeners('connection');
-    if (storage.gfs) {
-      const db = storage.gfs.db;
-      return drop(db);
-    } else {
-      storage.once('connection', (gfs, db) => drop(db));
-    }
+  after(() => {
+    unmute();
+    return cleanDb(storage);
   });
-  
-  after(() => unmute());
   
 });

@@ -5,43 +5,41 @@ const chai = require('chai');
 const expect = chai.expect;
 const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
-const uploads = require('./utils/uploads');
 const request = require('supertest');
 const multer = require('multer');
-const { version } = require('./utils/testutils');
+const { version, files, cleanDb } = require('./utils/testutils');
 const Promise = require('bluebird');
+const mute = require('mute');
 
 describe('ES6 generators', function () {
-  let app;
+  let app, storage;
   
-  before(() => {
-    app = express();
-  });
+  before(() => app = express());
   
   describe('all options with generators', function () {
-    let db, storage, result;
+    let result;
     before((done) => {
       if (version.major < 6) {
         return this.skip();
       }
-      /*eslint-disable no-constant-condition */
+      
       storage = GridFsStorage({
         url: setting.mongoUrl(),
         filename: function*() {
           let counter = 0;
-          while (true) {
+          for(;;) {
             counter++;
             yield 'file' + counter;
           }
         },
         metadata: function*() {
-          while (true) {
+          for(;;) {
             yield { data: Math.random() };
           }
         },
         identifier: function*() {
           let counter = 0;
-          while (true) {
+          for(;;) {
             counter++;
             yield counter;
           }
@@ -49,7 +47,7 @@ describe('ES6 generators', function () {
         chunkSize: function*() {
           const sizes = [102400, 204800];
           let counter = 0;
-          while (true) {
+          for(;;) {
             yield sizes[counter];
             counter++;
           }
@@ -57,27 +55,25 @@ describe('ES6 generators', function () {
         root: function*() {
           const names = ['plants', 'animals'];
           let counter = 0;
-          while (true) {
+          for(;;) {
             yield names[counter];
             counter++;
           }
         }
       });
-      /*eslint-enable no-constant-condition */
       
       const upload = multer({ storage: storage });
       
-      app.post('/gen1', upload.array('photos', 2), function (req, res) {
+      app.post('/options', upload.array('photos', 2), (req, res) => {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.on('connection', function (gridfs, database) {
-        db = database;
+      storage.on('connection', () => {
         request(app)
-          .post('/gen1')
-          .attach('photos', uploads.files[0])
-          .attach('photos', uploads.files[1])
-          .end(function (err, res) {
+          .post('/options')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end((err, res) => {
             result = res.body;
             done();
           });
@@ -110,6 +106,7 @@ describe('ES6 generators', function () {
     });
     
     it('should be stored under in a collection with the yielded value', function (done) {
+      const db = storage.gfs.db;
       db.collection('plants.files', { strict: true }, function (err) {
         expect(err).to.be.equal(null);
         db.collection('animals.files', { strict: true }, function (err) {
@@ -119,24 +116,13 @@ describe('ES6 generators', function () {
       });
     });
     
-    after(function () {
-      if (storage) {
-        storage.removeAllListeners();
-      }
-      if (db) {
-        return db
-          .dropDatabase()
-          .then(function () {
-            return db.close(true);
-          });
-      }
-    });
+    after(() => cleanDb(storage));
+    
   });
   
   describe('generator parameters', function () {
-    let db, storage;
     let parameters;
-    before(function (done) {
+    before((done) => {
       if (version.major < 6) {
         return this.skip();
       }
@@ -149,13 +135,12 @@ describe('ES6 generators', function () {
         root: []
       };
       
-      /*eslint-disable no-constant-condition */
       storage = GridFsStorage({
         url: setting.mongoUrl(),
         filename: function*(req, file) {
           let counter = 0;
           parameters.filename.push({ req: req, file: file });
-          while (true) {
+          for(;;) {
             counter++;
             [req, file] = yield 'file' + counter;
             parameters.filename.push({ req: req, file: file });
@@ -163,7 +148,7 @@ describe('ES6 generators', function () {
         },
         metadata: function*(req, file) {
           parameters.metadata.push({ req: req, file: file });
-          while (true) {
+          for(;;) {
             [req, file] = yield { data: Math.random() };
             parameters.metadata.push({ req: req, file: file });
           }
@@ -171,7 +156,7 @@ describe('ES6 generators', function () {
         identifier: function*(req, file) {
           let counter = 0;
           parameters.identifier.push({ req: req, file: file });
-          while (true) {
+          for(;;) {
             counter++;
             [req, file] = yield counter;
             parameters.identifier.push({ req: req, file: file });
@@ -181,7 +166,7 @@ describe('ES6 generators', function () {
           const sizes = [102400, 204800];
           let counter = 0;
           parameters.chunkSize.push({ req: req, file: file });
-          while (true) {
+          for(;;) {
             [req, file] = yield sizes[counter];
             counter++;
             parameters.chunkSize.push({ req: req, file: file });
@@ -191,105 +176,92 @@ describe('ES6 generators', function () {
           const names = ['plants', 'animals'];
           let counter = 0;
           parameters.root.push({ req: req, file: file });
-          while (true) {
+          for(;;) {
             [req, file] = yield names[counter];
             counter++;
             parameters.root.push({ req: req, file: file });
           }
         }
       });
-      /*eslint-enable no-constant-condition */
       
       const upload = multer({ storage: storage });
       
-      app.post('/gen2', upload.array('photos', 2), function (req, res) {
+      app.post('/parameters', upload.array('photos', 2), (req, res) => {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.on('connection', function (gridfs, database) {
-        db = database;
+      storage.on('connection', () => {
         request(app)
-          .post('/gen2')
-          .attach('photos', uploads.files[0])
-          .attach('photos', uploads.files[1])
+          .post('/parameters')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
           .end(done);
       });
     });
     
     it('should the filename parameters be a request and a file objects', function () {
-      parameters.filename.forEach(function (param) {
+      parameters.filename.forEach((param) => {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
     
     it('should the metadata parameters be a request and a file objects', function () {
-      parameters.metadata.forEach(function (param) {
+      parameters.metadata.forEach((param) => {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
     
     it('should the identifier parameters be a request and a file objects', function () {
-      parameters.identifier.forEach(function (param) {
+      parameters.identifier.forEach((param) => {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
     
     it('should the chunkSize parameters be a request and a file objects', function () {
-      parameters.chunkSize.forEach(function (param) {
+      parameters.chunkSize.forEach((param) => {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
     
     it('should the root parameters be a request and a file objects', function () {
-      parameters.root.forEach(function (param) {
+      parameters.root.forEach((param) => {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
       });
     });
     
-    after(function () {
-      if (storage) {
-        storage.removeAllListeners();
-      }
-      if (db) {
-        return db
-          .dropDatabase()
-          .then(function () {
-            return db.close(true);
-          });
-      }
-    });
+    after(() => cleanDb(storage));
     
   });
   
   describe('promises and generators', function () {
-    let db, storage, result;
-    before(function (done) {
+    let result;
+    before((done) => {
       if (version.major < 6) {
         return this.skip();
       }
-      /*eslint-disable no-constant-condition */
+      
       storage = GridFsStorage({
         url: setting.mongoUrl(),
         filename: function*() {
           let counter = 0;
-          while (true) {
+          for(;;) {
             counter++;
             yield Promise.resolve('file' + counter);
           }
         },
         metadata: function*() {
-          while (true) {
+          for(;;) {
             yield Promise.resolve({ data: Math.random() });
           }
         },
         identifier: function*() {
           let counter = 0;
-          while (true) {
+          for(;;) {
             counter++;
             yield Promise.resolve(counter);
           }
@@ -297,7 +269,7 @@ describe('ES6 generators', function () {
         chunkSize: function*() {
           const sizes = [102400, 204800];
           let counter = 0;
-          while (true) {
+          for(;;) {
             yield Promise.resolve(sizes[counter]);
             counter++;
           }
@@ -305,27 +277,25 @@ describe('ES6 generators', function () {
         root: function*() {
           const names = ['plants', 'animals'];
           let counter = 0;
-          while (true) {
+          for(;;) {
             yield Promise.resolve(names[counter]);
             counter++;
           }
         }
       });
-      /*eslint-enable no-constant-condition */
       
-      const upload = multer({ storage: storage });
+      const upload = multer({ storage });
       
-      app.post('/gen3', upload.array('photos', 2), function (req, res) {
+      app.post('/promises', upload.array('photos', 2), (req, res) => {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.on('connection', function (gridfs, database) {
-        db = database;
+      storage.on('connection', () => {
         request(app)
-          .post('/gen3')
-          .attach('photos', uploads.files[0])
-          .attach('photos', uploads.files[1])
-          .end(function (err, res) {
+          .post('/promises')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end((err, res) => {
             result = res.body;
             done();
           });
@@ -358,6 +328,7 @@ describe('ES6 generators', function () {
     });
     
     it('should be stored under in a collection with the yielded value', function (done) {
+      const db = storage.gfs.db;
       db.collection('plants.files', { strict: true }, function (err) {
         expect(err).to.be.equal(null);
         db.collection('animals.files', { strict: true }, function (err) {
@@ -367,17 +338,121 @@ describe('ES6 generators', function () {
       });
     });
     
-    after(function () {
-      if (storage) {
-        storage.removeAllListeners();
+    after(() => cleanDb(storage));
+  });
+  
+  describe('finite generators', function () {
+    let result, error, isError, unmute;
+    before((done) => {
+      if (version.major < 6) {
+        return this.skip();
       }
-      if (db) {
-        return db
-          .dropDatabase()
-          .then(function () {
-            return db.close(true);
+      unmute = mute(process.stderr);
+      storage = GridFsStorage({
+        url: setting.mongoUrl(),
+        filename: function*() {
+          yield 'name';
+        }
+      });
+      
+      const upload = multer({ storage });
+      
+      app.post('/finite', upload.array('photos', 2), (req, res) => {
+        res.send({ headers: req.headers, files: req.files, body: req.body });
+      });
+      
+      storage.on('connection', () => {
+        request(app)
+          .post('/finite')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end((err, res) => {
+            isError = res.serverError;
+            error = res.error;
+            result = res.body;
+            done();
           });
-      }
+      });
+    });
+    
+    it('should be a failed request', function () {
+      expect(result.files).not.to.be.an.instanceOf(Array);
+      expect(isError).to.equal(true);
+    });
+    
+    it('should not upload any file', function (done) {
+      const gfs = storage.gfs;
+      gfs.files.count({}, (err, count) => {
+        expect(count).to.equal(0);
+        done(err);
+      });
+    });
+  
+    it('should throw an error about the ended generator', function () {
+      expect(error.text).to.match(/Generator ended unexpectedly/);
+    });
+    
+    after(() => {
+      unmute();
+      return cleanDb(storage);
     });
   });
+  
+  describe('rejected promise', function () {
+    let result, error, isError, unmute;
+    before((done) => {
+      if (version.major < 6) {
+        return this.skip();
+      }
+      unmute = mute(process.stderr);
+      storage = GridFsStorage({
+        url: setting.mongoUrl(),
+        filename: function*() {
+          yield Promise.reject('reason');
+        }
+      });
+      
+      const upload = multer({ storage });
+      
+      app.post('/rejected', upload.array('photos', 2), (req, res) => {
+        res.send({ headers: req.headers, files: req.files, body: req.body });
+      });
+      
+      storage.on('connection', () => {
+        request(app)
+          .post('/rejected')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end((err, res) => {
+            isError = res.serverError;
+            error = res.error;
+            result = res.body;
+            done();
+          });
+      });
+    });
+    
+    it('should be a failed request', function () {
+      expect(result.files).not.to.be.an.instanceOf(Array);
+      expect(isError).to.equal(true);
+    });
+    
+    it('should not upload any file', function (done) {
+      const gfs = storage.gfs;
+      gfs.files.count({}, (err, count) => {
+        expect(count).to.equal(0);
+        done(err);
+      });
+    });
+    
+    it('should be failed with an error "reason"', function () {
+      expect(error.text).to.match(/reason/);
+    });
+    
+    after(() => {
+      unmute();
+      return cleanDb(storage);
+    });
+  });
+  
 });

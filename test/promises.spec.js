@@ -5,7 +5,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
-const uploads = require('./utils/uploads');
+const { files, cleanDb } = require('./utils/testutils');
 const request = require('supertest');
 const multer = require('multer');
 const md5File = require('md5-file');
@@ -16,15 +16,13 @@ describe('Promises', function () {
   let result, app, storage;
   this.timeout(4000);
   
-  before(() => {
-    app = express();
-  });
+  before(() => app = express());
   
   describe('return promises from configuration options', function () {
     let counter = 0;
     const roots = ['plants', 'animals'];
     const sizes = [102400, 204800];
-    before(function (done) {
+    before((done) => {
       storage = GridFsStorage({
         url: setting.mongoUrl(),
         filename: (req, file) => Promise.resolve(file.originalname),
@@ -46,8 +44,8 @@ describe('Promises', function () {
       storage.on('connection', () => {
         request(app)
           .post('/promise')
-          .attach('photos', uploads.files[0])
-          .attach('photos', uploads.files[1])
+          .attach('photos', files[0])
+          .attach('photos', files[1])
           .end((err, res) => {
             result = res.body;
             done();
@@ -62,10 +60,12 @@ describe('Promises', function () {
     
     it('should have each stored file the same MD5 signature than the uploaded file', function (done) {
       result.files.forEach((file, index) => {
-        expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
+        expect(file.grid.md5).to.be.equal(md5File(files[index]));
       });
       done();
     });
+    
+    after(() => cleanDb(storage));
     
   });
   
@@ -88,8 +88,8 @@ describe('Promises', function () {
       storage.on('connection', () => {
         request(app)
           .post('/rejection')
-          .attach('photos', uploads.files[0])
-          .attach('photos', uploads.files[1])
+          .attach('photos', files[0])
+          .attach('photos', files[1])
           .end((err, res) => {
             status = res.statusCode;
             result = res.body;
@@ -106,23 +106,11 @@ describe('Promises', function () {
       expect(status).to.equal(500);
     });
     
-    after(() => unmute());
+    after(() => {
+      unmute();
+      return cleanDb(storage);
+    });
     
   });
   
-  afterEach((done) => {
-    
-    function drop(db) {
-      return db.dropDatabase()
-        .then(() => db.close(true))
-        .then(done);
-    }
-    
-    if (storage.gfs) {
-      const db = storage.gfs.db;
-      drop(db);
-    } else {
-      storage.once('connection', (gfs, db) => drop(db));
-    }
-  });
 });

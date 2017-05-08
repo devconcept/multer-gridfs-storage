@@ -8,13 +8,10 @@ const validate = __.validateOptions;
 const settings = require('./utils/settings');
 const { noop } = require('./utils/testutils');
 
-describe('error handling', function () {
+describe('validation function', function () {
   let unmute;
   
-  
-  before(() => {
-    unmute = mute(process.stderr);
-  });
+  before(() => unmute = mute(process.stderr));
   
   it('should throw an error when no url and gfs parameters are passed in', function () {
     const fn = () => {

@@ -5,7 +5,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
-const uploads = require('./utils/uploads');
+const { files, cleanDb } = require('./utils/testutils');
 const request = require('supertest');
 const multer = require('multer');
 const md5File = require('md5-file');
@@ -19,8 +19,7 @@ chai.use(require('sinon-chai'));
 
 describe('module usage', function () {
   this.timeout(4000);
-  let result, app, storage,
-    db, gfs, spy, logSpy;
+  let result, app, storage, spy, logSpy;
   
   before(() => {
     spy = sinon.spy();
@@ -71,14 +70,11 @@ describe('module usage', function () {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.once('connection', (grid, database) => {
-        gfs = grid;
-        db = database;
-        
+      storage.once('connection', () => {
         request(app)
           .post('/opts')
-          .attach('photos', uploads.files[0])
-          .attach('photos', uploads.files[1])
+          .attach('photos', files[0])
+          .attach('photos', files[1])
           .field('field', 'field')
           .end((err, res) => {
             result = res.body;
@@ -136,7 +132,7 @@ describe('module usage', function () {
     
     it('should have the same MD5 signature than the upload', function (done) {
       result.files.forEach((file, index) => {
-        expect(file.grid.md5).to.be.equal(md5File(uploads.files[index]));
+        expect(file.grid.md5).to.be.equal(md5File(files[index]));
       });
       done();
     });
@@ -158,6 +154,7 @@ describe('module usage', function () {
     });
     
     it('should be stored under a different root', function (done) {
+      const db = storage.gfs.db;
       db.collections().then((collections) => {
         expect(collections).to.have.length(5);
         collections.forEach((col) => {
@@ -166,6 +163,9 @@ describe('module usage', function () {
         done();
       });
     });
+    
+    after(() => cleanDb(storage));
+    
   });
   
   describe('fixed value configuration options', function () {
@@ -186,14 +186,11 @@ describe('module usage', function () {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
       
-      storage.once('connection', (grid, database) => {
-        gfs = grid;
-        db = database;
-        
+      storage.once('connection', () => {
         request(app)
           .post('/fixed')
-          .attach('photos', uploads.files[0])
-          .attach('photos', uploads.files[1])
+          .attach('photos', files[0])
+          .attach('photos', files[1])
           .field('field', 'field')
           .end((err, res) => {
             result = res.body;
@@ -211,6 +208,7 @@ describe('module usage', function () {
     });
     
     it('should be stored under a different root with the value myfiles', function (done) {
+      const db = storage.gfs.db;
       db.collection('myfiles.files', { strict: true }, (err) => {
         expect(err).to.be.equal(null);
         db.collection('myfiles.chunks', { strict: true }, (err) => {
@@ -225,6 +223,9 @@ describe('module usage', function () {
         });
       });
     });
+  
+    after(() => cleanDb(storage));
+    
   });
   
   describe('failed request', function () {
@@ -244,8 +245,8 @@ describe('module usage', function () {
       storage.once('connection', () => {
         request(app)
           .post('/fail')
-          .attach('photos', uploads.files[0])
-          .attach('photos', uploads.files[1])
+          .attach('photos', files[0])
+          .attach('photos', files[1])
           .field('field', 'field')
           .end((err, res) => {
             result = res.body;
@@ -256,22 +257,15 @@ describe('module usage', function () {
     });
     
     it('should fail with an error', function (done) {
+      const gfs = storage.gfs;
       gfs.files.count({}, (err, count) => {
         expect(count).to.equal(0);
         done(err);
       });
     });
-  });
-  
-  afterEach(() => {
-    if (storage) {
-      storage.removeAllListeners();
-    }
-    if (db) {
-      return db
-        .dropDatabase()
-        .then(() => db.close(true));
-    }
+    
+    after(() => cleanDb(storage));
+    
   });
   
 });
