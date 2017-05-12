@@ -2,7 +2,7 @@
 
 Generator functions are a new ES6 feature that allows you to write functions
 that can be exited and later re-entered. This can sometimes reduce the amount
-of code written to accomplish certain tasks.
+of code required to accomplish certain tasks.
 
 Do not confuse the term *generator function* with *generator*. They are not the same.
 A generator function when invoked will return a generator which in turn can be
@@ -10,11 +10,11 @@ used to produce values.
 
 You can read more about this in MDN:
 
-[Generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*)
+[Generator functions][1]
 
-[Generators](https://developer.mozilla.org/es/docs/Web/JavaScript/Reference/Global_Objects/Generator)
+[Generators][2]
 
-Also you can watch [this](http://www.youtube.com/watch?v=qbKWsbJ76-s) great introductory video
+Also you can watch [this][3] great introductory video
 
 ## Usage
 
@@ -122,7 +122,9 @@ Here `result` is an **array** with the `req` and `file` objects in the 0 and 1 i
 
 Q: Why the result is an array? An object wouldn't be better?
 
-A: Because you are using ES6 features you can also use destructuring to assign those values producing cleaner code
+A: Because you are using ES6 features you can also use 
+[destructuring][4]
+ to assign those values producing cleaner code
 
 Compare
 
@@ -181,16 +183,18 @@ function* fail (cb) {
 }
 ```
 
-But the good news is that you can `yield` a Promise and this will wait for the 
+But the good news is that you can `yield` 
+a [Promise][5]
+and this will wait for the 
 promise to resolve or reject to produce a value
 
 Q: I tried to use a generator function but got an error. What happened?
 
 A: You must have node version 6 or greater to use them. You also need 
-version 1.2.0 or greater of this module.
+version 1.2.0 or greater of this module. Currently polyfills are not supported.
 
-
-
-
-
-
+[1]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"
+[2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator "Generator"
+[3]: https://www.youtube.com/watch?v=qbKWsbJ76-s "Forbes Lindesey - Promises and Generators: control flow utopia"
+[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment "Destructuring assignment"
+[5]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise "Promise"

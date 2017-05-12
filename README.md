@@ -63,7 +63,8 @@ var storage = new GridFSStorage(options)
 var upload = multer({ storage: storage });
 ```
 
-ES6 users that want to use the `function*` syntax can check the wiki article [using generator functions][generator-functions]
+The 1.2 version brings full support for promises and ES6 generators. 
+You can check the [wiki][wiki] for more information.
 
 ### Options
 
@@ -524,4 +525,4 @@ $ npm coverage
 [root-option]: #root
 [log-option]: #log
 [logLevel-option]: #loglevel
-[generator-functions]: https://github.com/devconcept/multer-gridfs-storage/wiki
+[wiki]: https://github.com/devconcept/multer-gridfs-storage/wiki

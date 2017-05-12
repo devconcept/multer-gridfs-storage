@@ -153,7 +153,7 @@ describe('GridFS storage', function () {
       done();
     });
     
-    it('should log an error if the connection promise is rejected and rethrow the error', function (done) {
+    it('should log an error if the connection promise is rejected', function (done) {
       const promise = Promise.reject('reason');
       GridFsStorage({
         gfs: promise,
