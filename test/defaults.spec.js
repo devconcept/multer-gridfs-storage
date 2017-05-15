@@ -8,7 +8,7 @@ const settings = require('./utils/settings');
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const { EventEmitter } = require('events');
-const { cleanDb, version } = require('./utils/testutils');
+const { cleanDb } = require('./utils/testutils');
 
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
