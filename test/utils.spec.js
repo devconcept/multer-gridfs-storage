@@ -461,7 +461,7 @@ describe('utility functions', function () {
       result1 = __.checkRule(testSubject, invalidRule);
       
       expect(result1).to.equal(false);
-      expect(validateSpy1).to.be.calledOnce;
+      expect(validateSpy1).to.have.callCount(1);
       expect(validateSpy2).to.have.callCount(0);
     });
     
@@ -476,8 +476,8 @@ describe('utility functions', function () {
       result1 = __.checkRule(testSubject, invalidRule);
       
       expect(result1).to.equal(true);
-      expect(validateSpy1).to.be.calledOnce;
-      expect(validateSpy2).to.have.calledOnce;
+      expect(validateSpy1).to.have.callCount(1);
+      expect(validateSpy2).to.have.callCount(1);
     });
   });
   
