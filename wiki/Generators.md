@@ -1,5 +1,3 @@
-# Using generator functions
-
 Generator functions are a new ES6 feature that allows you to write functions
 that can be exited and later re-entered. This can sometimes reduce the amount
 of code required to accomplish certain tasks.
@@ -13,8 +11,6 @@ You can read more about this in MDN:
 [Generator functions][1]
 
 [Generators][2]
-
-Also you can watch [this][3] great introductory video
 
 ## Usage
 
@@ -123,7 +119,7 @@ Here `result` is an **array** with the `req` and `file` objects in the 0 and 1 i
 Q: Why the result is an array? An object wouldn't be better?
 
 A: Because you are using ES6 features you can also use 
-[destructuring][4]
+[destructuring][3]
  to assign those values producing cleaner code
 
 Compare
@@ -183,8 +179,7 @@ function* fail (cb) {
 }
 ```
 
-But the good news is that you can `yield` 
-a [Promise][5]
+But the good news is that you can `yield` a [Promise][4]
 and this will wait for the 
 promise to resolve or reject to produce a value
 
@@ -195,6 +190,5 @@ version 1.2.0 or greater of this module. Currently polyfills are not supported.
 
 [1]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"
 [2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator "Generator"
-[3]: https://www.youtube.com/watch?v=qbKWsbJ76-s "Forbes Lindesey - Promises and Generators: control flow utopia"
-[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment "Destructuring assignment"
-[5]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise "Promise"
+[3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment "Destructuring assignment"
+[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise "Promise"

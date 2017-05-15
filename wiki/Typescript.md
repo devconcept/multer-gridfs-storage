@@ -1,5 +1,3 @@
-# Using typescript
-
 Typings for this module can be installed using npm
 
 ```bash

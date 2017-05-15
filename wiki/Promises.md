@@ -1,5 +1,3 @@
-# Using promises
-
 Promises are an ES6 feature that allows you to represent a value that **may**
 be available in the future. This concept has been around for a while now in
 many javascript libraries but ES6 brings the official language support.
