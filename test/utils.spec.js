@@ -175,11 +175,12 @@ describe('utility functions', function () {
   });
   
   describe('isGeneratorFunction', function () {
-    if (version.major < 6) {
-      return this.skip();
-    }
-    
+   
     it('should return false for non generator function values', function () {
+      if (version.major < 6) {
+        return this.skip();
+      }
+      
       const values = [].concat(
         types.primitives,
         types.wrappers,
@@ -195,6 +196,10 @@ describe('utility functions', function () {
     });
     
     it('should return true for generator functions', function () {
+      if (version.major < 6) {
+        return this.skip();
+      }
+      
       types.generatorFunctions.forEach((value) => {
         expect(__.isGeneratorFunction(value)).to.equal(true);
       });
@@ -235,9 +240,6 @@ describe('utility functions', function () {
   });
   
   describe('isGenerator', function () {
-    if (version.major < 6) {
-      return this.skip();
-    }
     
     it('should return false for non generators', function () {
       const values = [].concat(
@@ -255,6 +257,10 @@ describe('utility functions', function () {
     });
     
     it('should return true for generators', function () {
+      if (version.major < 6) {
+        return this.skip();
+      }
+      
       types.generators.forEach((generator) => {
         expect(__.isGenerator(generator)).to.equal(true);
       });
