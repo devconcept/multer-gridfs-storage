@@ -14,10 +14,6 @@ const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-if (version.major < 6) {
-  require('babel-polyfill');
-}
-
 describe('module default options', function () {
   this.timeout(4000);
   this.slow(8000);
