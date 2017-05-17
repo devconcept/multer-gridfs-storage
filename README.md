@@ -514,7 +514,7 @@ $ npm coverage
 [travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master "Build status"
 [coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
-[version-image]: https://img.shields.io/npm/v/npm.svg "Npm version"
+[version-image]:https://img.shields.io/npm/v/multer-gridfs-storage.svg "Npm version"
 
 [url-option]: #url
 [gfs-option]: #gfs
