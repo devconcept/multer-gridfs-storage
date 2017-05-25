@@ -29,7 +29,7 @@ const fnExpr = function () {
 
 const thenableObj = {
   then: function () {
-  
+
   }
 };
 
@@ -61,10 +61,6 @@ const genFnExpr = function*() {
 
 const genCtr = new GeneratorFunction('');
 
-
-
-
-
 const types = {
   empty: [null, undefined],
   falsey: [null, undefined, false, '', 0],
@@ -72,6 +68,7 @@ const types = {
   primitives: [1, false, true, 'rainbows'],
   wrappers: [new Boolean(true), new Boolean(false), new Number(1), new String('unicorns')],
   objectLike: [{}, []],
+  values: [Infinity, NaN, null, undefined],
   nonObjects: [[], new Error(), new Date(), new RegExp(/foo/)],
   objects: [{}, Object.create(null)],
   functions: [fn, fnExpr, new Function('')],
