@@ -90,7 +90,7 @@ filename: function* () {
 
 A: This is how you write an infinite generator function. This code will exit the function 
 as soon as it reaches the `yield` statement. You can also write `for(;;) {}` 
-or any other loop. As long as the `yield` is inside the loop and 
+or any other loop statement. As long as the `yield` is inside the loop and 
 this continues to iterate indefinitely everything will be fine.
 
 Q: I need the `request` and the `file` objects. How can I get those? 
@@ -110,7 +110,7 @@ can be obtained as the result of the call
 
 ```javascript
 filename: function* () {
-  let result = yield...
+  let result = yield ...
 }
 ```
 
@@ -118,9 +118,7 @@ Here `result` is an **array** with the `req` and `file` objects in the 0 and 1 i
 
 Q: Why the result is an array? An object wouldn't be better?
 
-A: Because you are using ES6 features you can also use 
-[destructuring][3]
- to assign those values producing cleaner code
+A: Because you are using ES6 features you can also use [destructuring][3] to assign those values producing cleaner code
 
 Compare
 
@@ -170,7 +168,7 @@ A: Generators by default are syncronous because `yield` cannot be written inside
 anything that is not a generator function. 
 
 ```javascript
-// This fails with the error: Unexpected strict mode reserved word
+// This fails with a Syntax Error: Unexpected strict mode reserved word
 function* fail (cb) {
   setTimeout(function() {
     yield 1;
