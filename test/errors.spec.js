@@ -3,12 +3,20 @@
 const GridFsStorage = require('../index');
 
 const multer = require('multer');
-const {expect} = require('chai');
+const chai = require('chai');
+const expect = chai.expect;
 const request = require('supertest');
 const express = require('express');
 const settings = require('./utils/settings');
+const mongo = require('mongodb');
+const MongoClient = mongo.MongoClient;
+const Grid = require('gridfs-stream');
 const {files, cleanDb, version} = require('./utils/testutils');
 const mute = require('mute');
+
+const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
+chai.use(sinonChai);
 
 describe('error handling', function () {
   let storage, app, unmute;
@@ -17,7 +25,6 @@ describe('error handling', function () {
     unmute = mute(process.stderr);
     app = express();
   });
-
 
   it('should throw an error if the identifier function is invoked with an error callback', function (done) {
     storage = GridFsStorage({
@@ -100,7 +107,7 @@ describe('error handling', function () {
     });
   });
 
-  it('should throw an error if the chunckSize function is invoked with an error callback', function (done) {
+  it('should throw an error if the chunkSize function is invoked with an error callback', function (done) {
     storage = GridFsStorage({
       url: settings.mongoUrl(),
       chunkSize: (req, file, cb) => {
@@ -153,6 +160,51 @@ describe('error handling', function () {
           done();
         });
     });
+  });
+
+
+  it('should emit an error event when the file streaming fails', function (done) {
+    let db, fs;
+    const errorSpy = sinon.spy();
+
+    MongoClient
+      .connect(settings.mongoUrl())
+      .then((_db) => db = _db)
+      .then(() => fs = db.collection('fs.files'))
+      .then(() => fs.createIndex('name', {unique: true}))
+      .then(() => {
+
+        const gfs = new Grid(db, mongo);
+        storage = GridFsStorage({
+          gfs: gfs,
+          filename: (req, file, cb) => {
+            cb(null, 'name');
+          }
+        });
+
+        const upload = multer({storage});
+
+        app.post('/emit', upload.array('photos', 2), (req, res) => {
+          res.send({headers: req.headers, files: req.files, body: req.body});
+        });
+
+        storage.on('error', errorSpy);
+
+        request(app)
+          .post('/emit')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end((err, body) => {
+            expect(body.status).to.equal(500);
+            expect(errorSpy).to.be.calledOnce;
+            const call = errorSpy.getCall(0);
+            expect(call.args[0]).to.be.an.instanceof(Error);
+            expect(call.args[1]).to.have.all.keys('chunkSize', 'content_type', 'filename', 'metadata', 'root');
+            done();
+          });
+
+      });
+
   });
 
   it('should fail gracefully if an error is thrown inside an option function', function (done) {

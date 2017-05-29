@@ -364,56 +364,39 @@ To see all the other properties of the file object check the Multer's [documenta
 
 ### Events
 
-Each storage object is also a standard Node.js Event Emitter. This is done to ensure that some 
-objects are made available after they are instantiated since some options
-generate asynchronous database connections that needs to be established before those objects
-are referenced.
+Each storage object is also a standard Node.js Event Emitter. This is 
+done to ensure that some internal events can also be handled in user code.
 
 #### Event: `'connection'`
 
-Only available when the storage is created with the [`url`][url-option] option.
+> Only available when the storage is created with the [`url`][url-option] option.
 
-This event is emitted when the MongoDb connection is opened. This is useful 
-if you want access to the internal GridFS instance for later use.
+This event is emitted when the MongoDb connection is opened.
 
-**Event arguments**
+*Event arguments*
 
  - gfs: The newly created GridFS instance 
  - db: The native MongoDb database object.
-
-Example:
-
-```javascript
-var url = 'mongodb://localhost:27017/database';
-var storage = require('multer-gridfs-storage')({
-   url: url
-});
-var upload = multer({ storage: storage });
-
-storage.once('connection', function(gfs, db) {
-   // Do something with the GridFS or the MongoDb instance
-   console.log('MongoDb connected in url ' + url);
-});
-```
 
 This event is only triggered once. Note that if you only want to log events there is an api option for that
 
 #### Event: `'file'`
 
-This event is emitted every time a new file is stored in the db. This is useful when you have
-a custom logging mechanism and want to record every uploaded file.
+This event is emitted every time a new file is stored in the db. 
 
-```javascript
-var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database'
-});
-var upload = multer({ storage: storage });
+*Event arguments*
 
-storage.on('file', function(file) {
-   // Do something with the file
-   console.log('New file uploaded ' + file.originalname);
-});
-```
+ - file: The uploaded file 
+
+
+#### Event: `'error'`
+
+This event is emitted when there is an error streaming the file to the database.
+
+*Event arguments*
+
+ - error: The streaming error
+ - config: The failed upload configuration
 
 ## Debugging
 
