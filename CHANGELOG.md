@@ -1,3 +1,13 @@
+1.2.2
+=====
+
+  * Log error in 'error' event
+
+1.2.1
+=====
+
+  * Added 'error' event
+
 1.2.0
 =====
 

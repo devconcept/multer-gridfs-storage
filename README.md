@@ -1,12 +1,19 @@
 # Multer's GridFS storage engine
 
-[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] ![Npm version][version-image]
+[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] ![Npm version][version-image] ![Downloads][downloads-image]
+
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb
 
 ## Installation
 
-Using npm
+Using yarn
+
+```sh
+$ yarn add multer-gridfs-storage
+```
+
+Or with npm
 
 ```sh
 $ npm install multer-gridfs-storage --save
@@ -498,6 +505,7 @@ $ npm coverage
 [coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
 [version-image]:https://img.shields.io/npm/v/multer-gridfs-storage.svg "Npm version"
+[downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 
 [url-option]: #url
 [gfs-option]: #gfs
