@@ -267,7 +267,7 @@ describe('error handling', function () {
   });
 
   it('should append the storage error in case the remove function fails', function (done) {
-    //const e = new Error();
+    const e = new Error();
     storage = GridFsStorage({
       url: settings.mongoUrl()
     });
