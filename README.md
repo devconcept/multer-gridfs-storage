@@ -7,13 +7,7 @@
 
 ## Installation
 
-Using yarn
-
-```sh
-$ yarn add multer-gridfs-storage
-```
-
-Or with npm
+Using npm
 
 ```sh
 $ npm install multer-gridfs-storage --save
