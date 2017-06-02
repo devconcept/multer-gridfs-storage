@@ -19,7 +19,7 @@ const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
 describe('error handling', function () {
-  let storage, app, unmute;
+  let storage, app, unmute, connectRef, removeRef;
 
   before(() => {
     unmute = mute(process.stderr);
@@ -266,8 +266,60 @@ describe('error handling', function () {
     });
   });
 
+  it('should append the storage error in case the remove function fails', function (done) {
+    //const e = new Error();
+    storage = GridFsStorage({
+      url: settings.mongoUrl()
+    });
+
+    const upload = multer({storage});
+
+    /* eslint-disable no-unused-vars */
+    app.post('/storageerror', upload.single('photo'), (err, req, res, next) => {
+      expect(e).to.equal(err);
+      expect(e).to.have.property('storageErrors');
+    });
+    /* eslint-enable no-unused-vars */
+
+    storage.on('connection', () => {
+      removeRef = storage.gfs.remove;
+      storage.gfs.remove = function (options, callback) {
+        callback(new Error());
+      };
+
+      request(app)
+        .post('/storageerror')
+        .attach('photo', files[0])
+        .attach('photo', files[1])
+        .end((err, res) => {
+          expect(res.serverError).to.equal(true);
+          expect(res.error).to.be.an('error');
+          done();
+        });
+    });
+  });
+
+  it('should throw an error if the mongodb connection fails', function () {
+    connectRef = mongo.MongoClient.connect;
+    const err = new Error();
+
+    mongo.MongoClient.connect = function (url, cb) {
+      cb(err);
+    };
+
+    const errFn = function () {
+      storage = GridFsStorage({
+        url: settings.mongoUrl()
+      });
+    };
+
+    expect(errFn).to.throw(err);
+  });
+
   after(() => {
+    mongo.MongoClient.connect = connectRef;
     unmute();
+    storage.gfs.remove = removeRef;
     return cleanDb(storage);
   });
 

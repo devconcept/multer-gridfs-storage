@@ -1,15 +1,17 @@
 'use strict';
 
 const __ = require('../lib/utils');
-const { expect } = require('chai');
+const {expect} = require('chai');
 const Grid = require('gridfs-stream');
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const settings = require('./utils/settings');
-const sinon = require('sinon');
 const chai = require('chai');
-const { version, types } = require('./utils/testutils');
-chai.use(require('sinon-chai'));
+const {version, types} = require('./utils/testutils');
+const crypto = require('crypto');
+const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
+chai.use(sinonChai);
 
 describe('utility functions', function () {
 
@@ -44,7 +46,6 @@ describe('utility functions', function () {
       });
     });
   });
-
 
   describe('isGfsOrPromise', function () {
     let db, gfs;
@@ -279,37 +280,37 @@ describe('utility functions', function () {
 
     before(() => {
       matches = [
-        { value: 0, type: Number },
-        { value: 123, type: Number },
-        { value: 1234.45, type: Number },
-        { value: '', type: String },
-        { value: '123', type: String },
-        { value: true, type: Boolean },
-        { value: false, type: Boolean },
-        { value: new Number(0), type: Number },
-        { value: new Number(123), type: Number },
-        { value: new Number(1234.45), type: Number },
-        { value: new String(''), type: String },
-        { value: new String('123'), type: String },
-        { value: new Boolean(true), type: Boolean },
-        { value: new Boolean(false), type: Boolean }
+        {value: 0, type: Number},
+        {value: 123, type: Number},
+        {value: 1234.45, type: Number},
+        {value: '', type: String},
+        {value: '123', type: String},
+        {value: true, type: Boolean},
+        {value: false, type: Boolean},
+        {value: new Number(0), type: Number},
+        {value: new Number(123), type: Number},
+        {value: new Number(1234.45), type: Number},
+        {value: new String(''), type: String},
+        {value: new String('123'), type: String},
+        {value: new Boolean(true), type: Boolean},
+        {value: new Boolean(false), type: Boolean}
       ];
 
       mismatch = [
-        { value: 0, type: Boolean },
-        { value: '', type: Number },
-        { value: 1234.45, type: String },
-        { value: '', type: Boolean },
-        { value: '123', type: Number },
-        { value: true, type: Number },
-        { value: false, type: String },
-        { value: new Number(0), type: Boolean },
-        { value: new Number(123), type: String },
-        { value: new Number(1234.45), type: Boolean },
-        { value: new String(''), type: Boolean },
-        { value: new String('123'), type: Number },
-        { value: new Boolean(true), type: String },
-        { value: new Boolean(false), type: Number }
+        {value: 0, type: Boolean},
+        {value: '', type: Number},
+        {value: 1234.45, type: String},
+        {value: '', type: Boolean},
+        {value: '123', type: Number},
+        {value: true, type: Number},
+        {value: false, type: String},
+        {value: new Number(0), type: Boolean},
+        {value: new Number(123), type: String},
+        {value: new Number(1234.45), type: Boolean},
+        {value: new String(''), type: Boolean},
+        {value: new String('123'), type: Number},
+        {value: new Boolean(true), type: String},
+        {value: new Boolean(false), type: Number}
       ];
     });
 
@@ -326,7 +327,6 @@ describe('utility functions', function () {
     });
   });
 
-
   describe('hasValue', function () {
     let arr;
 
@@ -359,34 +359,21 @@ describe('utility functions', function () {
 
   });
 
-  describe('hasValue', function () {
-    let arr;
+  describe('hasProps', function () {
+    const obj = {'a': 1, 'b': 2, 'c': 3};
 
-    before(() => {
-      arr = [1, 2, 3, 4, 5];
+    it('should accept a string in the props argument', function () {
+      expect(__.hasProps(obj, 'a')).to.equal(true);
+      expect(__.hasProps(obj, 'd')).to.equal(false);
     });
 
-    it('should accept the array in the second position to be compatible with the validation function', function () {
-      function failed() {
-        __.hasValue(arr, 1);
-      }
-
-      function success() {
-        __.hasValue(1, arr);
-      }
-
-      expect(failed).to.throw();
-      expect(success).not.to.throw();
+    it('should accept an array in the props argument', function () {
+      expect(__.hasProps(obj, ['a', 'c'])).to.equal(true);
+      expect(__.hasProps(obj, ['d'])).to.equal(false);
     });
 
-    it('should return true the value is present', function () {
-      expect(__.hasValue(1, arr)).to.equal(true);
-      expect(__.hasValue(5, arr)).to.equal(true);
-    });
-
-    it('should return false if the value is not present', function () {
-      expect(__.hasValue(6, arr)).to.equal(false);
-      expect(__.hasValue(10, arr)).to.equal(false);
+    it('should return false if at least one of the properties is not present', function () {
+      expect(__.hasProps(obj, ['a', 'b', 'c', 'd'])).to.equal(true);
     });
 
   });
@@ -411,8 +398,8 @@ describe('utility functions', function () {
       rule1 = {
         prop: null,
         validations: [
-          { check: validateSpy1 },
-          { check: validateArgSpy1, args: passedArgs }
+          {check: validateSpy1},
+          {check: validateArgSpy1, args: passedArgs}
         ],
         error: 'Custom error in object'
       };
@@ -420,8 +407,8 @@ describe('utility functions', function () {
       rule2 = {
         prop: 'bar',
         validations: [
-          { check: validateSpy2 },
-          { check: validateArgSpy2, args: passedArgs }
+          {check: validateSpy2},
+          {check: validateArgSpy2, args: passedArgs}
         ],
         error: 'Custom error in property'
       };
@@ -469,7 +456,7 @@ describe('utility functions', function () {
       validateSpy2 = sinon.spy((target) => target.bar === '123');
       const invalidRule = {
         prop: null,
-        validations: [{ check: validateSpy1 }, { check: validateSpy2 }]
+        validations: [{check: validateSpy1}, {check: validateSpy2}]
       };
       result1 = __.checkRule(testSubject, invalidRule);
 
@@ -483,7 +470,7 @@ describe('utility functions', function () {
       validateSpy2 = sinon.spy((target) => target.bar === '123');
       const invalidRule = {
         prop: null,
-        validations: [{ check: validateSpy1 }, { check: validateSpy2 }],
+        validations: [{check: validateSpy1}, {check: validateSpy2}],
         condition: 'or'
       };
       result1 = __.checkRule(testSubject, invalidRule);
@@ -492,6 +479,38 @@ describe('utility functions', function () {
       expect(validateSpy1).to.have.callCount(1);
       expect(validateSpy2).to.have.callCount(1);
     });
+  });
+
+  describe('compatibility tests', function () {
+    let ref;
+
+    before(() => ref = crypto.randomBytes);
+
+    it('should fallback to pseudoRandomBytes if randomBytes is not supported', function () {
+      crypto.randomBytes = undefined;
+      __.getFilename(null, null, (err, name) => {
+        expect(err).to.equal(null);
+        expect(name).to.match(/^[0-9a-f]{32}$/);
+      });
+
+    });
+
+    it('should invoke the callback with an error in case the function randomBytes fails', function () {
+      const errRef = new Error();
+      crypto.randomBytes = function (size, cb) {
+        cb(errRef);
+      };
+      __.getFilename(null, null, (err, name) => {
+        expect(err).to.equal(errRef);
+        expect(name).to.equal(null);
+      });
+
+    });
+
+    after(() => {
+      crypto.randomBytes = ref;
+    });
+
   });
 
 });
