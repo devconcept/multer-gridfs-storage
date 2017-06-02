@@ -51,18 +51,7 @@ app.post('/cool-profile', fUpload, function (req, res, next) {
 The module returns a function that can be invoked with options to create a Multer storage engine.
 
 Starting from version 1.1.0 the module function can be called with 
-or without the javascript `new` operator like this
-
-```javascript
-var storage = require('multer-gridfs-storage')(options);
-var upload = multer({ storage: storage });
-
-//or
-
-var GridFSStorage = require('multer-gridfs-storage');
-var storage = new GridFSStorage(options)
-var upload = multer({ storage: storage });
-```
+or without the javascript `new` operator.
 
 The 1.2 version brings full support for promises and ES6 generators. 
 You can check the [wiki][wiki] for more information.
@@ -70,36 +59,6 @@ You can check the [wiki][wiki] for more information.
 ### Options
 
 The options parameter is an object with the following properties.
-
-#### gfs
-
-Type: `object` or `Promise`
-
-Required if [`url`][url-option] option is not present
-
-The [gridfs-stream](https://github.com/aheckmann/gridfs-stream/) instance to use or a promise that resolves with the instance.
-
-If this option is provided, files are stored using this stream. This is useful when you have an existing GridFS object and want to reuse it to upload your files.
-
-Example:
-
-```javascript
-var Grid = require('gridfs-stream');
-var mongo = require('mongodb');
-var GridFSStorage = require('multer-gridfs-storage');
-
-var db = new mongo.Db('database', new mongo.Server("127.0.0.1", 27017));
-
-db.open(function (err) {
-  if (err) return handleError(err);
-  var gfs = Grid(db, mongo);
-
-  var storage = GridFSStorage({
-     gfs: gfs
-  });
-  var upload = multer({ storage: storage });
-})
-```
 
 #### url
 
@@ -147,6 +106,36 @@ var storage = require('multer-gridfs-storage')({
     url: connectionString
 });
 var upload = multer({ storage: storage });
+```
+
+#### gfs
+
+Type: `object` or `Promise`
+
+Required if [`url`][url-option] option is not present
+
+The [gridfs-stream](https://github.com/aheckmann/gridfs-stream/) instance to use or a promise that resolves with the instance.
+
+If this option is provided, files are stored using this stream. This is useful when you have an existing GridFS object and want to reuse it to upload your files.
+
+Example:
+
+```javascript
+var Grid = require('gridfs-stream');
+var mongo = require('mongodb');
+var GridFSStorage = require('multer-gridfs-storage');
+
+var db = new mongo.Db('database', new mongo.Server("127.0.0.1", 27017));
+
+db.open(function (err) {
+  if (err) return handleError(err);
+  var gfs = Grid(db, mongo);
+
+  var storage = GridFSStorage({
+     gfs: gfs
+  });
+  var upload = multer({ storage: storage });
+})
 ```
 
 #### filename
