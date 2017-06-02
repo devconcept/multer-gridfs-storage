@@ -404,6 +404,16 @@ This event is emitted when there is an error streaming the file to the database.
 
  - error: The streaming error
  - config: The failed upload configuration
+ 
+#### Event: `'dbError'`
+ 
+This event is emitted when there underlying connection emits an error.
+ 
+ > Only available when the storage is created with the [`url`][url-option] option.
+ 
+*Event arguments*
+ 
+ - error: The error emitted by the database connection
 
 ## Debugging
 
@@ -423,14 +433,16 @@ By default, the module will not output anything. Set this option to `true` to lo
 files are stored or an error occurs. This is useful when you want to see logging about incoming files.
 
 If a function is provided it will be called in every log event with two arguments `err` y `log` with the error or
-the message respectively. The `log` object contains two properties `message` and `extra` corresponding to the
-event that triggered the log and any additional info, eg. the uploaded file
+the message respectively. 
+
+The `log` object contains two properties `message` and `extra` corresponding to the
+event that triggered the log and any additional info, e.g. the uploaded file
 
 ```javascript
 var storage = require('multer-gridfs-storage')({
    url: 'mongodb://localhost:27017/database',
    log: function(err, log) {
-      if (error) {
+      if (err) {
         console.error(err);
       } else {
         console.log(log.message, log.extra);
@@ -477,18 +489,6 @@ $ npm test
 ```
 
 Tests are written with [mocha](https://mochajs.org/) and [chai](http://chaijs.com/). You can also run the tests with:
-
-In case you don't have mocha installed
-
-```bash
-$ npm install mocha -g
-```
-
-and then run
-
-```bash
-$ mocha
-```
 
 Code coverage thanks to [istanbul](https://github.com/gotwarlost/istanbul)
 

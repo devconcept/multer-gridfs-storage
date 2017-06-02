@@ -1,7 +1,8 @@
 1.2.2
 =====
 
-  * Log error in 'error' event
+  * Added 'dbError' event
+  * Call log function in 'error' event
 
 1.2.1
 =====
