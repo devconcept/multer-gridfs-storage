@@ -171,16 +171,11 @@ describe('error handling', function () {
       .connect(settings.mongoUrl())
       .then((_db) => db = _db)
       .then(() => fs = db.collection('fs.files'))
-      .then(() => fs.createIndex('name', {unique: true}))
+      .then(() => fs.createIndex('md5', {unique: true}))
       .then(() => {
 
         const gfs = new Grid(db, mongo);
-        storage = GridFsStorage({
-          gfs: gfs,
-          filename: (req, file, cb) => {
-            cb(null, 'name');
-          }
-        });
+        storage = GridFsStorage({gfs});
 
         const upload = multer({storage});
 
@@ -192,8 +187,9 @@ describe('error handling', function () {
 
         request(app)
           .post('/emit')
+          // Send the same file twice so the checksum is the same
           .attach('photos', files[0])
-          .attach('photos', files[1])
+          .attach('photos', files[0])
           .end((err, body) => {
             expect(body.status).to.equal(500);
             expect(errorSpy).to.be.calledOnce;
