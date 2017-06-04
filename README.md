@@ -2,8 +2,9 @@
 
 [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] ![Npm version][version-image] ![Downloads][downloads-image]
 
+[GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb.
 
-[GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb
+This module is intended to be used with the v1.x branch of Multer.
 
 ## Installation
 
@@ -16,30 +17,32 @@ $ npm install multer-gridfs-storage --save
 Basic usage example:
 
 ```javascript
-var express = require('express');
-var multer  = require('multer');
+const express = require('express');
+const multer  = require('multer');
+
 // Create a storage object with a given configuration
 var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database'
+   url: 'mongodb://yourhost:27017/database'
 });
-// Set multer storage engine to the newly created object
-var upload = multer({ storage: storage });
 
-var app = express()
+// Set multer storage engine to the newly created object
+const upload = multer({ storage: storage });
+
+const app = express()
 
 // Upload your files as usual
-var sUpload = upload.single('avatar');
-app.post('/profile', sUpload, function (req, res, next) { 
+const sUpload = upload.single('avatar');
+app.post('/profile', sUpload, (req, res, next) => { 
     /*....*/ 
 })
 
-var arrUpload = upload.array('photos', 12);
-app.post('/photos/upload', arrUpload, function (req, res, next) {
+const arrUpload = upload.array('photos', 12);
+app.post('/photos/upload', arrUpload, (req, res, next) => {
     /*....*/ 
 })
 
-var fUpload = upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'gallery', maxCount: 8 }])
-app.post('/cool-profile', fUpload, function (req, res, next) {
+const fUpload = upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'gallery', maxCount: 8 }])
+app.post('/cool-profile', fUpload, (req, res, next) => {
     /*....*/ 
 })
 ```
@@ -54,7 +57,8 @@ Starting from version 1.1.0 the module function can be called with
 or without the javascript `new` operator.
 
 The 1.2 version brings full support for promises and ES6 generators. 
-You can check the [wiki][wiki] for more information.
+
+Check the [wiki][wiki] for an in depth guide on how to use this module.
 
 ### Options
 
@@ -77,36 +81,12 @@ Note: If the [`gfs`][gfs-option] option is specified this setting is ignored.
 Example:
 
 ```javascript
-var storage = require('multer-gridfs-storage')({
-    url: 'mongodb://localhost:27017/database'
+const storage = require('multer-gridfs-storage')({
+    url: 'mongodb://yourhost:27017/database'
 });
-var upload = multer({ storage: storage });
 ```
 
-Creating the connection string from a host, port and database object
-
-```javascript
-var url = require('url');
-
-var settings = {
-    host: '127.0.0.1',
-    port: 27017,
-    database: 'database'
-};
-
-var connectionString = url.format({
-    protocol: 'mongodb',
-    slashes: true,
-    hostname: settings.host,
-    port: settings.port,
-    pathname: settings.database
-});
-
-var storage = require('multer-gridfs-storage')({
-    url: connectionString
-});
-var upload = multer({ storage: storage });
-```
+Examples: *connecting*
 
 #### gfs
 
@@ -114,29 +94,20 @@ Type: `object` or `Promise`
 
 Required if [`url`][url-option] option is not present
 
-The [gridfs-stream](https://github.com/aheckmann/gridfs-stream/) instance to use or a promise that resolves with the instance.
+The [gridfs-stream](https://github.com/aheckmann/gridfs-stream/) instance 
+to use or a promise that resolves with the instance.
 
-If this option is provided, files are stored using this stream. This is useful when you have an existing GridFS object and want to reuse it to upload your files.
+If this option is provided, files are stored using this stream. This is 
+useful to reuse an existing stream to create more storage objects.
 
 Example:
 
 ```javascript
-var Grid = require('gridfs-stream');
-var mongo = require('mongodb');
-var GridFSStorage = require('multer-gridfs-storage');
-
-var db = new mongo.Db('database', new mongo.Server("127.0.0.1", 27017));
-
-db.open(function (err) {
-  if (err) return handleError(err);
-  var gfs = Grid(db, mongo);
-
-  var storage = GridFSStorage({
-     gfs: gfs
-  });
-  var upload = multer({ storage: storage });
-})
+const gfs = Grid(db, mongo);
+storage = new GridFSStorage({ gfs: gfs });
 ```
+
+More examples in *connecting*
 
 #### filename
 
@@ -153,39 +124,7 @@ It generates a 16 bytes long name in hexadecimal format with no extension for th
 to guarantee that there are very low probabilities of naming collisions. You can override this 
 by passing your own function.
 
-Example:
-
-```javascript
-var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
-   filename: function(req, file, cb) {
-      cb(null, file.originalname);
-   }
-});
-var upload = multer({ storage: storage });
-```
-
-In this example the original filename and extension in the user's computer are used 
-to name each of the uploaded files. Please note that this will not guarantee that file
-names are unique and you might have files with duplicate names in your database.
-
-```javascript
-var crypto = require('crypto');
-var path = require('path');
-
-var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
-   filename: function(req, file, cb) {
-       crypto.randomBytes(16, function (err, raw) {
-           cb(err, err ? undefined : raw.toString('hex') + path.extname(file.originalname));
-       });
-   }
-});
-var upload = multer({ storage: storage });
-```
-
-To ensure that names are unique a random name is used and the file extension is preserved as well. 
-You could also use the user's file name plus a timestamp to generate unique names.
+Examples: *naming*
 
 #### identifier
 
@@ -209,7 +148,7 @@ Example:
 ```javascript
 var path = require('path');
 var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
+   url: 'mongodb://yourhost:27017/database',
    identifier: function(req, file, cb) {
       cb(null, Math.floor(Math.random() * 1000000));
    }
@@ -241,7 +180,7 @@ Example:
 
 ```javascript
 var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
+   url: 'mongodb://yourhost:27017/database',
    metadata: function(req, file, cb) {
       cb(null, req.body);
    }
@@ -269,7 +208,7 @@ Example using fixed value:
 
 ```javascript
 var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
+   url: 'mongodb://yourhost:27017/database',
    chunkSize: 2048
 });
 var upload = multer({ storage: storage });
@@ -279,7 +218,7 @@ Example using dynamic value:
 
 ```javascript
 var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
+   url: 'mongodb://yourhost:27017/database',
    chunkSize: function(req, file, cb) {
        if (file.originalname === 'myphoto.jpg') {
            cb(null, 12345);
@@ -306,7 +245,7 @@ Example using a fixed value:
 
 ```javascript
 var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
+   url: 'mongodb://yourhost:27017/database',
    root: 'myfiles'
 });
 var upload = multer({ storage: storage });
@@ -323,7 +262,7 @@ Example using a dynamic value:
 
 ```javascript
 var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
+   url: 'mongodb://yourhost:27017/database',
    root: function(req, file, cb) {
        if (file.fieldname = 'plants') {
            cb(null, 'plants');
@@ -359,16 +298,25 @@ done to ensure that some internal events can also be handled in user code.
 
 #### Event: `'connection'`
 
-> Only available when the storage is created with the [`url`][url-option] option.
-
-This event is emitted when the MongoDb connection is opened.
+This event is emitted when the MongoDb connection is ready to use.
 
 *Event arguments*
 
- - gfs: The newly created GridFS instance 
- - db: The native MongoDb database object.
+ - gfs: The newly created GridFS instance
+ - db: The native MongoDb database object
 
-This event is only triggered once. Note that if you only want to log events there is an api option for that
+This event is only triggered once.
+
+#### Event: `'connectionFailed'`
+
+This event is emitted when the connection could not be opened.
+
+*Event arguments*
+
+ - err: The connection error
+
+This event only triggers once. Only one of `connection` or `connectionFailed `
+will be fired.
 
 #### Event: `'file'`
 
@@ -376,7 +324,7 @@ This event is emitted every time a new file is stored in the db.
 
 *Event arguments*
 
- - file: The uploaded file 
+ - file: The uploaded file
 
 
 #### Event: `'error'`
@@ -423,7 +371,7 @@ event that triggered the log and any additional info, e.g. the uploaded file
 
 ```javascript
 var storage = require('multer-gridfs-storage')({
-   url: 'mongodb://localhost:27017/database',
+   url: 'mongodb://yourhost:27017/database',
    log: function(err, log) {
       if (err) {
         console.error(err);

@@ -3,13 +3,14 @@ be available in the future. This concept has been around for a while now in
 many javascript libraries but ES6 brings the official language support.
 
 You can return promises instead of invoking callbacks if you prefer and this 
-will allow you to reuse any existing promise and avoid the piramid of doom.
+will allow you to reuse any existing promise and avoid [callback hell][cb-hell].
 
 ## Usage
 
-How you use the promise depends on the value expected by the option you are configuring.
-If the configuration expects a function you must return the promise, if not you can
-pass the promise directly.
+How you use the promise depends on the option you are configuring.
+If is a [connection option][connection-option] you must pass the promise directly,
+if is a [configuration option][configuration-option] you must return the promise
+from the function or the generator function.
 
 ### connection
 
@@ -36,8 +37,7 @@ the upload will fail.
 
 ### configuration
 
-In any of the configuration options (`filename`, `metadata`, `identifier`,
-`chunkSize` and `root`) you can return a promise instead of invoking
+In any of the configuration options you can return a promise instead of invoking
 the callback and this will handle the error or return the value when the
 promise is resolved or rejected.
 
@@ -77,3 +77,7 @@ var upload = multer({ storage: storage });
 
 This will wait for the result of the promise and use it as the value required
 to store the file.
+
+[cb-hell]: http://callbackhell.com/
+[connection-option]: https://github.com/devconcept/multer-gridfs-storage/wiki/Guide#connection
+[configuration-option]: https://github.com/devconcept/multer-gridfs-storage/wiki/Guide#configuration

@@ -8,22 +8,14 @@ used to produce values.
 
 You can read more about this in MDN:
 
-[Generator functions][1]
+[Generator functions][gen]
 
-[Generators][2]
+[Generators][gen-fn]
 
 ## Usage
 
-This module accepts a generator function in many of its configuration properties.
+This module accepts a generator function in all of the [configuration options][configuration-options].
 Experienced javascript users can take advantage of it to produce cleaner code.
-
-They are supported in 
-
-- `filename`
-- `metadata`
-- `identifier` 
-- `chunkSize`
-- `root`
 
 The syntax is the same for all.
 
@@ -32,7 +24,7 @@ Here is an example:
 ```javascript
 const GridFSStorage = require('multer-gridfs-storage');
 const storage = new GridFSStorage({
-    url: 'mongodb://localhost:27017/database',
+    url: 'mongodb://yourhost:27017/database',
     filename: function* () {
       let counter = 1;
       while (true) {
@@ -46,10 +38,10 @@ var upload = multer({ storage: storage });
 
 Notice the asterisk (*) after the `function` keyword. This is how you define 
 a generator function. The previous example will run until it founds the `yield` keyword
-and will return the following expression pretty much like a `return` statement will.
+and will return the following expression, pretty much like a `return` statement will.
 
 The main difference is that the next time the module calls the generator it will continue
-its execution in the next line after the `yield`. In a normal function it would start at
+its execution right after the `yield`. In a normal function it would start at
 the beginning of the function body.
 
 This allows the function to "remember" all its variables and values (it's execution context)
@@ -118,7 +110,8 @@ Here `result` is an **array** with the `req` and `file` objects in the 0 and 1 i
 
 Q: Why the result is an array? An object wouldn't be better?
 
-A: Because you are using ES6 features you can also use [destructuring][3] to assign those values producing cleaner code
+A: Because you are using ES6 features you can also use [destructuring][destructuring] to assign 
+those values producing cleaner code
 
 Compare
 
@@ -129,8 +122,8 @@ const storage = new GridFSStorage({
       let params;
       // the first loop will grab r and f
       // params is assigned on re-entry 
-      let req = params ? values.req : r;
-      let file = params ? values.file : f;
+      let req = params ? params.req : r;
+      let file = params ? params.file : f;
       ...
       params = yield 'name' + counter;
     }
@@ -177,7 +170,7 @@ function* fail (cb) {
 }
 ```
 
-But the good news is that you can `yield` a [Promise][4]
+But the good news is that you can `yield` a [Promise][promise]
 and this will wait for the 
 promise to resolve or reject to produce a value
 
@@ -186,7 +179,8 @@ Q: I tried to use a generator function but got an error. What happened?
 A: You must have node version 6 or greater to use them. You also need 
 version 1.2.0 or greater of this module. Currently polyfills are not supported.
 
-[1]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"
-[2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator "Generator"
-[3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment "Destructuring assignment"
-[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise "Promise"
+[gen]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"
+[gen-fn]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator "Generator"
+[destructuring]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment "Destructuring assignment"
+[promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise "Promise"
+[configuration-options]: https://github.com/devconcept/multer-gridfs-storage/wiki/Guide#configuration
