@@ -16,6 +16,7 @@ env:
   - NODE_ENV=test
 before_install:
   - "npm install multer@^1.0.0"
+  - "npm install mongodb"
 before_script:
   - sleep 15
 after_script:
