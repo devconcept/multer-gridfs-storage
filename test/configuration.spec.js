@@ -7,37 +7,17 @@ const expect = chai.expect;
 const settings = require('./utils/settings');
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
-const {EventEmitter} = require('events');
-const {cleanDb} = require('./utils/testutils');
+const { cleanDb } = require('./utils/testutils');
+const { EventEmitter } = require('events');
 
-describe('module default options', function () {
+const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
+chai.use(sinonChai);
+
+describe('module basic configuration', function () {
   this.timeout(4000);
-  this.slow(8000);
+  this.slow(5000);
   let storage;
-
-  before(() => {
-    storage = GridFSStorage({
-      url: settings.mongoUrl()
-    });
-  });
-
-  it('should have the EventEmitter signature', function () {
-    expect(storage).to.respondTo('once');
-    expect(storage).to.respondTo('on');
-    expect(storage).to.be.a.instanceOf(EventEmitter);
-  });
-
-  it('should implement Multer plugin definition', function () {
-    expect(storage).to.respondTo('_handleFile');
-    expect(storage).to.respondTo('_removeFile');
-  });
-
-  it('should create a mongodb connection when using the url parameter', function (done) {
-    setTimeout(() => {
-      expect(storage.gfs).to.be.an.instanceof(Grid);
-      done();
-    }, 3000);
-  });
 
   it('should use an existing GridFS connection when using the gfs parameter', function (done) {
     MongoClient.connect(settings.mongoUrl(), function (err, db) {
@@ -51,60 +31,67 @@ describe('module default options', function () {
     });
   });
 
-  it('should set the default reconnection setting to false', function () {
-    expect(storage._reconnect).to.equal(false);
+  it('should allow to create the instance with the new operator', function () {
+    storage = new GridFSStorage({
+      url: settings.mongoUrl()
+    });
+    expect(storage).to.be.a.instanceOf(EventEmitter);
+    expect(storage).to.respondTo('_handleFile');
+    expect(storage).to.respondTo('_removeFile');
   });
 
-  it('should set the default reconnection retries to 3', function () {
+  it('should emit a connection event when using the url parameter', function (done) {
+    const connectionSpy = sinon.spy();
+    storage = new GridFSStorage({
+      url: settings.mongoUrl()
+    });
+    storage.once('connection', connectionSpy);
+    setTimeout(() => {
+      expect(connectionSpy).to.have.callCount(1);
+      done();
+    }, 3000);
+  });
+
+  it('should allow to change the reconnection parameter', function () {
+    storage = new GridFSStorage({
+      url: settings.mongoUrl(),
+      reconnect: true
+    });
+    expect(storage._reconnect).to.equal(true);
+  });
+
+  it('should allow to change the connection retries parameter', function () {
+    storage = new GridFSStorage({
+      url: settings.mongoUrl(),
+      reconnect: true,
+      retries: 5
+    });
+    expect(storage._retries).to.equal(5);
+  });
+
+  it('should ignore the retries parameter if you are not reconnecting', function () {
+    storage = new GridFSStorage({
+      url: settings.mongoUrl(),
+      retries: 5
+    });
     expect(storage._retries).to.equal(3);
   });
 
-  it('should set the default reconnection delay to 3s', function () {
+  it('should allow to change the reconnection delay parameter', function () {
+    storage = new GridFSStorage({
+      url: settings.mongoUrl(),
+      reconnect: true,
+      delay: 2000
+    });
+    expect(storage._delay).to.equal(2000);
+  });
+
+  it('should ignore the delay parameter if you are not reconnecting', function () {
+    storage = new GridFSStorage({
+      url: settings.mongoUrl(),
+      delay: 2000
+    });
     expect(storage._delay).to.equal(3000);
-  });
-
-  it('should set the default filename to a 16 bytes hexadecimal string', function () {
-    storage._getFilename(null, null, (err, filename) => {
-      expect(filename).to.match(/^[0-9a-f]{32}$/);
-    });
-  });
-
-  it('should set the default metadata to null', function () {
-    storage._getMetadata(null, null, (err, metadata) => {
-      expect(metadata).to.equal(null);
-    });
-  });
-
-  it('should disable logging by default', function () {
-    storage = GridFSStorage({
-      url: settings.mongoUrl()
-    });
-    expect(storage._log).to.equal(false);
-  });
-
-  it('should set the logLevel to file by default', function () {
-    storage = GridFSStorage({
-      url: settings.mongoUrl()
-    });
-    expect(storage._logLevel).to.equal('file');
-  });
-
-  it('should set the default chunkSize to 261120', function () {
-    storage = GridFSStorage({
-      url: settings.mongoUrl()
-    });
-    storage._getChunkSize(null, null, (err, chunkSize) => {
-      expect(chunkSize).to.equal(261120);
-    });
-  });
-
-  it('should set the default root to null', function () {
-    storage = GridFSStorage({
-      url: settings.mongoUrl()
-    });
-    storage._getRoot(null, null, (err, root) => {
-      expect(root).to.equal(null);
-    });
   });
 
   it('should change the default naming function', function () {
@@ -190,7 +177,3 @@ describe('module default options', function () {
   after(() => cleanDb(storage));
 
 });
-
-
-
-

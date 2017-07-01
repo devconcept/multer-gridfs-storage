@@ -13,7 +13,7 @@ const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-describe('utility functions', function () {
+describe('Utility functions', function () {
 
   describe('isPromise', function () {
 
