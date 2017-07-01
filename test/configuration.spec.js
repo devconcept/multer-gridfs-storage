@@ -52,48 +52,6 @@ describe('module basic configuration', function () {
     }, 3000);
   });
 
-  it('should allow to change the reconnection parameter', function () {
-    storage = new GridFSStorage({
-      url: settings.mongoUrl(),
-      reconnect: true
-    });
-    expect(storage._reconnect).to.equal(true);
-  });
-
-  it('should allow to change the connection retries parameter', function () {
-    storage = new GridFSStorage({
-      url: settings.mongoUrl(),
-      reconnect: true,
-      retries: 5
-    });
-    expect(storage._retries).to.equal(5);
-  });
-
-  it('should ignore the retries parameter if you are not reconnecting', function () {
-    storage = new GridFSStorage({
-      url: settings.mongoUrl(),
-      retries: 5
-    });
-    expect(storage._retries).to.equal(3);
-  });
-
-  it('should allow to change the reconnection delay parameter', function () {
-    storage = new GridFSStorage({
-      url: settings.mongoUrl(),
-      reconnect: true,
-      delay: 2000
-    });
-    expect(storage._delay).to.equal(2000);
-  });
-
-  it('should ignore the delay parameter if you are not reconnecting', function () {
-    storage = new GridFSStorage({
-      url: settings.mongoUrl(),
-      delay: 2000
-    });
-    expect(storage._delay).to.equal(3000);
-  });
-
   it('should change the default naming function', function () {
     const namingFn = function (req, file, cb) {
       cb(null, 'foo' + Date.now());

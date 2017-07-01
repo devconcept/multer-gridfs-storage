@@ -51,18 +51,6 @@ describe('module default options', function () {
     });
   });
 
-  it('should set the default reconnection setting to false', function () {
-    expect(storage._reconnect).to.equal(false);
-  });
-
-  it('should set the default reconnection retries to 3', function () {
-    expect(storage._retries).to.equal(3);
-  });
-
-  it('should set the default reconnection delay to 3s', function () {
-    expect(storage._delay).to.equal(3000);
-  });
-
   it('should set the default filename to a 16 bytes hexadecimal string', function () {
     storage._getFilename(null, null, (err, filename) => {
       expect(filename).to.match(/^[0-9a-f]{32}$/);

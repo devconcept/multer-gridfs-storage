@@ -17,4 +17,4 @@ var GridFsStorage = require('./lib/gridfs');
  * @see [GridFSStorage]{@link module:multer-gridfs-storage/gridfs~GridFSStorage}
  * **/
 
-module.exports = GridFsStorage;
+module.exports = exports = GridFsStorage;
