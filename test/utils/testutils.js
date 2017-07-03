@@ -93,8 +93,8 @@ const files = ['sample1.jpg', 'sample2.jpg']
 function cleanDb(storage) {
   if (storage) {
     storage.removeAllListeners();
-    if (storage.gfs) {
-      const db = storage.gfs.db;
+    if (storage.db) {
+      const db = storage.db;
       return db
         .dropDatabase()
         .then(() => db.close(true));

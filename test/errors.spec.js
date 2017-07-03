@@ -26,189 +26,11 @@ describe('error handling', function () {
     app = express();
   });
 
-  it('should throw an error if the identifier function is invoked with an error callback', function (done) {
+  it('should fail gracefully if an error is thrown inside the configuration function', function (done) {
     storage = GridFsStorage({
       url: settings.mongoUrl(),
-      identifier: (req, file, cb) => {
-        cb(new Error('Identifier error'));
-      }
-    });
-
-    const upload = multer({storage});
-
-    app.post('/identifier', upload.single('photo'), (req, res) => {
-      res.send({headers: req.headers, files: req.files, body: req.body});
-    });
-
-    storage.on('connection', () => {
-      request(app)
-        .post('/identifier')
-        .attach('photo', files[0])
-        .end((err, res) => {
-          expect(res.serverError).to.equal(true);
-          expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: Identifier error/);
-          done();
-        });
-    });
-  });
-
-  it('should throw an error if the filename function is invoked with an error callback', function (done) {
-    storage = GridFsStorage({
-      url: settings.mongoUrl(),
-      filename: (req, file, cb) => {
-        cb(new Error('Filename error'));
-      }
-    });
-
-    const upload = multer({storage});
-
-    app.post('/filename', upload.single('photo'), (req, res) => {
-      res.send({headers: req.headers, files: req.files, body: req.body});
-    });
-
-    storage.on('connection', () => {
-      request(app)
-        .post('/filename')
-        .attach('photo', files[0])
-        .end((err, res) => {
-          expect(res.serverError).to.equal(true);
-          expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: Filename error/);
-          done();
-        });
-    });
-  });
-
-  it('should throw an error if the metadata is invoked with an error callback', function (done) {
-    storage = GridFsStorage({
-      url: settings.mongoUrl(),
-      metadata: (req, file, cb) => {
-        cb(new Error('Metadata error'));
-      }
-    });
-
-    const upload = multer({storage});
-
-    app.post('/metadata', upload.single('photo'), (req, res) => {
-      res.send({headers: req.headers, files: req.files, body: req.body});
-    });
-
-    storage.on('connection', function () {
-      request(app)
-        .post('/metadata')
-        .attach('photo', files[0])
-        .end((err, res) => {
-          expect(res.serverError).to.equal(true);
-          expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: Metadata error/);
-          done();
-        });
-    });
-  });
-
-  it('should throw an error if the chunkSize function is invoked with an error callback', function (done) {
-    storage = GridFsStorage({
-      url: settings.mongoUrl(),
-      chunkSize: (req, file, cb) => {
-        cb(new Error('ChunkSize error'));
-      }
-    });
-
-    const upload = multer({storage});
-
-    app.post('/chunksize', upload.single('photo'), (req, res) => {
-      res.send({headers: req.headers, files: req.files, body: req.body});
-    });
-
-    storage.on('connection', () => {
-      request(app)
-        .post('/chunksize')
-        .attach('photo', files[0])
-        .end((err, res) => {
-          expect(res.serverError).to.equal(true);
-          expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: ChunkSize error/);
-          done();
-        });
-    });
-  });
-
-  it('should throw an error if the root function is invoked with an error callback', function (done) {
-
-    storage = GridFsStorage({
-      url: settings.mongoUrl(),
-      root: (req, file, cb) => {
-        cb(new Error('Root error'));
-      }
-    });
-
-    const upload = multer({storage});
-
-    app.post('/root', upload.single('photo'), (req, res) => {
-      res.send({headers: req.headers, files: req.files, body: req.body});
-    });
-
-    storage.on('connection', () => {
-      request(app)
-        .post('/root')
-        .attach('photo', files[0])
-        .end((err, res) => {
-          expect(res.serverError).to.equal(true);
-          expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: Root error/);
-          done();
-        });
-    });
-  });
-
-
-  it('should emit an error event when the file streaming fails', function (done) {
-    let db, fs;
-    const errorSpy = sinon.spy();
-
-    MongoClient
-      .connect(settings.mongoUrl())
-      .then((_db) => db = _db)
-      .then(() => fs = db.collection('fs.files'))
-      .then(() => fs.createIndex('md5', {unique: true}))
-      .then(() => {
-
-        const gfs = new Grid(db, mongo);
-        storage = GridFsStorage({gfs});
-
-        const upload = multer({storage});
-
-        app.post('/emit', upload.array('photos', 2), (req, res) => {
-          res.send({headers: req.headers, files: req.files, body: req.body});
-        });
-
-        storage.on('error', errorSpy);
-
-        request(app)
-          .post('/emit')
-          // Send the same file twice so the checksum is the same
-          .attach('photos', files[0])
-          .attach('photos', files[0])
-          .end((err, body) => {
-            expect(body.status).to.equal(500);
-            expect(errorSpy).to.be.calledOnce;
-            const call = errorSpy.getCall(0);
-            expect(call.args[0]).to.be.an.instanceof(Error);
-            expect(call.args[1]).to.have.all.keys('chunkSize', 'content_type', 'filename', 'metadata', 'root');
-            done();
-          });
-
-      });
-
-  });
-
-  it('should fail gracefully if an error is thrown inside an option function', function (done) {
-
-    storage = GridFsStorage({
-      url: settings.mongoUrl(),
-      filename: () => {
-        throw new Error('Filename error');
+      file: () => {
+        throw new Error('Error thrown');
       }
     });
 
@@ -225,10 +47,49 @@ describe('error handling', function () {
         .end((err, res) => {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: Filename error/);
+          expect(res.error.text).to.match(/Error: Error thrown/);
           done();
         });
     });
+  });
+
+  it('should emit an error event when the file streaming fails', function (done) {
+    let db, fs;
+    const errorSpy = sinon.spy();
+
+    MongoClient
+      .connect(settings.mongoUrl())
+      .then((_db) => db = _db)
+      .then(() => fs = db.collection('fs.files'))
+      .then(() => fs.createIndex('md5', {unique: true}))
+      .then(() => {
+
+        storage = GridFsStorage({url: settings.mongoUrl()});
+
+        const upload = multer({storage});
+
+        app.post('/emit', upload.array('photos', 2), (req, res) => {
+          res.send({headers: req.headers, files: req.files, body: req.body});
+        });
+
+        storage.on('streamError', errorSpy);
+
+        request(app)
+          .post('/emit')
+          // Send the same file twice so the checksum is the same
+          .attach('photos', files[0])
+          .attach('photos', files[0])
+          .end((err, body) => {
+            expect(body.status).to.equal(500);
+            expect(errorSpy).to.be.calledOnce;
+            const call = errorSpy.getCall(0);
+            expect(call.args[0]).to.be.an.instanceof(Error);
+            expect(call.args[1]).to.have.all.keys('chunkSize', 'contentType', 'filename', 'metadata', 'bucketName', 'id');
+            done();
+          });
+
+      });
+
   });
 
   it('should fail gracefully if an error is thrown inside a generator function', function (done) {
@@ -238,7 +99,7 @@ describe('error handling', function () {
 
     storage = GridFsStorage({
       url: settings.mongoUrl(),
-      filename: function*() {
+      file: function*() {
         throw new Error('Filename error');
       }
     });
@@ -257,39 +118,6 @@ describe('error handling', function () {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
           expect(res.error.text).to.match(/Error: Filename error/);
-          done();
-        });
-    });
-  });
-
-  it('should append the storage error in case the remove function fails', function (done) {
-    const e = new Error();
-    storage = GridFsStorage({
-      url: settings.mongoUrl()
-    });
-
-    const upload = multer({storage});
-
-    /* eslint-disable no-unused-vars */
-    app.post('/storageerror', upload.single('photo'), (err, req, res, next) => {
-      expect(e).to.equal(err);
-      expect(e).to.have.property('storageErrors');
-    });
-    /* eslint-enable no-unused-vars */
-
-    storage.on('connection', () => {
-      removeRef = storage.gfs.remove;
-      storage.gfs.remove = function (options, callback) {
-        callback(new Error());
-      };
-
-      request(app)
-        .post('/storageerror')
-        .attach('photo', files[0])
-        .attach('photo', files[1])
-        .end((err, res) => {
-          expect(res.serverError).to.equal(true);
-          expect(res.error).to.be.an('error');
           done();
         });
     });
@@ -315,7 +143,7 @@ describe('error handling', function () {
   after(() => {
     mongo.MongoClient.connect = connectRef;
     unmute();
-    storage.gfs.remove = removeRef;
+    storage.remove = removeRef;
     return cleanDb(storage);
   });
 
