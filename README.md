@@ -327,7 +327,7 @@ This event is emitted every time a new file is stored in the db.
  - file: The uploaded file
 
 
-#### Event: `'error'`
+#### Event: `'streamError'`
 
 This event is emitted when there is an error streaming the file to the database.
 
@@ -335,6 +335,11 @@ This event is emitted when there is an error streaming the file to the database.
 
  - error: The streaming error
  - config: The failed upload configuration
+ 
+ > This was previously emitted as the `error` event but there was a bug that causes
+ the application to exit if you don't set any listener for this and the event is
+ emitted. Since you can also catch errors with an express error handler and bypass events
+ altogether this was renamed to avoid potential errors.
  
 #### Event: `'dbError'`
  
