@@ -1,65 +1,61 @@
-1.2.2
-=====
+# 2.0.0
 
-  * Added 'dbError' event
-  * Call log function in 'error' event
+ * Breaking change: Removed gridfs-stream dependency
+ * Breaking change: Removed all old file configuration options
+ * Feature: Simplified api by adding a new option `file` to control file configuration
+ * Feature: Added reconnection feature
+ * Feature: Added delayed file storage after successful connection instead of failing with an error
 
-1.2.1
-=====
+# 1.2.2
 
-  * Added 'error' event
+  * Feature: Added 'dbError' event
+  * Fix: Call log function in 'error' event
 
-1.2.0
-=====
+# 1.2.1
 
-  * Added generator function support
-  * Allow to use promises in configuration options instead of callbacks
+  * Feature: Added 'error' event
 
-1.1.1
-=====
+# 1.2.0
 
-  * Fixed UnhandledPromiseRejection error
+  * Feature: Added generator function support
+  * Feature: Allow to use promises in configuration options instead of callbacks
+
+# 1.1.1
+
+  * Fix: Fixed UnhandledPromiseRejection error
   
 
-1.1.0
-==================
+# 1.1.0
 
-  * Added support for connection promises
-  * Added file size information
-  * Allow the api to be called with the `new` operator
-  * Added Typescript support
+  * Feature: Added support for connection promises
+  * Feature: Added file size information
+  * Feature: Allow the api to be called with the `new` operator
+  * Feature: Added Typescript support
 
-1.0.3
-==================
+# 1.0.3
 
-  * Fixed code coverage
+  * Fix: Fixed code coverage
 
-1.0.2
-==================
+# 1.0.2
 
-  * Changed log option to accept a function
+  * Feature: Changed log option to accept a function
 
-1.0.1
-==================
+# 1.0.1
 
-  * Added validation for options
+  * Fix: Added validation for options
 
-1.0.0
-==================
+# 1.0.0
 
   * Initial stable release
   
-0.0.5
-==================
+# 0.0.5
   
-  * Added support for changing the default collection with the root option
+  * Feature: Added support for changing the default collection with the root option
   
-0.0.4
-==================
+# 0.0.4
   
-  * Added support for changing the chunk size
+  * Feature: Added support for changing the chunk size
   
-0.0.3
-==================
+# 0.0.3
   
   * First release
