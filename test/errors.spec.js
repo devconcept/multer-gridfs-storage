@@ -10,7 +10,6 @@ const express = require('express');
 const settings = require('./utils/settings');
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
-const Grid = require('gridfs-stream');
 const {files, cleanDb, version} = require('./utils/testutils');
 const mute = require('mute');
 
