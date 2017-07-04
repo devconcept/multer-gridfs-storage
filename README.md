@@ -307,16 +307,6 @@ This event is emitted when the MongoDb connection is ready to use.
 
 This event is only triggered once.
 
-#### Event: `'connectionFailed'`
-
-This event is emitted when the connection could not be opened.
-
-*Event arguments*
-
- - err: The connection error
-
-This event only triggers once. Only one of `connection` or `connectionFailed `
-will be fired.
 
 #### Event: `'file'`
 
