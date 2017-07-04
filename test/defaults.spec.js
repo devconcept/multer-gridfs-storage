@@ -6,7 +6,6 @@ const expect = chai.expect;
 const settings = require('./utils/settings');
 const { cleanDb } = require('./utils/testutils');
 const { EventEmitter } = require('events');
-const mongo = require('mongodb');
 
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
@@ -56,7 +55,7 @@ describe('module defaults', function () {
     expect(result.metadata).to.equal(null);
   });
 
-  it('should set the default metadata to null', function () {
+  it('should set the default chunkSize to 261120', function () {
     expect(result.chunkSize).to.equal(261120);
   });
 

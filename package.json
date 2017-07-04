@@ -26,8 +26,7 @@
     "url": "git+https://github.com/devconcept/multer-gridfs-storage.git"
   },
   "dependencies": {
-    "is-generator-fn": "^1.0.0",
-    "is-promise": "^2.1.0"
+    "is-generator-fn": "^1.0.0"
   },
   "optionalDependencies": {
     "mongodb": "^2.0.0"

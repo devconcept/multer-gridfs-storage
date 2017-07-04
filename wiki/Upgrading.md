@@ -10,7 +10,7 @@ do some asynchronous work you have to return promises.
 
 The dependency on `gridfs-stream` was removed. The reason is that the module
 is a nice wrapper around GridStore but this feature has been deprecated since 
-mongo 2.2. If you still need an old mongodb version for some reason this is not
+mongodb 2.2. If you still need an old mongodb version for some reason this is not
 a problem since this plugin fallback to GridStore in case GridFSBucket is not
 present dealing with the differences internally.
 
