@@ -166,6 +166,7 @@ describe('error handling', function () {
   it('should emit an error event when the file streaming fails', function (done) {
     let db, fs;
     const errorSpy = sinon.spy();
+    const deprecated = sinon.spy();
 
     MongoClient
       .connect(settings.mongoUrl())
@@ -183,7 +184,8 @@ describe('error handling', function () {
           res.send({headers: req.headers, files: req.files, body: req.body});
         });
 
-        storage.on('error', errorSpy);
+        storage.on('error', deprecated);
+        storage.on('streamError', errorSpy);
 
         request(app)
           .post('/emit')
@@ -193,6 +195,7 @@ describe('error handling', function () {
           .end((err, body) => {
             expect(body.status).to.equal(500);
             expect(errorSpy).to.be.calledOnce;
+            expect(deprecated).not.to.be.called;
             const call = errorSpy.getCall(0);
             expect(call.args[0]).to.be.an.instanceof(Error);
             expect(call.args[1]).to.have.all.keys('chunkSize', 'content_type', 'filename', 'metadata', 'root');
