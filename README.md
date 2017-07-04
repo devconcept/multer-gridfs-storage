@@ -7,7 +7,7 @@
 This module is intended to be used with the v1.x branch of Multer.
 
 The new version 2 brings a simplified api and more features. If you still need the old version 
-switch to the v1.x branch.
+you can switch to the v1.x branch.
 
 ## Installation
 
@@ -17,6 +17,8 @@ Using npm
 $ npm install multer-gridfs-storage --save
 ```
 
+You should have mongodb installed. See the [`mongodb`][mongodb-option] option for more information.
+
 Basic usage example:
 
 ```javascript
@@ -24,7 +26,7 @@ const express = require('express');
 const multer  = require('multer');
 
 // Create a storage object with a given configuration
-var storage = require('multer-gridfs-storage')({
+const storage = require('multer-gridfs-storage')({
    url: 'mongodb://yourhost:27017/database'
 });
 
@@ -100,7 +102,13 @@ Example:
 MongoClient.connect('url').then((database) => {
   storage = new GridFSStorage({ db: database });
 });
+```
 
+or
+
+```javascript
+const promise = MongoClient.connect('url');
+storage = new GridFSStorage({ db: promise });
 ```
 
 #### file
@@ -109,7 +117,7 @@ Type: `function` or `function*`
 
 Not required
 
-A function to control the file naming in the database. Is invoked with
+A function to control the file storage in the database. Is invoked **per file** with
 the parameters `req` and `file`, in that order.
 
 By default, this module behaves exactly like the default Multer disk storage does.
@@ -117,18 +125,43 @@ It generates a 16 bytes long name in hexadecimal format with no extension for th
 to guarantee that there are very low probabilities of naming collisions. You can override this 
 by passing your own function.
 
+The return value of this function must be an object or a promise (this also applies to generators) with
+the following properties. You should at least provide the `filename` property. All missing
+properties will use the defaults for mongodb.
+
+Property name | Description
+------------- | -----------
+`filename` | The desired filename for the file
+`id` | A mongodb ObjectID which will be used as the identifier
+`metadata` | The metadata for the file
+`chunkSize` | The size of file chunks in bytes (defaults to 261120)
+`bucketName` | The name of the GridFs collection to store the file
+
+#### mongo
+
+Type: `function`
+
+Not required
+
+By default this module will call `require('mongodb')` and use whatever module is available. If you want to
+use a specific version of mongo this options lets you change it. Just pass the result of the `require` call to
+it and this will be the mongodb module used for all operations.
+
 ### File information
 
 Each file in `req.file` and `req.files` contain the following properties in addition
-to the ones that Multer create by default.
+to the ones that Multer create by default. Some of them can be set using the `file` configuration.
 
 Key | Description
 --- | -----------
 `filename` | The name of the file within the database
 `metadata` | The stored metadata of the file
 `id` | The id of the stored file
-`grid` | The GridFS information of the stored file
+`bucketName` | The name of the GridFs collection used to store the file
+`chunkSize` | The size of file chunks used to store the file
 `size` | The size of the stored file
+`md5` | The md5 hash of the file
+`uploadDate` | The upload timestamp of the file
 
 To see all the other properties of the file object check the Multer's [documentation](https://github.com/expressjs/multer#file-information).
 
@@ -148,17 +181,6 @@ This event is emitted when the MongoDb connection is ready to use.
 
 This event is only triggered once.
 
-#### Event: `'connectionFailed'`
-
-This event is emitted when the connection could not be opened.
-
-*Event arguments*
-
- - err: The connection error
-
-This event only triggers once. Only one of `connection` or `connectionFailed `
-will be fired.
-
 #### Event: `'file'`
 
 This event is emitted every time a new file is stored in the db. 
@@ -168,7 +190,7 @@ This event is emitted every time a new file is stored in the db.
  - file: The uploaded file
 
 
-#### Event: `'error'`
+#### Event: `'streamError'`
 
 This event is emitted when there is an error streaming the file to the database.
 
@@ -219,4 +241,5 @@ $ npm coverage
 [url-option]: #url
 [db-option]: #db
 [file-option]: #file
+[mongodb-option]: #mongodb
 [wiki]: https://github.com/devconcept/multer-gridfs-storage/wiki
