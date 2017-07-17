@@ -11,7 +11,7 @@ const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-describe('module defaults', function () {
+describe('Module defaults', function () {
   this.timeout(3000);
   this.slow(4000);
   let storage;

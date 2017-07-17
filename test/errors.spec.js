@@ -17,7 +17,7 @@ const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-describe('error handling', function () {
+describe('Error handling', function () {
   let storage, app, unmute, connectRef, removeRef;
 
   before(() => {
@@ -99,7 +99,7 @@ describe('error handling', function () {
     storage = GridFsStorage({
       url: settings.mongoUrl(),
       file: function*() {
-        throw new Error('Filename error');
+        throw new Error('File error');
       }
     });
 
@@ -116,27 +116,31 @@ describe('error handling', function () {
         .end((err, res) => {
           expect(res.serverError).to.equal(true);
           expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: Filename error/);
+          expect(res.error.text).to.match(/Error: File error/);
           done();
         });
     });
   });
 
-  it('should throw an error if the mongodb connection fails', function () {
+  it('should throw an error if the mongodb connection fails', function (done) {
     connectRef = mongo.MongoClient.connect;
     const err = new Error();
+    const connectionSpy = sinon.spy();
 
-    mongo.MongoClient.connect = function (url, cb) {
+    mongo.MongoClient.connect = function (url, options, cb) {
       cb(err);
     };
 
-    const errFn = function () {
-      storage = GridFsStorage({
-        url: settings.mongoUrl()
-      });
-    };
+    storage = GridFsStorage({
+      url: settings.mongoUrl()
+    });
 
-    expect(errFn).to.throw(err);
+    storage.once('connectionFailed', connectionSpy);
+
+    setTimeout(() => {
+      expect(connectionSpy).to.be.calledOnce;
+      done();
+    });
   });
 
   after(() => {

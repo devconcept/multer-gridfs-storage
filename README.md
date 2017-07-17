@@ -239,6 +239,7 @@ $ npm coverage
 [downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 
 [url-option]: #url
+[options-options]: #options
 [db-option]: #db
 [file-option]: #file
 [mongodb-option]: #mongodb

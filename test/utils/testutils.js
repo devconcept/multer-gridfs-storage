@@ -5,10 +5,8 @@ const util = require('util');
 const path = require('path');
 
 function getNodeVersion() {
-  const [, maj, min] = /^v(\d+)\.(\d+)\./.exec(process.version);
-  const major = parseInt(maj, 10);
-  const minor = parseInt(min, 10);
-  return { major, minor };
+  const [major, minor, patch] = process.versions.node.split('.').map(Number);
+  return { major, minor, patch };
 }
 
 const version = getNodeVersion();
