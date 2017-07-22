@@ -3,7 +3,6 @@
  * Breaking change: Removed gridfs-stream dependency
  * Breaking change: Removed all old file configuration options
  * Feature: Simplified api by adding a new option `file` to control file configuration
- * Feature: Added reconnection feature
  * Feature: Added delayed file storage after successful connection instead of failing with an error
 
 # 1.2.2

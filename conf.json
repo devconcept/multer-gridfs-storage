@@ -9,7 +9,8 @@
   "source": {
     "include": [
       "index.js",
-      "lib/gridfs.js"
+      "lib/gridfs.js",
+      "lib/utils.js"
     ],
     "includePattern": ".+\\.js(doc|x)?$",
     "excludePattern": "(^|\\/|\\\\)_"

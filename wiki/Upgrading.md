@@ -21,7 +21,7 @@ to learn a new api to deal with GridFs and use the new and improved GridFSBucket
 class.
 
 The `grid` property of uploaded files was removed and all it's properties were
-merged with the file object. This removes the need for deep property lookups to
+merged with the file object. This removes the need for deep property lookup to
 access file information.
 
 Logging configurations were removed in an effort to make the api as simple as
