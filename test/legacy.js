@@ -30,7 +30,7 @@ describe('Backwards compatibility', function () {
     });
   });
 
-  describe('Using gridfs-stream to store files', function () {
+  describe('Using GridStore streams to save files', function () {
     before((done) => {
       db = MongoClient.connect(setting.mongoUrl());
       storage = new GridFsStorage({db});
@@ -92,7 +92,83 @@ describe('Backwards compatibility', function () {
 
   });
 
-  describe('Using gridfs-stream to delete files', function () {
+  describe('Changing file configuration', function () {
+    before((done) => {
+      let counter = 0;
+      const data = ['foo', 'bar'];
+      const sizes = [102400, 204800];
+      const names = ['plants', 'animals'];
+      storage = new GridFsStorage({
+        url: setting.mongoUrl(),
+        file: function () {
+          counter++;
+          return {
+            filename: 'file' + counter,
+            metadata: data[counter - 1],
+            id: counter,
+            chunkSize: sizes[counter - 1],
+            bucketName: names[counter - 1]
+          };
+        }
+      });
+
+      const upload = multer({storage});
+
+      app.post('/config', upload.array('photos', 2), (req, res) => {
+        result = {headers: req.headers, files: req.files, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/config')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end(done);
+      });
+    });
+
+    it('should the request contain the two uploaded files', function () {
+      expect(result.files).to.be.an('array');
+      expect(result.files).to.have.length(2);
+    });
+
+    it('should be named with the yielded value', function () {
+      expect(result.files[0].filename).to.equal('file1');
+      expect(result.files[1].filename).to.equal('file2');
+    });
+
+    it('should contain a metadata object with the yielded object', function () {
+      expect(result.files[0].metadata).to.equal('foo');
+      expect(result.files[1].metadata).to.equal('bar');
+    });
+
+    it('should be stored with the yielded chunkSize value', function () {
+      expect(result.files[0].chunkSize).to.equal(102400);
+      expect(result.files[1].chunkSize).to.equal(204800);
+    });
+
+    it('should change the id with the yielded value', function () {
+      expect(result.files[0].id).to.equal(1);
+      expect(result.files[1].id).to.equal(2);
+    });
+
+    it('should be stored under in a collection with the yielded value', function (done) {
+      const db = storage.db;
+      db.collection('plants.files', {strict: true}, function (err) {
+        expect(err).to.be.equal(null);
+        db.collection('animals.files', {strict: true}, function (err) {
+          expect(err).to.be.equal(null);
+          done();
+        });
+      });
+    });
+
+    after(() => cleanDb(storage));
+
+  });
+
+  describe('Using GridStore to delete files', function () {
     let error;
 
     before((done) => {
@@ -130,53 +206,6 @@ describe('Backwards compatibility', function () {
 
     after(() => cleanDb(storage));
 
-  });
-
-  describe('Crypto module in old node versions', function () {
-    let result, ref;
-
-    before((done) => {
-      ref = __.isOldNode;
-
-      __.isOldNode = function () {
-        return true;
-      };
-
-      storage = GridFsStorage({
-        url: settings.mongoUrl()
-      });
-
-      const upload = multer({storage});
-
-      app.post('/pseudorandombytes', upload.array('photo', 2), (req, res) => {
-        result = {headers: req.headers, files: req.files, body: req.body};
-        res.end();
-      });
-
-      storage.on('connection', () => {
-        request(app)
-          .post('/pseudorandombytes')
-          .attach('photo', files[0])
-          .attach('photo', files[1])
-          .end(done);
-      });
-    });
-
-    it('should store the files on upload', function () {
-      expect(result.files).to.be.an('array');
-      expect(result.files).to.have.length(2);
-    });
-
-    it('should have each stored file the same MD5 signature than the uploaded file', function () {
-      result.files.forEach((file, index) => {
-        expect(file.md5).to.be.equal(md5File(files[index]));
-      });
-    });
-
-    after(() => {
-      __.isOldNode = ref;
-      return cleanDb(storage);
-    });
   });
 
   after(() => {

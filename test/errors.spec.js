@@ -170,7 +170,7 @@ describe('Error handling', function () {
       before((done) => {
         const promise = mongo.MongoClient.connect(settings.mongoUrl())
           .then((db) => {
-            setTimeout(() => {
+            process.nextTick(() => {
               db.close();
             });
             return db;
