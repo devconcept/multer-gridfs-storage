@@ -3,6 +3,7 @@
 const GridFsStorage = require('../index');
 
 const multer = require('multer');
+const crypto = require('crypto');
 const chai = require('chai');
 const expect = chai.expect;
 const request = require('supertest');
@@ -12,48 +13,86 @@ const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const {files, cleanDb, version} = require('./utils/testutils');
 const mute = require('mute');
+const Promise = global.Promise || require('es6-promise');
 
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
 describe('Error handling', function () {
-  let storage, app, unmute, connectRef, removeRef;
+  let storage, app, unmute, connectRef, randomBytesRef;
 
   before(() => {
+    // TODO: Remove
     unmute = mute(process.stderr);
     app = express();
   });
 
-  it('should fail gracefully if an error is thrown inside the configuration function', function (done) {
-    storage = GridFsStorage({
-      url: settings.mongoUrl(),
-      file: () => {
-        throw new Error('Error thrown');
+  describe('Catching errors', function () {
+
+    it('should fail gracefully if an error is thrown inside the configuration function', function (done) {
+      let error;
+      storage = GridFsStorage({
+        url: settings.mongoUrl(),
+        file: () => {
+          throw new Error('Error thrown');
+        }
+      });
+
+      const upload = multer({storage});
+
+      app.post('/fail', upload.single('photo'), (err, req, res, next) => {
+        error = err;
+        next();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/fail')
+          .attach('photo', files[0])
+          .end(() => {
+            expect(error).to.be.an('error');
+            expect(error.message).to.equal('Error thrown');
+            done();
+          });
+      });
+    });
+
+    it('should fail gracefully if an error is thrown inside a generator function', function (done) {
+      let error;
+      if (version.major < 6) {
+        this.skip();
       }
-    });
 
-    const upload = multer({storage});
+      storage = GridFsStorage({
+        url: settings.mongoUrl(),
+        file: function*() {
+          throw new Error('File error');
+        }
+      });
 
-    app.post('/fail', upload.single('photo'), (req, res) => {
-      res.send({headers: req.headers, files: req.files, body: req.body});
-    });
+      const upload = multer({storage});
 
-    storage.on('connection', () => {
-      request(app)
-        .post('/fail')
-        .attach('photo', files[0])
-        .end((err, res) => {
-          expect(res.serverError).to.equal(true);
-          expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: Error thrown/);
-          done();
-        });
+      app.post('/failgen', upload.single('photo'), (err, req, res, next) => {
+        error = err;
+        next();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/failgen')
+          .attach('photo', files[0])
+          .end(() => {
+            expect(error).to.be.an('error');
+            expect(error.message).to.equal('File error');
+            done();
+          });
+      });
     });
   });
 
   it('should emit an error event when the file streaming fails', function (done) {
-    let db, fs;
+    let db, fs, error;
     const errorSpy = sinon.spy();
 
     MongoClient
@@ -67,8 +106,9 @@ describe('Error handling', function () {
 
         const upload = multer({storage});
 
-        app.post('/emit', upload.array('photos', 2), (req, res) => {
-          res.send({headers: req.headers, files: req.files, body: req.body});
+        app.post('/emit', upload.array('photos', 2), (err, req, res, next) => {
+          error = err;
+          next();
         });
 
         storage.on('streamError', errorSpy);
@@ -78,76 +118,170 @@ describe('Error handling', function () {
           // Send the same file twice so the checksum is the same
           .attach('photos', files[0])
           .attach('photos', files[0])
-          .end((err, body) => {
-            expect(body.status).to.equal(500);
+          .end(() => {
             expect(errorSpy).to.be.calledOnce;
+            expect(error).to.be.an.instanceOf(Error);
             const call = errorSpy.getCall(0);
-            expect(call.args[0]).to.be.an.instanceof(Error);
+            expect(call.args[0]).to.be.an.instanceOf(Error);
             expect(call.args[1]).to.have.all.keys('chunkSize', 'contentType', 'filename', 'metadata', 'bucketName', 'id');
             done();
           });
-
       });
 
+
+    after(() => cleanDb(storage));
   });
 
-  it('should fail gracefully if an error is thrown inside a generator function', function (done) {
-    if (version.major < 6) {
-      this.skip();
-    }
+  describe('MongoDb connection', function () {
 
-    storage = GridFsStorage({
-      url: settings.mongoUrl(),
-      file: function*() {
-        throw new Error('File error');
-      }
-    });
+    describe('Connection function fails to connect', function () {
+      let err;
 
-    const upload = multer({storage});
+      before(() => {
+        connectRef = mongo.MongoClient.connect;
+        err = new Error();
 
-    app.post('/failgen', upload.single('photo'), (req, res) => {
-      res.send({headers: req.headers, files: req.files, body: req.body});
-    });
+        mongo.MongoClient.connect = function (url, options, cb) {
+          cb(err);
+        };
+      });
 
-    storage.on('connection', () => {
-      request(app)
-        .post('/failgen')
-        .attach('photo', files[0])
-        .end((err, res) => {
-          expect(res.serverError).to.equal(true);
-          expect(res.error).to.be.an('error');
-          expect(res.error.text).to.match(/Error: File error/);
+      it('should throw an error if the mongodb connection fails', function (done) {
+        const connectionSpy = sinon.spy();
+
+        storage = GridFsStorage({
+          url: settings.mongoUrl()
+        });
+
+        storage.once('connectionFailed', connectionSpy);
+
+        setTimeout(() => {
+          expect(connectionSpy).to.be.calledOnce;
           done();
         });
+      });
+
+      after(() => mongo.MongoClient.connect = connectRef);
+    });
+
+    describe('Connection is not opened', function () {
+      let error;
+
+      before((done) => {
+        const promise = mongo.MongoClient.connect(settings.mongoUrl())
+          .then((db) => {
+            setTimeout(() => {
+              db.close();
+            });
+            return db;
+          });
+
+        storage = GridFsStorage({
+          db: promise
+        });
+        const upload = multer({storage});
+
+        app.post('/close', upload.array('photos', 2), (err, req, res, next) => {
+          error = err;
+          next();
+        });
+
+        request(app)
+          .post('/close')
+          .attach('photos', files[0])
+          .attach('photos', files[0])
+          .end(done);
+      });
+
+      it('should throw an error if database connection is not opened', function () {
+        expect(error).to.be.an('error');
+        expect(error.message).to.equal('The database connection must be open to store files');
+      });
+    });
+
+    describe('Connection promise fails to connect', function () {
+      let error, errorSpy = sinon.spy();
+
+      before((done) => {
+        error = new Error('Failed promise');
+
+        const promise = mongo.MongoClient.connect(settings.mongoUrl())
+          .then(() => {
+            return Promise.reject(error);
+          });
+
+        storage = GridFsStorage({
+          db: promise
+        });
+
+        storage.on('connectionFailed', errorSpy);
+
+        const upload = multer({storage});
+
+        app.post('/close', upload.array('photos', 2), (err, req, res, next) => {
+          error = err;
+          next();
+        });
+
+        request(app)
+          .post('/close')
+          .attach('photos', files[0])
+          .attach('photos', files[0])
+          .end(done);
+      });
+
+      it('should emit an error if the connection fails to open', function () {
+        expect(errorSpy).to.be.calledOnce;
+      });
+
+      it('should set the database instance to null', function () {
+        expect(storage.db).to.equal(null);
+      });
     });
   });
 
-  it('should throw an error if the mongodb connection fails', function (done) {
-    connectRef = mongo.MongoClient.connect;
-    const err = new Error();
-    const connectionSpy = sinon.spy();
+  describe('Crypto module', function () {
+    let error, generatedError;
 
-    mongo.MongoClient.connect = function (url, options, cb) {
-      cb(err);
-    };
+    before(() => {
+      randomBytesRef = crypto.randomBytes;
+      generatedError = new Error('Random bytes error');
 
-    storage = GridFsStorage({
-      url: settings.mongoUrl()
+      crypto.randomBytes = function (size, cb) {
+        if (cb) {
+          return cb(generatedError);
+        }
+        throw generatedError;
+      };
     });
 
-    storage.once('connectionFailed', connectionSpy);
+    it('should result in an error if the randomBytes function fails', function (done) {
+      storage = GridFsStorage({
+        url: settings.mongoUrl()
+      });
 
-    setTimeout(() => {
-      expect(connectionSpy).to.be.calledOnce;
-      done();
+      const upload = multer({storage});
+
+      app.post('/randombytes', upload.single('photo'), (err, req, res, next) => {
+        error = err;
+        next();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/randombytes')
+          .attach('photo', files[0])
+          .end(() => {
+            expect(error).to.equal(generatedError);
+            expect(error.message).to.equal('Random bytes error');
+            done();
+          });
+      });
     });
+
+    after(() => crypto.randomBytes = randomBytesRef);
   });
 
-  after(() => {
-    mongo.MongoClient.connect = connectRef;
-    unmute();
-    storage.remove = removeRef;
-    return cleanDb(storage);
-  });
+  after(() => unmute());
 
 });

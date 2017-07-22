@@ -12,7 +12,7 @@ const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const md5File = require('md5-file');
 const fs = require('fs');
-var Promise = global.Promise || require('es6-promise');
+const Promise = global.Promise || require('es6-promise');
 
 chai.use(require('chai-interface'));
 
@@ -98,7 +98,6 @@ describe('Storage', function () {
   });
 
   describe('db promise based instance', function () {
-    let db;
     before((done) => {
       const promised = MongoClient
         .connect(setting.mongoUrl());
@@ -112,9 +111,7 @@ describe('Storage', function () {
         res.end();
       });
 
-      storage.on('connection', (database) => {
-        db = database;
-
+      storage.on('connection', () => {
         request(app)
           .post('/promise')
           .attach('photos', files[0])
@@ -122,6 +119,19 @@ describe('Storage', function () {
           .end(done);
       });
     });
+
+    it('should store the files on upload', function () {
+      expect(result.files).to.be.an('array');
+      expect(result.files).to.have.length(2);
+    });
+
+    it('should have each stored file the same MD5 signature than the uploaded file', function () {
+      result.files.forEach((file, index) => {
+        expect(file.md5).to.be.equal(md5File(files[index]));
+      });
+    });
+
+    after(() => cleanDb(storage));
   });
 
   describe('handle incoming files while connecting', function () {
@@ -220,6 +230,74 @@ describe('Storage', function () {
 
     after(() => cleanDb(storage));
 
+  });
+
+  describe('file function usage', function () {
+    before((done) => {
+      let counter = 0;
+      storage = GridFsStorage({
+        url: setting.mongoUrl(),
+        file: function () {
+          counter++;
+          return {
+            filename: `name${counter}`
+          };
+        }
+      });
+      const upload = multer({storage});
+
+      app.post('/usage', upload.array('photo', 2), (req, res) => {
+        result = {headers: req.headers, files: req.files, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/usage')
+          .attach('photo', files[0])
+          .attach('photo', files[1])
+          .end(done);
+      });
+    });
+
+    it('should have a filename property', function () {
+      result.files.forEach((file) => {
+        expect(file).to.have.a.property('filename');
+        expect(file.filename).to.be.a('string');
+        expect(file.filename).to.match(/^name\d+$/);
+      });
+    });
+
+    it('should have a metadata property', function () {
+      result.files.forEach((file) => {
+        expect(file).to.have.a.property('metadata');
+        expect(file.metadata).to.equal(null);
+      });
+    });
+
+    it('should have a id property', function () {
+      result.files.forEach((file) => {
+        expect(file).to.have.a.property('id');
+        expect(file.id).to.match(/^[0-9a-f]{24}$/);
+      });
+    });
+
+    it('should have the default bucket name pointing to the fs collection', function () {
+      result.files.forEach((file) => {
+        expect(file).to.have.a.property('bucketName');
+        expect(file.bucketName).to.equal('fs');
+      });
+    });
+
+    it('should have the date of the upload', function () {
+      it('should have the default bucket name pointing to the fs collection', function () {
+        result.files.forEach((file) => {
+          expect(file).to.have.a.property('uploadDate');
+        });
+      });
+    });
+
+    after(() => cleanDb(storage));
   });
 
 });

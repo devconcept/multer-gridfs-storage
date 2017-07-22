@@ -54,9 +54,6 @@
     "sinon-chai": "^2.10.0",
     "supertest": "^1.2.0"
   },
-  "optionalDependencies": {
-    "gridfs-stream": "^1.1.1"
-  },
   "engines": {
     "node": ">= 0.10.0"
   },

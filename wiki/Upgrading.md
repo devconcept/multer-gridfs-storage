@@ -8,16 +8,11 @@ Unlike the previous versions callbacks are not supported in the new configuratio
 function, it is invoked with only the `req` and `file` parameters. If you need to 
 do some asynchronous work you have to return promises. 
 
-The dependency on `gridfs-stream` was changed to be an optional dependency.
-The reason for this is that the module is a nice wrapper around GridStore 
-but this feature has been deprecated since mongodb 2.2. If you still need an 
-older mongodb version for some reason you need to install the module manually using
-
-```bash
-npm install gridfs-stream
-```
-
-This module will use it and deal with the differences internally.
+The dependency on `gridfs-stream` was removed. The reason for this is that 
+the module is a nice wrapper around GridStore but this feature has been 
+deprecated since mongodb 2.2. If you still need an older mongodb version
+for some reason this is not a problem; this module will fall back to GridStore
+and deal with the differences internally.
 
 Another feature of using `gridfs-stream` was the ability to reuse the connection
 to the database. This is still possible but using the `db` object directly. This

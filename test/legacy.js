@@ -12,6 +12,8 @@ const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const md5File = require('md5-file');
 const fs = require('fs');
+const __ = require('../lib/utils');
+const settings = require('./utils/settings');
 
 chai.use(require('chai-interface'));
 
@@ -128,6 +130,53 @@ describe('Backwards compatibility', function () {
 
     after(() => cleanDb(storage));
 
+  });
+
+  describe('Crypto module in old node versions', function () {
+    let result, ref;
+
+    before((done) => {
+      ref = __.isOldNode;
+
+      __.isOldNode = function () {
+        return true;
+      };
+
+      storage = GridFsStorage({
+        url: settings.mongoUrl()
+      });
+
+      const upload = multer({storage});
+
+      app.post('/pseudorandombytes', upload.array('photo', 2), (req, res) => {
+        result = {headers: req.headers, files: req.files, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/pseudorandombytes')
+          .attach('photo', files[0])
+          .attach('photo', files[1])
+          .end(done);
+      });
+    });
+
+    it('should store the files on upload', function () {
+      expect(result.files).to.be.an('array');
+      expect(result.files).to.have.length(2);
+    });
+
+    it('should have each stored file the same MD5 signature than the uploaded file', function () {
+      result.files.forEach((file, index) => {
+        expect(file.md5).to.be.equal(md5File(files[index]));
+      });
+    });
+
+    after(() => {
+      __.isOldNode = ref;
+      return cleanDb(storage);
+    });
   });
 
   after(() => {
