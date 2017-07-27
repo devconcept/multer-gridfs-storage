@@ -12,18 +12,14 @@ const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const md5File = require('md5-file');
 const fs = require('fs');
-const __ = require('../lib/utils');
-const settings = require('./utils/settings');
 
 chai.use(require('chai-interface'));
 
 describe('Backwards compatibility', function () {
-  let result, app, storage, GridFSBucket, db, size;
+  let result, app, storage, db, size;
 
   before((done) => {
     app = express();
-    GridFSBucket = mongo.GridFSBucket;
-    mongo.GridFSBucket = undefined;
     fs.readFile(files[0], (err, f) => {
       size = f.length;
       done(err);
@@ -34,6 +30,7 @@ describe('Backwards compatibility', function () {
     before((done) => {
       db = MongoClient.connect(setting.mongoUrl());
       storage = new GridFsStorage({db});
+      storage._legacy = true;
 
       const upload = multer({storage});
 
@@ -98,6 +95,7 @@ describe('Backwards compatibility', function () {
       const data = ['foo', 'bar'];
       const sizes = [102400, 204800];
       const names = ['plants', 'animals'];
+      const contentTypes = ['text/plain', 'image/jpeg'];
       storage = new GridFsStorage({
         url: setting.mongoUrl(),
         file: function () {
@@ -107,10 +105,13 @@ describe('Backwards compatibility', function () {
             metadata: data[counter - 1],
             id: counter,
             chunkSize: sizes[counter - 1],
-            bucketName: names[counter - 1]
+            bucketName: names[counter - 1],
+            contentType: contentTypes[counter - 1]
           };
         }
       });
+      // Set to use GridStore
+      storage._legacy = true;
 
       const upload = multer({storage});
 
@@ -133,27 +134,27 @@ describe('Backwards compatibility', function () {
       expect(result.files).to.have.length(2);
     });
 
-    it('should be named with the yielded value', function () {
+    it('should be named with the provided value', function () {
       expect(result.files[0].filename).to.equal('file1');
       expect(result.files[1].filename).to.equal('file2');
     });
 
-    it('should contain a metadata object with the yielded object', function () {
+    it('should contain a metadata object with the provided object', function () {
       expect(result.files[0].metadata).to.equal('foo');
       expect(result.files[1].metadata).to.equal('bar');
     });
 
-    it('should be stored with the yielded chunkSize value', function () {
+    it('should be stored with the provided chunkSize value', function () {
       expect(result.files[0].chunkSize).to.equal(102400);
       expect(result.files[1].chunkSize).to.equal(204800);
     });
 
-    it('should change the id with the yielded value', function () {
+    it('should change the id with the provided value', function () {
       expect(result.files[0].id).to.equal(1);
       expect(result.files[1].id).to.equal(2);
     });
 
-    it('should be stored under in a collection with the yielded value', function (done) {
+    it('should be stored under in a collection with the provided value', function (done) {
       const db = storage.db;
       db.collection('plants.files', {strict: true}, function (err) {
         expect(err).to.be.equal(null);
@@ -162,6 +163,11 @@ describe('Backwards compatibility', function () {
           done();
         });
       });
+    });
+
+    it('should change the content type with the provided value', function () {
+      expect(result.files[0].contentType).to.equal('text/plain');
+      expect(result.files[1].contentType).to.equal('image/jpeg');
     });
 
     after(() => cleanDb(storage));
@@ -174,6 +180,7 @@ describe('Backwards compatibility', function () {
     before((done) => {
       db = MongoClient.connect(setting.mongoUrl());
       storage = new GridFsStorage({db});
+      storage._legacy = true;
 
       const upload = multer({storage});
 
@@ -205,11 +212,67 @@ describe('Backwards compatibility', function () {
     });
 
     after(() => cleanDb(storage));
-
   });
 
-  after(() => {
-    mongo.GridFSBucket = GridFSBucket;
-  });
+  describe('Missing properties in file naming function', function () {
+    const assignRef = Object.assign;
+    before((done) => {
+      Object.assign = undefined;
+      storage = GridFsStorage({
+        url: setting.mongoUrl(),
+        file: function () {
+          return {
+            metadata: {foo: 'bar'},
+            id: 1234
+          };
+        }
+      });
+      const upload = multer({storage});
 
+      app.post('/missinglegacy', upload.single('photo'), (req, res) => {
+        result = {headers: req.headers, file: req.file, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/missinglegacy')
+          .attach('photo', files[0])
+          .end(done);
+      });
+    });
+
+    it('should have a filename property', function () {
+      expect(result.file).to.have.a.property('filename');
+      expect(result.file.filename).to.be.a('string');
+      expect(result.file.filename).to.match(/^[0-9a-f]{32}$/);
+    });
+
+    it('should have a metadata property', function () {
+      expect(result.file).to.have.a.property('metadata');
+      expect(result.file.metadata).to.have.a.property('foo');
+      expect(result.file.metadata.foo).to.equal('bar');
+    });
+
+    it('should have a id property', function () {
+      expect(result.file).to.have.a.property('id');
+      expect(result.file.id).to.equal(1234);
+    });
+
+    it('should have the default bucket name pointing to the fs collection', function () {
+      expect(result.file).to.have.a.property('bucketName');
+      expect(result.file.bucketName).to.equal('fs');
+    });
+
+    it('should have the date of the upload', function () {
+      it('should have the default bucket name pointing to the fs collection', function () {
+        expect(result.file).to.have.a.property('uploadDate');
+      });
+    });
+
+    after(() => {
+      Object.assign = assignRef;
+      return cleanDb(storage);
+    });
+  });
 });

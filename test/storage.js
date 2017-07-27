@@ -235,65 +235,136 @@ describe('Storage', function () {
   describe('file function usage', function () {
     before((done) => {
       let counter = 0;
-      storage = GridFsStorage({
+      const data = ['foo', 'bar'];
+      const sizes = [102400, 204800];
+      const names = ['plants', 'animals'];
+      const contentTypes = ['text/plain', 'image/jpeg'];
+      storage = new GridFsStorage({
         url: setting.mongoUrl(),
         file: function () {
           counter++;
           return {
-            filename: `name${counter}`
+            filename: 'file' + counter,
+            metadata: data[counter - 1],
+            id: counter,
+            chunkSize: sizes[counter - 1],
+            bucketName: names[counter - 1],
+            contentType: contentTypes[counter - 1]
           };
         }
       });
+
       const upload = multer({storage});
 
-      app.post('/usage', upload.array('photo', 2), (req, res) => {
+      app.post('/config', upload.array('photos', 2), (req, res) => {
         result = {headers: req.headers, files: req.files, body: req.body};
         res.end();
       });
 
       storage.on('connection', () => {
         request(app)
-          .post('/usage')
+          .post('/config')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end(done);
+      });
+    });
+
+    it('should the request contain the two uploaded files', function () {
+      expect(result.files).to.be.an('array');
+      expect(result.files).to.have.length(2);
+    });
+
+    it('should be named with the provided value', function () {
+      expect(result.files[0].filename).to.equal('file1');
+      expect(result.files[1].filename).to.equal('file2');
+    });
+
+    it('should contain a metadata object with the provided object', function () {
+      expect(result.files[0].metadata).to.equal('foo');
+      expect(result.files[1].metadata).to.equal('bar');
+    });
+
+    it('should be stored with the provided chunkSize value', function () {
+      expect(result.files[0].chunkSize).to.equal(102400);
+      expect(result.files[1].chunkSize).to.equal(204800);
+    });
+
+    it('should change the id with the provided value', function () {
+      expect(result.files[0].id).to.equal(1);
+      expect(result.files[1].id).to.equal(2);
+    });
+
+    it('should be stored under in a collection with the provided value', function (done) {
+      const db = storage.db;
+      db.collection('plants.files', {strict: true}, function (err) {
+        expect(err).to.be.equal(null);
+        db.collection('animals.files', {strict: true}, function (err) {
+          expect(err).to.be.equal(null);
+          done();
+        });
+      });
+    });
+
+    it('should change the content type with the provided value', function () {
+      expect(result.files[0].contentType).to.equal('text/plain');
+      expect(result.files[1].contentType).to.equal('image/jpeg');
+    });
+
+    after(() => cleanDb(storage));
+  });
+
+  describe('Missing properties in file naming function', function () {
+    before((done) => {
+      storage = GridFsStorage({
+        url: setting.mongoUrl(),
+        file: function () {
+          return {
+            metadata: {foo: 'bar'},
+            id: 1234
+          };
+        }
+      });
+      const upload = multer({storage});
+
+      app.post('/missing', upload.single('photo'), (req, res) => {
+        result = {headers: req.headers, file: req.file, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/missing')
           .attach('photo', files[0])
-          .attach('photo', files[1])
           .end(done);
       });
     });
 
     it('should have a filename property', function () {
-      result.files.forEach((file) => {
-        expect(file).to.have.a.property('filename');
-        expect(file.filename).to.be.a('string');
-        expect(file.filename).to.match(/^name\d+$/);
-      });
+      expect(result.file).to.have.a.property('filename');
+      expect(result.file.filename).to.be.a('string');
+      expect(result.file.filename).to.match(/^[0-9a-f]{32}$/);
     });
 
     it('should have a metadata property', function () {
-      result.files.forEach((file) => {
-        expect(file).to.have.a.property('metadata');
-        expect(file.metadata).to.equal(null);
-      });
+      expect(result.file).to.have.a.property('metadata');
+      expect(result.file.metadata).to.have.a.property('foo');
+      expect(result.file.metadata.foo).to.equal('bar');
     });
 
     it('should have a id property', function () {
-      result.files.forEach((file) => {
-        expect(file).to.have.a.property('id');
-        expect(file.id).to.match(/^[0-9a-f]{24}$/);
-      });
+      expect(result.file).to.have.a.property('id');
+      expect(result.file.id).to.equal(1234);
     });
 
     it('should have the default bucket name pointing to the fs collection', function () {
-      result.files.forEach((file) => {
-        expect(file).to.have.a.property('bucketName');
-        expect(file.bucketName).to.equal('fs');
-      });
+      expect(result.file).to.have.a.property('bucketName');
+      expect(result.file.bucketName).to.equal('fs');
     });
 
     it('should have the date of the upload', function () {
       it('should have the default bucket name pointing to the fs collection', function () {
-        result.files.forEach((file) => {
-          expect(file).to.have.a.property('uploadDate');
-        });
+        expect(result.file).to.have.a.property('uploadDate');
       });
     });
 

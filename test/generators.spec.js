@@ -26,13 +26,15 @@ describe('ES6 generators', function () {
           const data = ['foo', 'bar'];
           const sizes = [102400, 204800];
           const names = ['plants', 'animals'];
+          const contentTypes = ['text/plain', 'image/jpeg'];
           for (; ;) {
             yield {
               filename: 'file' + (counter + 1),
               metadata: data[counter],
               id: counter + 1,
               chunkSize: sizes[counter],
-              bucketName: names[counter]
+              bucketName: names[counter],
+              contentType: contentTypes[counter]
             };
             counter++;
           }
@@ -110,6 +112,11 @@ describe('ES6 generators', function () {
           done();
         });
       });
+    });
+
+    it('should change the content type with the provided value', function () {
+      expect(result.files[0].contentType).to.equal('text/plain');
+      expect(result.files[1].contentType).to.equal('image/jpeg');
     });
 
     after(() => cleanDb(storage));

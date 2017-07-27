@@ -1,7 +1,6 @@
 'use strict';
 
 const Promise = require('bluebird');
-const util = require('util');
 const path = require('path');
 
 function getNodeVersion() {
