@@ -9,8 +9,6 @@
     "cover": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "docs": "jsdoc -c ./conf.json --readme ./README.md",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
-    "preversion": "eslint .",
-    "pretest": "eslint ."
   },
   "keywords": [
     "multer",
