@@ -37,6 +37,9 @@ describe('Backwards compatibility', function () {
       app.post('/store', upload.single('photos'), (req, res) => {
         result = {headers: req.headers, file: req.file, body: req.body};
         res.end();
+      }, (err, req,res, next) => {
+        console.log(err);
+        next();
       });
 
       storage.on('connection', () => {

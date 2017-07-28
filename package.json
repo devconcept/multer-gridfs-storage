@@ -7,8 +7,10 @@
     "test": "mocha --require babel-register --require babel-polyfill",
     "lint": "eslint .",
     "cover": "istanbul cover ./node_modules/mocha/bin/_mocha",
-    "docs": "./node_modules/.bin/jsdoc -c ./conf.json --readme ./README.md",
-    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
+    "docs": "jsdoc -c ./conf.json --readme ./README.md",
+    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "preversion": "eslint .",
+    "pretest": "eslint ."
   },
   "keywords": [
     "multer",
