@@ -12,7 +12,7 @@ const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const md5File = require('md5-file');
 const fs = require('fs');
-const Promise = global.Promise || require('es6-promise');
+const Promise = require('bluebird');
 
 chai.use(require('chai-interface'));
 
