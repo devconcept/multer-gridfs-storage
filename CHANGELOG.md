@@ -3,9 +3,16 @@
  * Breaking change: Removed gridfs-stream dependency
  * Breaking change: Removed all old file configuration options
  * Breaking change: Removed logging functions
- * Breaking change: The grid property in the file object was removed and its properties merged directly with the object
+ * Breaking change: The grid property in the file object was removed and its properties merged directly with the file object
  * Feature: Simplified api by adding a new option `file` to control file configuration
  * Feature: Added delayed file storage after successful connection instead of failing with an error
+
+# 1.3.0
+
+  * Fix: Renamed 'error' event to 'streamError' to prevent a bug where the
+  the user does not set any listener for that event and emitting it causes the
+  program to crash.
+
 
 # 1.2.2
 

@@ -84,48 +84,50 @@ describe('Error handling', function () {
           });
       });
     });
-  });
 
-  it('should emit an error event when the file streaming fails', function (done) {
-    this.slow(500);
-    let db, fs, error;
-    const errorSpy = sinon.spy();
+    it('should emit an error event when the file streaming fails', function (done) {
+      this.slow(500);
+      let db, fs, error;
+      const errorSpy = sinon.spy();
+      const deprecated = sinon.spy();
 
-    MongoClient
-      .connect(settings.mongoUrl())
-      .then((_db) => db = _db)
-      .then(() => fs = db.collection('fs.files'))
-      .then(() => fs.createIndex('md5', {unique: true}))
-      .then(() => {
+      MongoClient
+        .connect(settings.mongoUrl())
+        .then((_db) => db = _db)
+        .then(() => fs = db.collection('fs.files'))
+        .then(() => fs.createIndex('md5', {unique: true}))
+        .then(() => {
 
-        storage = GridFsStorage({url: settings.mongoUrl()});
+          storage = GridFsStorage({url: settings.mongoUrl()});
 
-        const upload = multer({storage});
+          const upload = multer({storage});
 
-        app.post('/emit', upload.array('photos', 2), (err, req, res, next) => {
-          error = err;
-          next();
+          app.post('/emit', upload.array('photos', 2), (err, req, res, next) => {
+            error = err;
+            next();
+          });
+
+          storage.on('error', deprecated);
+          storage.on('streamError', errorSpy);
+
+          request(app)
+            .post('/emit')
+            // Send the same file twice so the checksum is the same
+            .attach('photos', files[0])
+            .attach('photos', files[0])
+            .end(() => {
+              expect(errorSpy).to.be.calledOnce;
+              expect(deprecated).not.to.be.called;
+              const call = errorSpy.getCall(0);
+              expect(call.args[0]).to.be.an.instanceOf(Error);
+              expect(call.args[1]).to.have.all.keys('chunkSize', 'contentType', 'filename', 'metadata', 'bucketName', 'id');
+              done();
+            });
         });
 
-        storage.on('streamError', errorSpy);
 
-        request(app)
-          .post('/emit')
-          // Send the same file twice so the checksum is the same
-          .attach('photos', files[0])
-          .attach('photos', files[0])
-          .end(() => {
-            expect(errorSpy).to.be.calledOnce;
-            expect(error).to.be.an.instanceOf(Error);
-            const call = errorSpy.getCall(0);
-            expect(call.args[0]).to.be.an.instanceOf(Error);
-            expect(call.args[1]).to.have.all.keys('chunkSize', 'contentType', 'filename', 'metadata', 'bucketName', 'id');
-            done();
-          });
-      });
-
-
-    after(() => cleanDb(storage));
+      after(() => cleanDb(storage));
+    });
   });
 
   describe('MongoDb connection', function () {

@@ -194,13 +194,13 @@ This event is triggered at most once.
 
 #### Event: `'connectionFailed'`
 
-This event is emitted the connection to MongoDb fails.
+This event is emitted when the connection could not be opened.
 
-*Event arguments*
+ - err: The connection error
 
- - err: The error that occurred trying to connect
+This event only triggers at most once. 
 
-This event is triggered at most once.
+> Only one of the events `connection` or `connectionFailed ` will be emitted.
 
 #### Event: `'file'`
 
@@ -220,7 +220,6 @@ This event is emitted when there is an error streaming the file to the database.
  - error: The streaming error
  - conf: The failed file configuration
  
-
 > Note:
 
 > Previously this event was named `error` which seemed to be the most logical choice
