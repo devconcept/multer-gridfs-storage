@@ -110,7 +110,7 @@ This is useful to reuse an existing connection to create more storage objects.
 Example:
 
 ```javascript
-MongoClient.connect('url').then((database) => {
+MongoClient.connect('mongodb://yourhost:27017/database').then((database) => {
   storage = new GridFSStorage({ db: database });
 });
 ```
@@ -118,7 +118,7 @@ MongoClient.connect('url').then((database) => {
 or
 
 ```javascript
-const promise = MongoClient.connect('url');
+const promise = MongoClient.connect('mongodb://yourhost:27017/database');
 storage = new GridFSStorage({ db: promise });
 ```
 

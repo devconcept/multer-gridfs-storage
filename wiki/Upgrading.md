@@ -1,4 +1,4 @@
-The new version 2 brings some new features and a simplified api.
+The new version 2 brings some cool new features and a simplified api.
 
 All the previous file configuration functions like `identifier`, `metadata`,
 `filename`, `chunkSize` and `root` were removed in favor of a single function
@@ -6,7 +6,10 @@ named `file`.
 
 Unlike the previous versions callbacks are not supported in the new configuration 
 function, it is invoked with only the `req` and `file` parameters. If you need to 
-do some asynchronous work you have to return promises. 
+do some asynchronous work you have to return promises.
+
+It is now possible to start receiving files without waiting for the connection to open.
+This module will handle incoming files and store them as soon as is opened.
 
 The dependency on `gridfs-stream` was removed. The reason for this is that 
 the module is a nice wrapper around GridStore but this feature has been 
