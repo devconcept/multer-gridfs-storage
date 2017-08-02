@@ -87,7 +87,7 @@ describe('Error handling', function () {
 
     it('should emit an error event when the file streaming fails', function (done) {
       this.slow(500);
-      let db, fs, error;
+      let db, fs;
       const errorSpy = sinon.spy();
       const deprecated = sinon.spy();
 
@@ -103,7 +103,6 @@ describe('Error handling', function () {
           const upload = multer({storage});
 
           app.post('/emit', upload.array('photos', 2), (err, req, res, next) => {
-            error = err;
             next();
           });
 
