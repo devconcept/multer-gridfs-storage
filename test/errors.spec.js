@@ -61,7 +61,7 @@ describe('Error handling', function () {
 
       storage = GridFsStorage({
         url: settings.mongoUrl(),
-        file: function*() {
+        file: function*() { // eslint-disable-line require-yield
           throw new Error('File error');
         }
       });

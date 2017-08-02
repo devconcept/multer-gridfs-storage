@@ -60,7 +60,7 @@ describe('ES6 generators', function () {
     it('should the request contain the two uploaded files', function () {
       // on mocha < 3 using before hook doesn't work so every test should be skipped individually
       // this pending tests should be removed when polyfills are supported
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
