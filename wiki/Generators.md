@@ -56,8 +56,7 @@ const storage = new GridFSStorage({
 });
 ```
 
-Generators are only supported on Node versions > 6 and polyfills are not supported
-by this module.
+Generators are only supported on Node versions >= 4 and polyfills are not supported.
 
 [file-option]: https://github.com/devconcept/multer-gridfs-storage#file
 [gen]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"

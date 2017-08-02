@@ -18,7 +18,7 @@ import * as GridFSStorage from 'multer-gridfs-storage';
 ```
 
 ```typescript
-let gfsCtr = new GridFSStorage({ ... });
+let storage = new GridFSStorage({ ... });
 ```
  
 It also exports two interfaces that can be used for the options object 
@@ -38,7 +38,7 @@ The `UrlStorageOptions` interface requires a `url` property expecting a `string`
 ```typescript
 let opts: GridFSStorage.UrlStorageOptions;
 opts = {
-  url: 'mongodb://address'
+  url: 'mongodb://yourhost:27017/database'
 };
 ```
 

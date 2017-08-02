@@ -180,7 +180,7 @@ promise to resolve or reject to produce a value
 
 Q: I tried to use a generator function but got an error. What happened?
 
-A: You must have node version 6 or greater to use them. You also need 
+A: You must have node version 4 or greater to use them. You also need 
 version 1.2.0 or greater of this module. Currently polyfills are not supported.
 
 [gen]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"
