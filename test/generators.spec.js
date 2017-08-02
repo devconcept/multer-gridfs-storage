@@ -69,7 +69,7 @@ describe('ES6 generators', function () {
     });
 
     it('should be named with the yielded value', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -78,7 +78,7 @@ describe('ES6 generators', function () {
     });
 
     it('should contain a metadata object with the yielded object', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -87,7 +87,7 @@ describe('ES6 generators', function () {
     });
 
     it('should be stored with the yielded chunkSize value', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -101,7 +101,7 @@ describe('ES6 generators', function () {
     });
 
     it('should be stored under in a collection with the yielded value', function (done) {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
       const db = storage.db;
@@ -166,7 +166,7 @@ describe('ES6 generators', function () {
     });
 
     it('should the parameters be a request and a file objects', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -220,7 +220,7 @@ describe('ES6 generators', function () {
     });
 
     it('should the request contain the two uploaded files', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -229,7 +229,7 @@ describe('ES6 generators', function () {
     });
 
     it('should be named with the yielded value', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -238,7 +238,7 @@ describe('ES6 generators', function () {
     });
 
     it('should contain a metadata object with the yielded object', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -247,7 +247,7 @@ describe('ES6 generators', function () {
     });
 
     it('should be stored with the yielded chunkSize value', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -256,7 +256,7 @@ describe('ES6 generators', function () {
     });
 
     it('should change the id with the yielded value', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -265,7 +265,7 @@ describe('ES6 generators', function () {
     });
 
     it('should be stored under in a collection with the yielded value', function (done) {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -311,7 +311,7 @@ describe('ES6 generators', function () {
     });
 
     it('should be a failed request', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -320,7 +320,7 @@ describe('ES6 generators', function () {
     });
 
     it('should not upload any file', function (done) {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -332,7 +332,7 @@ describe('ES6 generators', function () {
     });
 
     it('should throw an error about the ended generator', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -371,7 +371,7 @@ describe('ES6 generators', function () {
     });
 
     it('should be a failed request', function () {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 
@@ -380,7 +380,7 @@ describe('ES6 generators', function () {
     });
 
     it('should not upload any file', function (done) {
-      if (version.major < 6) {
+      if (version.major < 4) {
         return this.skip();
       }
 

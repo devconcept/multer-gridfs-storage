@@ -55,7 +55,7 @@ describe('Error handling', function () {
 
     it('should fail gracefully if an error is thrown inside a generator function', function (done) {
       let error;
-      if (version.major < 6) {
+      if (version.major < 4) {
         this.skip();
       }
 
