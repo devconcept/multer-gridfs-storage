@@ -252,7 +252,7 @@ $ npm install
 $ npm test
 ```
 
-Tests are written with [mocha](https://mochajs.org/) and [chai](http://chaijs.com/). You can also run the tests with:
+Tests are written with [mocha](https://mochajs.org/) and [chai](http://chaijs.com/).
 
 Code coverage thanks to [istanbul](https://github.com/gotwarlost/istanbul)
 

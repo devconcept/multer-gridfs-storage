@@ -26,6 +26,7 @@ describe('Error handling', function () {
   describe('Catching errors', function () {
 
     it('should fail gracefully if an error is thrown inside the configuration function', function (done) {
+      this.slow(200);
       let error;
       storage = GridFsStorage({
         url: settings.mongoUrl(),
@@ -232,11 +233,12 @@ describe('Error handling', function () {
           // Connection is always asynchronous and the connectionFailed event is emitted after all the attempts fail
           setTimeout(() => {
             cb(err);
-          });
+          }, 100);
         };
       });
 
       it('should throw an error if the mongodb connection fails', function (done) {
+        this.slow(300);
         const connectionSpy = sinon.spy();
 
         storage = GridFsStorage({
@@ -248,7 +250,7 @@ describe('Error handling', function () {
         setTimeout(() => {
           expect(connectionSpy).to.be.calledOnce;
           done();
-        });
+        }, 100);
       });
 
       after(() => mongo.MongoClient.connect = connectRef);
