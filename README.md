@@ -6,8 +6,7 @@
 
 This module is intended to be used with the v1.x branch of Multer.
 
-The new version 2 brings a simplified api and more features. If you still need the old version 
-you can switch to the v1.x branch.
+The new version 2 brings a simplified api and more features. If you still need the old version, you can switch to the v1.x branch.
 
 ## Installation
 
@@ -52,7 +51,7 @@ app.post('/cool-profile', fUpload, (req, res, next) => {
 
 ## API
 
-### module(options) : function
+### module(options): function
 
 The module returns a function that can be invoked with options to create a Multer storage engine.
 
@@ -70,7 +69,7 @@ Required if [`db`][db-option] option is not present
 
 The mongodb connection uri. 
 
-A string pointing to the database used to store the incoming files. This must be a standard mongodb [connection string](https://docs.mongodb.com/manual/reference/connection-string).
+A string pointing to the database used to store the incoming files. This must be a standard mongodb [connection string][connection-string].
 
 With this option the module will create a mongodb connection for you instead. 
 
@@ -90,16 +89,13 @@ Type: object
 
 Not required
 
-This setting allows you to customize how this module establishes the connection 
-if you are using the [`url`][url-option] option. 
+This setting allows you to customize how this module establishes the connection if you are using the [`url`][url-option] option. 
 
-You can set this to an object like is specified in the `MongoClient.connect` 
-documentation and change the default behaviour without having to create the 
-connection yourself using the [`db`][db-option] option.
+You can set this to an object like is specified in the [`MongoClient.connect`][mongoclient-connect] documentation and change the default behavior without having to create the connection yourself using the [`db`][db-option] option.
 
 #### db
 
-Type: `DB` or `Promise`
+Type: [`DB`][mongo-db] or `Promise`
 
 Required if [`url`][url-option] option is not present
 
@@ -128,16 +124,11 @@ Type: `function` or `function*`
 
 Not required
 
-A function to control the file storage in the database. Is invoked **per file** with
-the parameters `req` and `file`, in that order.
+A function to control the file storage in the database. Is invoked **per file** with the parameters `req` and `file`, in that order.
 
-By default, this module behaves exactly like the default Multer disk storage does.
-It generates a 16 bytes long name in hexadecimal format with no extension for the file
-to guarantee that there are very low probabilities of naming collisions. You can override this 
-by passing your own function.
+By default, this module behaves exactly like the default Multer disk storage does. It generates a 16 bytes long name in hexadecimal format with no extension for the file to guarantee that there are very low probabilities of naming collisions. You can override this by passing your own function.
 
-The return value of this function must be an object or a promise that resolves to an object
-(this also applies to generators) with the following properties. 
+The return value of this function must be an object or a promise that resolves to an object (this also applies to generators) with the following properties. 
 
 Property name | Description
 ------------- | -----------
@@ -152,8 +143,7 @@ Any missing properties will use the defaults.
 
 ### File information
 
-Each file in `req.file` and `req.files` contain the following properties in addition
-to the ones that Multer create by default. Most of them can be set using the [`file`][file-option] configuration.
+Each file in `req.file` and `req.files` contain the following properties in addition to the ones that Multer create by default. Most of them can be set using the [`file`][file-option] configuration.
 
 Key | Description
 --- | -----------
@@ -167,20 +157,17 @@ Key | Description
 `contentType` | Content type of the file in the database
 `uploadDate` | The timestamp when the file was uploaded
 
-To see all the other properties of the file object check the Multer's [documentation](https://github.com/expressjs/multer#file-information).
+To see all the other properties of the file object, check the Multer's [documentation](https://github.com/expressjs/multer#file-information).
 
 > Note: 
 
-> Do not confuse `contentType` with Multer's `mimetype`. The first is the value
-in the database while the later is the value in the request. 
+> Do not confuse `contentType` with Multer's `mimetype`. The first is the value in the database while the latter is the value in the request. 
 
-> You could choose to override the value at the moment of storing the file. In most
-cases both values should be equal. 
+> You could choose to override the value at the moment of storing the file. In most cases both values should be equal. 
 
 ### Events
 
-Each storage object is also a standard Node.js Event Emitter. This is 
-done to ensure that some internal events can also be handled in user code.
+Each storage object is also a standard Node.js Event Emitter. This is done to ensure that some internal events can also be handled in user code.
 
 #### Event: `'connection'`
 
@@ -222,19 +209,15 @@ This event is emitted when there is an error streaming the file to the database.
  
 > Note:
 
-> Previously this event was named `error` which seemed to be the most logical choice
-but unfortunately this introduces a problem: 
+> Previously this event was named `error` which seemed to be the most logical choice but unfortunately this introduces a problem: 
 
-> In node.js `error` events are special and crash the process if an error is emitted 
-and there is no `error` listener attached. You could choose to handle errors in an
-express middleware forcing you to set an empty `error` listener to avoid crashing.
+> In node.js `error` events are special and crash the process if an error is emitted and there is no `error` listener attached. You could choose to handle errors in an [express middleware][error-handling] forcing you to set an empty `error` listener to avoid crashing.
  
-> To simplify the issue this event was renamed to allow you to choose the best way to handle
-storage errors.
+> To simplify the issue this event was renamed to allow you to choose the best way to handle storage errors.
  
 #### Event: `'dbError'`
  
-This event is emitted when there underlying connection emits an error.
+This event is emitted when the underlying connection emits an error.
  
  > Only available when the storage is created with the [`url`][url-option] option.
  
@@ -270,6 +253,11 @@ $ npm coverage
 [coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
 [version-image]:https://img.shields.io/npm/v/multer-gridfs-storage.svg "Npm version"
 [downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
+
+[connection-string]: https://docs.mongodb.com/manual/reference/connection-string
+[mongoclient-connect]: https://mongodb.github.io/node-mongodb-native/api-generated/mongoclient.html
+[mongo-db]: https://mongodb.github.io/node-mongodb-native/api-generated/db.html
+[error-handling]: https://github.com/expressjs/multer#error-handling 
 
 [url-option]: #url
 [connectionOpts-option]: #connectionOpts

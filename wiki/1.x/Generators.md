@@ -2,12 +2,9 @@
 
 > This information only applies to the version 1.x of this module which has been deprecated.
 
-Generator functions are a new ES6 feature that allows you to write functions
-that can be exited and later re-entered. This can sometimes reduce the amount
-of code required to accomplish certain tasks.
+Generator functions are a new ES6 feature that allows you to write functions that can be exited and later re-entered. This can sometimes reduce the amount of code required to accomplish certain tasks.
 
-Do not confuse the term *generator function* with *generator*. They are not the same.
-A generator function when invoked will return a generator which in turn can be
+Do not confuse the term *generator function* with *generator*. They are not the same. A generator function when invoked will return a generator which in turn can be
 used to produce values.
 
 You can read more about this in MDN:
@@ -19,6 +16,7 @@ You can read more about this in MDN:
 ## Usage
 
 This module accepts a generator function in all of the [configuration options][configuration-options].
+
 Experienced javascript users can take advantage of it to produce cleaner code.
 
 The syntax is the same for all.
@@ -40,16 +38,12 @@ const storage = new GridFSStorage({
 var upload = multer({ storage: storage });
 ```
 
-Notice the asterisk (*) after the `function` keyword. This is how you define 
-a generator function. The previous example will run until it founds the `yield` keyword
+Notice the asterisk (*) after the `function` keyword. This is how you define a generator function. The previous example will run until it founds the `yield` keyword
 and will return the following expression, pretty much like a `return` statement will.
 
-The main difference is that the next time the module calls the generator it will continue
-its execution right after the `yield`. In a normal function it would start at
-the beginning of the function body.
+The main difference is that the next time the module calls the generator it will continue its execution right after the `yield`. In a normal function it would start at the beginning of the function body.
 
-This allows the function to "remember" all its variables and values (it's execution context)
-exactly as they were before `yield` was called.
+This allows the function to "remember" all its variables and values (it's execution context) exactly as they were before `yield` was called.
 
 The output of the previous example will be
 
@@ -60,11 +54,9 @@ name3
 ....
 ```
 
-If you try to write code to generate such values using standard functions, you will probably 
-need help from global variables or similar workarounds.
+If you try to write code to generate such values using standard functions, you will probably need help from global variables or similar workarounds.
 
-Generators can be *finite* or *infinite*; that means they can produce some values until they reach certain
-condition or they will continue to produce values as long as they are called.
+Generators can be *finite* or *infinite*; that means they can produce some values until they reach certain condition or they will continue to produce values as long as they are called.
 
 > It is very important that you **only** write infinite generators. 
 
@@ -84,16 +76,11 @@ filename: function* () {
 ```
 
 
-A: This is how you write an infinite generator function. This code will exit the function 
-as soon as it reaches the `yield` statement. You can also write `for(;;) {}` 
-or any other loop statement. As long as the `yield` is inside the loop and 
-this continues to iterate indefinitely everything will be fine.
+A: This is how you write an infinite generator function. This code will exit the function as soon as it reaches the `yield` statement. You can also write `for(;;) {}` or any other loop statement. As long as the `yield` is inside the loop and this continues to iterate indefinitely everything will be fine.
 
 Q: I need the `request` and the `file` objects. How can I get those? 
 
-A: Generators work a little different than normal functions. The first time
-the generator is called you can access the values as the parameters like
-you normally would.
+A: Generators work a little different than normal functions. The first time the generator is called you can access the values as the parameters like you normally would.
 
 ```javascript
 filename: function* (req, file) {
@@ -101,8 +88,7 @@ filename: function* (req, file) {
 }
 ```
 
-Remember that the execution resumes in the `yield` statement so the next value
-can be obtained as the result of the call
+Remember that the execution resumes in the `yield` statement so the next value can be obtained as the result of the call
 
 ```javascript
 filename: function* () {
@@ -114,8 +100,7 @@ Here `result` is an **array** with the `req` and `file` objects in the 0 and 1 i
 
 Q: Why the result is an array? An object wouldn't be better?
 
-A: Because you are using ES6 features you can also use [destructuring][destructuring] to assign 
-those values producing cleaner code
+A: Because you are using ES6 features you can also use [destructuring][destructuring] to assign those values producing cleaner code
 
 Compare
 
@@ -156,13 +141,11 @@ A: All subsequent uploads will fail with an error.
 
 Q: Can I call `return` inside the generator?
 
-A: Don't do that. This will finish the generator with the value returned.
-If you want to skip to the next iteration you can `yield` again.
+A: Don't do that. This will finish the generator with the value returned. If you want to skip to the next iteration you can `yield` again.
 
 Q: Why there is no callback with generators? What if I need to do some async?
 
-A: Generators by default are syncronous because `yield` cannot be written inside
-anything that is not a generator function. 
+A: Generators by default are syncronous because `yield` cannot be written inside anything that is not a generator function. 
 
 ```javascript
 // This fails with a Syntax Error: Unexpected strict mode reserved word
@@ -174,14 +157,11 @@ function* fail (cb) {
 }
 ```
 
-But the good news is that you can `yield` a [Promise][promise]
-and this will wait for the 
-promise to resolve or reject to produce a value
+But the good news is that you can `yield` a [Promise][promise] and this will wait for the promise to resolve or reject to produce a value
 
 Q: I tried to use a generator function but got an error. What happened?
 
-A: You must have node version 4 or greater to use them. You also need 
-version 1.2.0 or greater of this module. Currently polyfills are not supported.
+A: You must have node version 4 or greater to use them. You also need version 1.2.0 or greater of this module. Currently polyfills are not supported.
 
 [gen]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"
 [gen-fn]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator "Generator"

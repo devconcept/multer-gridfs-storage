@@ -9,9 +9,7 @@
 
 # 1.3.0
 
-  * Fix: Renamed 'error' event to 'streamError' to prevent a bug where the
-  the user does not set any listener for that event and emitting it causes the
-  program to crash.
+  * Fix: Renamed 'error' event to 'streamError' to prevent a bug where the the user does not set any listener for that event and emitting it causes the program to crash.
 
 
 # 1.2.2

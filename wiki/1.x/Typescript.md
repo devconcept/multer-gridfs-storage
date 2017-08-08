@@ -8,8 +8,7 @@ Typings for this module can be installed using npm
 $ npm install @types/multer-gridfs-storage --save
 ```
 
-When using typescript the module export a `class` definition 
-named `MulterGridfsStorage`.
+When using typescript the module export a `class` definition named `MulterGridfsStorage`.
 
 You can use `import` and write your own name for it
 
@@ -23,8 +22,7 @@ let storage = new GridFSStorage({ ... });
  
 It also exports two interfaces that can be used for the options object 
 
-The `GfsStorageOptions` interface requires a `gfs` property expecting a
-`Promise<Grid>` or a `Grid` object installable from `@types/gridfs-stream`.
+The `GfsStorageOptions` interface requires a `gfs` property expecting a `Promise<Grid>` or a `Grid` object installable from `@types/gridfs-stream`.
 
 ```typescript
 let opts: GridFSStorage.GfsStorageOptions;
