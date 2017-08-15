@@ -163,7 +163,7 @@ describe('error handling', function () {
   });
 
 
-  it('should emit an error event when the file streaming fails', function (done) {
+  it('should emit an error event when the file streaming fails using the deprecated error event', function (done) {
     let db, fs;
     const errorSpy = sinon.spy();
 
@@ -187,6 +187,46 @@ describe('error handling', function () {
 
         request(app)
           .post('/emit')
+          // Send the same file twice so the checksum is the same
+          .attach('photos', files[0])
+          .attach('photos', files[0])
+          .end((err, body) => {
+            expect(body.status).to.equal(500);
+            expect(errorSpy).to.be.calledOnce;
+            const call = errorSpy.getCall(0);
+            expect(call.args[0]).to.be.an.instanceof(Error);
+            expect(call.args[1]).to.have.all.keys('chunkSize', 'content_type', 'filename', 'metadata', 'root');
+            done();
+          });
+
+      });
+
+  });
+
+  it('should emit an error event when the file streaming fails using the streamError event', function (done) {
+    let db, fs;
+    const errorSpy = sinon.spy();
+
+    MongoClient
+      .connect(settings.mongoUrl())
+      .then((_db) => db = _db)
+      .then(() => fs = db.collection('fs.files'))
+      .then(() => fs.createIndex('md5', {unique: true}))
+      .then(() => {
+
+        const gfs = new Grid(db, mongo);
+        storage = GridFsStorage({gfs});
+
+        const upload = multer({storage});
+
+        app.post('/streamError', upload.array('photos', 2), (req, res) => {
+          res.send({headers: req.headers, files: req.files, body: req.body});
+        });
+
+        storage.on('streamError', errorSpy);
+
+        request(app)
+          .post('/streamError')
           // Send the same file twice so the checksum is the same
           .attach('photos', files[0])
           .attach('photos', files[0])

@@ -20,13 +20,13 @@ chai.use(require('sinon-chai'));
 describe('module usage', function () {
   this.timeout(4000);
   let result, app, storage, spy, logSpy;
-  
+
   before(() => {
     spy = sinon.spy();
     logSpy = sinon.spy();
     app = express();
   });
-  
+
   describe('all configuration options', function () {
     const messages = [];
     before((done) => {
@@ -61,15 +61,15 @@ describe('module usage', function () {
         },
         logLevel: 'all'
       });
-      
+
       storage.on('file', spy);
-      
+
       const upload = multer({ storage });
-      
+
       app.post('/opts', upload.array('photos', 2), (req, res) => {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
-      
+
       storage.once('connection', () => {
         request(app)
           .post('/opts')
@@ -81,24 +81,24 @@ describe('module usage', function () {
             done();
           });
       });
-      
-      
+
+
     });
-    
+
     it('should use a 16 bytes hexadecimal name with an extension', function (done) {
       result.files.forEach((file) => {
         expect(file).to.have.property('filename').that.matches(/^[a-f0-9]{32}\.jpg$/);
       });
       done();
     });
-    
+
     it('should have a metadata property with the value {field: "field"}', function (done) {
       result.files.forEach((file) => {
         expect(file).to.have.property('metadata').that.is.eql({ field: 'field' });
       });
       done();
     });
-    
+
     it('should have a id property that matches an ObjectId format', function (done) {
       result.files.forEach((file) => {
         expect(file).to.have.property('id').that.is.a('string');
@@ -106,7 +106,7 @@ describe('module usage', function () {
       });
       done();
     });
-    
+
     it('should have a id property that matches an ObjectId format', function (done) {
       result.files.forEach((file) => {
         expect(file).to.have.property('id').that.is.a('string');
@@ -114,7 +114,7 @@ describe('module usage', function () {
       });
       done();
     });
-    
+
     it('should have a grid property with the stored file info', function (done) {
       result.files.forEach((file) => {
         expect(file).to.have.property('grid').that.have.interface({
@@ -129,48 +129,47 @@ describe('module usage', function () {
       });
       done();
     });
-    
+
     it('should have the same MD5 signature than the upload', function (done) {
       result.files.forEach((file, index) => {
         expect(file.grid.md5).to.be.equal(md5File(files[index]));
       });
       done();
     });
-    
+
     it('should emit the file event for every uploaded file', function () {
       expect(spy).to.be.have.callCount(2);
     });
-    
+
     it('should execute the log function 3 times', function () {
       expect(logSpy).to.have.callCount(3);
       expect(messages).to.have.lengthOf(3);
     });
-    
+
     it('should have a different chunkSize between 10000 and 30000', function (done) {
       result.files.forEach((file) => {
         expect(file.grid.chunkSize).to.be.within(10000, 30000);
       });
       done();
     });
-    
-    it('should be stored under a different root', function (done) {
+
+    it('should be stored under a different root', function () {
       const db = storage.gfs.db;
-      db.collections().then((collections) => {
+      return db.collections().then((collections) => {
         expect(collections).to.have.length(5);
         collections.forEach((col) => {
           expect(['system.indexes', 'myfiles.files', 'myfiles.chunks', 'otherfiles.files', 'otherfiles.chunks']).to.include(col.collectionName);
         });
-        done();
       });
     });
-    
+
     after(() => cleanDb(storage));
-    
+
   });
-  
+
   describe('fixed value configuration options', function () {
     let unmute;
-    
+
     before((done) => {
       unmute = mute();
       storage = GridFsStorage({
@@ -179,13 +178,13 @@ describe('module usage', function () {
         root: 'myfiles',
         log: true
       });
-      
+
       const upload = multer({ storage });
-      
+
       app.post('/fixed', upload.array('photos', 2), (req, res) => {
         res.send({ headers: req.headers, files: req.files, body: req.body });
       });
-      
+
       storage.once('connection', () => {
         request(app)
           .post('/fixed')
@@ -199,14 +198,14 @@ describe('module usage', function () {
           });
       });
     });
-    
+
     it('should have a different fixed chunkSize with the value 131072', function (done) {
       result.files.forEach((file) => {
         expect(file.grid.chunkSize).to.be.equal(131072);
       });
       done();
     });
-    
+
     it('should be stored under a different root with the value myfiles', function (done) {
       const db = storage.gfs.db;
       db.collection('myfiles.files', { strict: true }, (err) => {
@@ -223,11 +222,11 @@ describe('module usage', function () {
         });
       });
     });
-  
+
     after(() => cleanDb(storage));
-    
+
   });
-  
+
   describe('failed request', function () {
     let unmute;
     before((done) => {
@@ -235,13 +234,13 @@ describe('module usage', function () {
       storage = GridFsStorage({
         url: setting.mongoUrl()
       });
-      
+
       const upload = multer({ storage });
-      
+
       app.post('/fail', upload.array('photos', 1), (req, res) => {
         res.send({ headers: req.headers, file: req.file, body: req.body });
       });
-      
+
       storage.once('connection', () => {
         request(app)
           .post('/fail')
@@ -255,7 +254,7 @@ describe('module usage', function () {
           });
       });
     });
-    
+
     it('should fail with an error', function (done) {
       const gfs = storage.gfs;
       gfs.files.count({}, (err, count) => {
@@ -263,9 +262,9 @@ describe('module usage', function () {
         done(err);
       });
     });
-    
+
     after(() => cleanDb(storage));
-    
+
   });
-  
+
 });
