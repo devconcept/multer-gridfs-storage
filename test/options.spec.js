@@ -156,7 +156,7 @@ describe('module usage', function () {
     it('should be stored under a different root', function () {
       const db = storage.gfs.db;
       return db.collections().then((collections) => {
-        expect(collections).to.have.lengthOf.above(3);
+        expect(collections.length).to.be.above(3);
         collections.forEach((col) => {
           expect(['system.indexes', 'myfiles.files', 'myfiles.chunks', 'otherfiles.files', 'otherfiles.chunks']).to.include(col.collectionName);
         });
