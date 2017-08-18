@@ -29,18 +29,18 @@ var app = express()
 
 // Upload your files as usual
 var sUpload = upload.single('avatar');
-app.post('/profile', sUpload, function (req, res, next) { 
-    /*....*/ 
+app.post('/profile', sUpload, function (req, res, next) {
+    /*....*/
 })
 
 var arrUpload = upload.array('photos', 12);
 app.post('/photos/upload', arrUpload, function (req, res, next) {
-    /*....*/ 
+    /*....*/
 })
 
 var fUpload = upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'gallery', maxCount: 8 }])
 app.post('/cool-profile', fUpload, function (req, res, next) {
-    /*....*/ 
+    /*....*/
 })
 ```
 
@@ -50,10 +50,10 @@ app.post('/cool-profile', fUpload, function (req, res, next) {
 
 The module returns a function that can be invoked with options to create a Multer storage engine.
 
-Starting from version 1.1.0 the module function can be called with 
+Starting from version 1.1.0 the module function can be called with
 or without the javascript `new` operator.
 
-The 1.2 version brings full support for promises and ES6 generators. 
+The 1.2 version brings full support for promises and ES6 generators.
 You can check the [wiki][wiki] for more information.
 
 ### Options
@@ -66,11 +66,11 @@ Type: `string`
 
 Required if [`gfs`][gfs-option] option is not present
 
-The mongodb connection uri. 
+The mongodb connection uri.
 
 A string pointing to the database used to store the incoming files. This must be a standard mongodb [connection string](https://docs.mongodb.com/manual/reference/connection-string).
 
-With this option the module will create a GridFS stream instance for you instead. 
+With this option the module will create a GridFS stream instance for you instead.
 
 Note: If the [`gfs`][gfs-option] option is specified this setting is ignored.
 
@@ -150,7 +150,7 @@ functions.
 
 By default, this module behaves exactly like the default Multer disk storage does.
 It generates a 16 bytes long name in hexadecimal format with no extension for the file
-to guarantee that there are very low probabilities of naming collisions. You can override this 
+to guarantee that there are very low probabilities of naming collisions. You can override this
 by passing your own function.
 
 Example:
@@ -165,7 +165,7 @@ var storage = require('multer-gridfs-storage')({
 var upload = multer({ storage: storage });
 ```
 
-In this example the original filename and extension in the user's computer are used 
+In this example the original filename and extension in the user's computer are used
 to name each of the uploaded files. Please note that this will not guarantee that file
 names are unique and you might have files with duplicate names in your database.
 
@@ -184,7 +184,7 @@ var storage = require('multer-gridfs-storage')({
 var upload = multer({ storage: storage });
 ```
 
-To ensure that names are unique a random name is used and the file extension is preserved as well. 
+To ensure that names are unique a random name is used and the file extension is preserved as well.
 You could also use the user's file name plus a timestamp to generate unique names.
 
 #### identifier
@@ -193,11 +193,11 @@ Type: `function` or `function*`
 
 Not required
 
-A function to control the unique identifier of the file. 
+A function to control the unique identifier of the file.
 
-This function is invoked as all the others with the `req`, `file` and `callback` 
+This function is invoked as all the others with the `req`, `file` and `callback`
 parameters and can be used to change the default identifier ( the `_id` property)
-created by MongoDb. You must guarantee that this value is unique 
+created by MongoDb. You must guarantee that this value is unique
 otherwise you will get an error.
 
 Please note that the identifiers must conform to the MongoDb spec for ObjectID, that is, a 24 bytes hex string, 12 byte binary string or a Number.
@@ -217,7 +217,7 @@ var storage = require('multer-gridfs-storage')({
 var upload = multer({ storage: storage });
 ```
 
-In this example a random number is used for the file identifier. 
+In this example a random number is used for the file identifier.
 
 ***Note:***
 
@@ -230,10 +230,10 @@ Type: `function` or `function*`
 
 Not required
 
-A function to control the metadata object associated to the file. 
+A function to control the metadata object associated to the file.
 
 This function is called with the `req`, `file` and `callback` parameters and is used
-to store metadata with the file. 
+to store metadata with the file.
 
 By default, the stored metadata value for uploaded files is `null`.
 
@@ -249,8 +249,8 @@ var storage = require('multer-gridfs-storage')({
 var upload = multer({ storage: storage });
 ```
 
-In this example the contents of the request body are stored with the file. 
-This is only for illustrative purposes. If your users send passwords or other sensitive data in the request 
+In this example the contents of the request body are stored with the file.
+This is only for illustrative purposes. If your users send passwords or other sensitive data in the request
 those will be stored unencrypted in the database as well, inside the metadata of the file.
 
 #### chunkSize
@@ -259,9 +259,9 @@ Type: `number`, `function` or `function*`
 
 Not required
 
-The preferred size of file chunks in bytes. 
+The preferred size of file chunks in bytes.
 
-Default value is 261120 (255kb). 
+Default value is 261120 (255kb).
 
 You can use a fixed number as the value or a function to use different values per upload.
 
@@ -354,7 +354,7 @@ To see all the other properties of the file object check the Multer's [documenta
 
 ### Events
 
-Each storage object is also a standard Node.js Event Emitter. This is 
+Each storage object is also a standard Node.js Event Emitter. This is
 done to ensure that some internal events can also be handled in user code.
 
 #### Event: `'connection'`
@@ -365,42 +365,47 @@ This event is emitted when the MongoDb connection is opened.
 
 *Event arguments*
 
- - gfs: The newly created GridFS instance 
+ - gfs: The newly created GridFS instance
  - db: The native MongoDb database object.
 
 This event is only triggered once. Note that if you only want to log events there is an api option for that
 
 #### Event: `'file'`
 
-This event is emitted every time a new file is stored in the db. 
+This event is emitted every time a new file is stored in the db.
 
 *Event arguments*
 
- - file: The uploaded file 
+ - file: The uploaded file
 
+#### Event: `'streamError'`
+
+ This event is emitted when there is an error streaming the file to the database.
+
+ *Event arguments*
+
+  - error: The streaming error
+  - config: The failed upload configuration
 
 #### Event: `'error'`
 
-This event is emitted when there is an error streaming the file to the database.
+> Deprecated
 
-*Event arguments*
+This event is identical to the `streamError` but it has been deprecated and it will be removed in the next major version. You should avoid using it. The reason for this is that in Node `error` events are special and crash the process if an error is emitted and there is no `error` listener attached. You could choose to handle errors in an [express middleware][error-handling] forcing you to set an empty `error` listener to avoid crashing. To simplify the issue, this event was renamed to allow you to choose the best way to handle storage errors.
 
- - error: The streaming error
- - config: The failed upload configuration
- 
 #### Event: `'dbError'`
- 
+
 This event is emitted when there underlying connection emits an error.
- 
+
  > Only available when the storage is created with the [`url`][url-option] option.
- 
+
 *Event arguments*
- 
+
  - error: The error emitted by the database connection
 
 ## Debugging
 
-To make debugging easy you can use any of the logging options in the storage constructor. 
+To make debugging easy you can use any of the logging options in the storage constructor.
 
 ### log
 
@@ -416,7 +421,7 @@ By default, the module will not output anything. Set this option to `true` to lo
 files are stored or an error occurs. This is useful when you want to see logging about incoming files.
 
 If a function is provided it will be called in every log event with two arguments `err` y `log` with the error or
-the message respectively. 
+the message respectively.
 
 The `log` object contains two properties `message` and `extra` corresponding to the
 event that triggered the log and any additional info, e.g. the uploaded file
@@ -451,7 +456,7 @@ Default: `'file'`
 
 Possible values: `'all'` or `'file'`
 
-If set to `'all'` and the connection is established using the [`url`][url-option] option 
+If set to `'all'` and the connection is established using the [`url`][url-option] option
 some events are attached to the MongoDb connection to output to `stdout` and `stderr`
 when the connection is established and files are uploaded.
 
@@ -500,3 +505,4 @@ $ npm coverage
 [log-option]: #log
 [logLevel-option]: #loglevel
 [wiki]: https://github.com/devconcept/multer-gridfs-storage/wiki
+[error-handling]: https://github.com/expressjs/multer#error-handling
