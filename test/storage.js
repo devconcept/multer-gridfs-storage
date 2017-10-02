@@ -371,6 +371,116 @@ describe('Storage', function () {
     after(() => cleanDb(storage));
   });
 
+  describe('Using empty values as return values', function () {
+    before((done) => {
+      const values = [null, undefined, {}];
+      let counter = -1;
+
+      storage = GridFsStorage({
+        url: setting.mongoUrl(),
+        file: () => {
+          counter++;
+          return values[counter];
+        }
+      });
+      const upload = multer({storage});
+
+      app.post('/empty', upload.array('photo', 3), (req, res) => {
+        result = {headers: req.headers, files: req.files, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/empty')
+          .attach('photo', files[0])
+          .attach('photo', files[0])
+          .attach('photo', files[0])
+          .end(done);
+      });
+    });
+
+    it('should have the default filename', function () {
+      result.files.forEach((file) => {
+        expect(file.filename).to.match(/^[0-9a-f]{32}$/);
+      });
+    });
+
+    it('should have the default metadata', function () {
+      result.files.forEach((file) => {
+        expect(file.metadata).to.equal(null);
+      });
+    });
+
+    it('should have the default bucket name', function () {
+      result.files.forEach((file) => {
+        expect(file.bucketName).to.equal('fs');
+      });
+    });
+
+    it('should have the default chunkSize', function () {
+      result.files.forEach((file) => {
+        expect(file.chunkSize).to.equal(261120);
+      });
+    });
+
+    after(() => cleanDb(storage));
+  });
+
+  describe('Using strings or numbers as return values', function () {
+    before((done) => {
+      const values = ['name', 10];
+      let counter = -1;
+
+      storage = GridFsStorage({
+        url: setting.mongoUrl(),
+        file: () => {
+          counter++;
+          return values[counter];
+        }
+      });
+      const upload = multer({storage});
+
+      app.post('/values', upload.array('photo', 2), (req, res) => {
+        result = {headers: req.headers, files: req.files, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/values')
+          .attach('photo', files[0])
+          .attach('photo', files[0])
+          .end(done);
+      });
+    });
+
+    it('should have given filename', function () {
+      expect(result.files[0].filename).to.equal('name');
+      expect(result.files[1].filename).to.equal('10');
+    });
+
+    it('should have the default metadata', function () {
+      result.files.forEach((file) => {
+        expect(file.metadata).to.equal(null);
+      });
+    });
+
+    it('should have the default bucket name', function () {
+      result.files.forEach((file) => {
+        expect(file.bucketName).to.equal('fs');
+      });
+    });
+
+    it('should have the default chunkSize', function () {
+      result.files.forEach((file) => {
+        expect(file.chunkSize).to.equal(261120);
+      });
+    });
+
+    after(() => cleanDb(storage));
+  });
+
 });
 
 

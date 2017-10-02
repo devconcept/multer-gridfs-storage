@@ -128,7 +128,7 @@ A function to control the file storage in the database. Is invoked **per file** 
 
 By default, this module behaves exactly like the default Multer disk storage does. It generates a 16 bytes long name in hexadecimal format with no extension for the file to guarantee that there are very low probabilities of naming collisions. You can override this by passing your own function.
 
-The return value of this function must be an object or a promise that resolves to an object (this also applies to generators) with the following properties. 
+The return value of this function is an object or a promise that resolves to an object (this also applies to generators) with the following properties. 
 
 Property name | Description
 ------------- | -----------
@@ -140,6 +140,87 @@ Property name | Description
 `contentType` | The content type for the file (default: inferred from the request)
 
 Any missing properties will use the defaults.
+
+If you return `null` or `undefined` from the file function, the values for the current file will also be the defaults. This is useful when you want to conditionally change some files while leaving others untouched.
+
+This example will use the collection `'photos'` only for incoming files whose reported mime-type is `image/jpeg`, the others will be stored using default values.
+
+```javascript
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+  url: 'mongodb://host:27017/database',
+  file: (req, file) => {
+    if (file.mimetype === 'image/jpeg') {
+      return {
+        bucketName: 'photos'
+      };
+    } else {
+      return null;
+    }
+  }
+});
+const upload = multer({ storage });
+```
+
+This other example names every file something like `'file_1504287812377'`, using the date to change the number and to generate unique values
+
+```javascript
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+  url: 'mongodb://host:27017/database',
+  file: (req, file) => {
+    return {
+      filename: 'file_' + Date.now()
+    };
+  }
+});
+const upload = multer({ storage });
+```
+
+Is also possible to return values other than objects, like strings or numbers, in which case they will be used as the filename and the remaining properties will use the defaults. This is a simplified version of a previous example
+
+```javascript
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+  url: 'mongodb://host:27017/database',
+  file: (req, file) => {
+    // instead of an object a string is returned
+    return 'file_' + Date.now();
+  }
+});
+const upload = multer({ storage });
+```
+
+Internally the function `crypto.randomBytes` is used to generate names. In this example, files are named using the same format plus the extension as received from the client, also changing the collection where to store files to `uploads`
+
+```javascript
+const crypto = require('crypto');
+const path = require('path');
+const GridFsStorage = require('multer-gridfs-storage');
+
+var storage = new GridFsStorage({
+  url: 'mongodb://host:27017/database',
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(16, (err, buf) => {
+        if (err) {
+          return reject(err);
+        }
+        const filename = buf.toString('hex') + path.extname(file.originalname));
+        const fileInfo = {
+          filename: filename,
+          bucketName: 'uploads'
+        };
+        resolve(fileInfo);
+      });
+    });
+  }
+});
+const upload = multer({ storage });
+```
 
 ### File information
 

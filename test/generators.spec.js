@@ -339,9 +339,7 @@ describe('ES6 generators', function () {
       expect(error.message).to.match(/Generator ended unexpectedly/);
     });
 
-    after(() => {
-      return cleanDb(storage);
-    });
+    after(() => cleanDb(storage));
   });
 
   describe('rejected promise', function () {
@@ -391,9 +389,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    after(() => {
-      return cleanDb(storage);
-    });
+    after(() => cleanDb(storage));
   });
 
 });

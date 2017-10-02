@@ -23,6 +23,38 @@ describe('Error handling', function () {
 
   before(() => app = express());
 
+  describe('Using invalid types as file configurations', function () {
+    let error;
+    before((done) => {
+      storage = GridFsStorage({
+        url: settings.mongoUrl(),
+        file: () => {
+          return true;
+        }
+      });
+      const upload = multer({storage});
+
+      app.post('/types', upload.single('photo'), (err, req, res, next) => {
+        error = err;
+        next();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/types')
+          .attach('photo', files[0])
+          .end(done);
+      });
+    });
+
+    it('should have given filename', function () {
+      expect(error).to.be.an('error');
+      expect(error.message).to.equal('Invalid type for file settings, got boolean');
+    });
+
+    after(() => cleanDb(storage));
+  });
+
   describe('Catching errors', function () {
 
     it('should fail gracefully if an error is thrown inside the configuration function', function (done) {
@@ -62,7 +94,7 @@ describe('Error handling', function () {
 
       storage = GridFsStorage({
         url: settings.mongoUrl(),
-        file: function*() { // eslint-disable-line require-yield
+        file: function* () { // eslint-disable-line require-yield
           throw new Error('File error');
         }
       });
@@ -124,10 +156,9 @@ describe('Error handling', function () {
               done();
             });
         });
-
-
-      after(() => cleanDb(storage));
     });
+
+    after(() => cleanDb(storage));
   });
 
   describe('MongoDb connection', function () {

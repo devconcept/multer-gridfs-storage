@@ -1,3 +1,8 @@
+# 2.1.0
+
+ * Feature: Allowed strings, numbers and null values as file configuration
+ * Fix: Added examples to the readme
+
 # 2.0.0
 
  * Breaking change: Removed gridfs-stream dependency

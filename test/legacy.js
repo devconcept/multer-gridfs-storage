@@ -12,6 +12,7 @@ const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const md5File = require('md5-file');
 const fs = require('fs');
+const sinon = require('sinon');
 
 chai.use(require('chai-interface'));
 
@@ -37,7 +38,7 @@ describe('Backwards compatibility', function () {
       app.post('/store', upload.single('photos'), (req, res) => {
         result = {headers: req.headers, file: req.file, body: req.body};
         res.end();
-      }, (err, req,res, next) => {
+      }, (err, req, res, next) => {
         console.log(err);
         next();
       });
@@ -276,6 +277,104 @@ describe('Backwards compatibility', function () {
     after(() => {
       Object.assign = assignRef;
       return cleanDb(storage);
+    });
+  });
+
+  describe('GridStore open error', function () {
+    let sandbox;
+    const errorSpy = sinon.spy();
+    const fileSpy = sinon.spy();
+    const err = new Error();
+
+    before((done) => {
+      sandbox = sinon.sandbox.create();
+      sandbox.stub(mongo, 'GridStore').returns({
+        stream: sandbox.stub().returns({
+          on: sandbox.stub(),
+          gs: {
+            open: sandbox.stub().callsFake(cb => cb(err))
+          }
+        })
+      });
+      storage = GridFsStorage({url: setting.mongoUrl()});
+      storage._legacy = true;
+      storage.on('streamError', errorSpy);
+      storage.on('file', fileSpy);
+
+      const upload = multer({storage});
+
+      app.post('/storeopen', upload.single('photo'), (err, req, res, next) => { // eslint-disable-line no-unused-vars
+        res.end();
+      });
+
+      request(app)
+        .post('/storeopen')
+        .attach('photo', files[0])
+        .end(done);
+    });
+
+    it('should emit an error event when the store fails to open', function () {
+      expect(errorSpy).to.be.calledOnce;
+      expect(fileSpy).not.to.be.called;
+      const call = errorSpy.getCall(0);
+      expect(call.args[0]).to.equal(err);
+    });
+
+    after(() => {
+      sandbox.restore();
+      cleanDb(storage);
+    });
+  });
+
+  describe('GridStore close error', function () {
+    let sandbox, emitterStub;
+    const errorSpy = sinon.spy();
+    const fileSpy = sinon.spy();
+    const err = new Error();
+
+    before((done) => {
+      sandbox = sinon.sandbox.create();
+      emitterStub = sandbox.stub().callsFake((evt, cb) => {
+        if (evt === 'end') {
+          cb();
+        }
+      });
+      sandbox.stub(mongo, 'GridStore').returns({
+        stream: sandbox.stub().returns({
+          on: emitterStub,
+          gs: {
+            open: sandbox.stub().callsFake(cb => cb()),
+            close: sandbox.stub().callsFake(cb => cb(err))
+          }
+        })
+      });
+      storage = GridFsStorage({url: setting.mongoUrl()});
+      storage._legacy = true;
+      storage.on('streamError', errorSpy);
+      storage.on('file', fileSpy);
+
+      const upload = multer({storage});
+
+      app.post('/storeclose', upload.single('photo'), (err, req, res, next) => { // eslint-disable-line no-unused-vars
+        res.end();
+      });
+
+      request(app)
+        .post('/storeclose')
+        .attach('photo', files[0])
+        .end(done);
+    });
+
+    it('should emit an error event when the store fails to open', function () {
+      expect(errorSpy).to.be.calledOnce;
+      expect(fileSpy).not.to.be.called;
+      const call = errorSpy.getCall(0);
+      expect(call.args[0]).to.equal(err);
+    });
+
+    after(() => {
+      sandbox.restore();
+      cleanDb(storage);
     });
   });
 });
