@@ -7,7 +7,7 @@ const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
 const request = require('supertest');
 const multer = require('multer');
-const {version, files, cleanDb} = require('./utils/testutils');
+const {version, files, cleanStorage} = require('./utils/testutils');
 const Promise = require('bluebird');
 
 describe('ES6 generators', function () {
@@ -119,7 +119,7 @@ describe('ES6 generators', function () {
       expect(result.files[1].contentType).to.equal('image/jpeg');
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
 
   });
 
@@ -176,7 +176,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
 
   });
 
@@ -279,7 +279,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
   });
 
   describe('finite generators', function () {
@@ -339,7 +339,7 @@ describe('ES6 generators', function () {
       expect(error.message).to.match(/Generator ended unexpectedly/);
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
   });
 
   describe('rejected promise', function () {
@@ -363,7 +363,6 @@ describe('ES6 generators', function () {
         request(app)
           .post('/rejected')
           .attach('photos', files[0])
-          .attach('photos', files[1])
           .end(done);
       });
     });
@@ -389,7 +388,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
   });
 
 });

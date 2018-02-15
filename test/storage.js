@@ -5,7 +5,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
-const {files, cleanDb} = require('./utils/testutils');
+const { files, cleanStorage, getDb, getClient } = require('./utils/testutils');
 const request = require('supertest');
 const multer = require('multer');
 const mongo = require('mongodb');
@@ -23,12 +23,12 @@ describe('Storage', function () {
 
   describe('url created instance', function () {
     before((done) => {
-      storage = new GridFsStorage({url: setting.mongoUrl()});
+      storage = new GridFsStorage({ url: setting.mongoUrl() });
 
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/url', upload.array('photos', 2), (req, res) => {
-        result = {headers: req.headers, files: req.files, body: req.body};
+        result = { headers: req.headers, files: req.files, body: req.body };
         res.end();
       });
 
@@ -53,31 +53,32 @@ describe('Storage', function () {
       done();
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
 
   });
 
   describe('db created instance', function () {
-    before((done) => {
-      MongoClient.connect(setting.mongoUrl(), (err, database) => {
-        if (err) {
-          return done(err);
-        }
+    before(() => {
+      const promise = MongoClient.connect(setting.mongoUrl());
+      return promise.then(_db => {
+        const db = getDb(_db);
+        storage = GridFsStorage({ db });
+        storage.client = getClient(_db);
 
-        storage = GridFsStorage({db: database});
-
-        const upload = multer({storage});
+        const upload = multer({ storage });
 
         app.post('/db', upload.array('photos', 2), (req, res) => {
-          result = {headers: req.headers, files: req.files, body: req.body};
+          result = { headers: req.headers, files: req.files, body: req.body };
           res.end();
         });
 
-        request(app)
-          .post('/db')
-          .attach('photos', files[0])
-          .attach('photos', files[1])
-          .end(done);
+        return new Promise((resolve) => {
+          request(app)
+            .post('/db')
+            .attach('photos', files[0])
+            .attach('photos', files[1])
+            .end(() => resolve());
+        });
       });
     });
 
@@ -93,21 +94,27 @@ describe('Storage', function () {
       done();
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
 
   });
 
   describe('db promise based instance', function () {
+    let db, client;
     before((done) => {
-      const promised = MongoClient
-        .connect(setting.mongoUrl());
 
-      storage = GridFsStorage({db: promised});
-      const upload = multer({storage});
+      const promised = MongoClient
+        .connect(setting.mongoUrl()).then(_db => {
+          db = getDb(_db);
+          client = getClient(_db);
+          return db;
+        });
+
+      storage = GridFsStorage({ db: promised });
+      const upload = multer({ storage });
 
 
       app.post('/promise', upload.array('photos', 2), (req, res) => {
-        result = {headers: req.headers, files: req.files, body: req.body};
+        result = { headers: req.headers, files: req.files, body: req.body };
         res.end();
       });
 
@@ -131,24 +138,27 @@ describe('Storage', function () {
       });
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage, db, client));
   });
 
   describe('handle incoming files while connecting', function () {
+    let db, client;
     before((done) => {
       const promised = MongoClient
-        .connect(setting.mongoUrl()).then((db) => {
+        .connect(setting.mongoUrl()).then((_db) => {
+          db = getDb(_db);
+          client = getClient(_db);
           return new Promise((resolve) => {
-            setTimeout(() => resolve(db), 1000);
+            setTimeout(() => resolve(getDb(_db)), 1000);
           });
         });
 
-      storage = GridFsStorage({db: promised});
-      const upload = multer({storage});
+      storage = GridFsStorage({ db: promised });
+      const upload = multer({ storage });
 
 
       app.post('/incoming', upload.array('photos', 2), (req, res) => {
-        result = {headers: req.headers, files: req.files, body: req.body};
+        result = { headers: req.headers, files: req.files, body: req.body };
         res.end();
       });
 
@@ -170,18 +180,18 @@ describe('Storage', function () {
       });
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage, db, client));
 
   });
 
   describe('default uploaded file spec', function () {
     let size;
     before((done) => {
-      storage = GridFsStorage({url: setting.mongoUrl()});
-      const upload = multer({storage});
+      storage = GridFsStorage({ url: setting.mongoUrl() });
+      const upload = multer({ storage });
 
       app.post('/spec', upload.single('photo'), (req, res) => {
-        result = {headers: req.headers, file: req.file, body: req.body};
+        result = { headers: req.headers, file: req.file, body: req.body };
         res.end();
       });
 
@@ -228,7 +238,7 @@ describe('Storage', function () {
       expect(result.file).to.have.a.property('uploadDate');
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
 
   });
 
@@ -254,10 +264,10 @@ describe('Storage', function () {
         }
       });
 
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/config', upload.array('photos', 2), (req, res) => {
-        result = {headers: req.headers, files: req.files, body: req.body};
+        result = { headers: req.headers, files: req.files, body: req.body };
         res.end();
       });
 
@@ -297,9 +307,9 @@ describe('Storage', function () {
 
     it('should be stored under in a collection with the provided value', function (done) {
       const db = storage.db;
-      db.collection('plants.files', {strict: true}, function (err) {
+      db.collection('plants.files', { strict: true }, function (err) {
         expect(err).to.be.equal(null);
-        db.collection('animals.files', {strict: true}, function (err) {
+        db.collection('animals.files', { strict: true }, function (err) {
           expect(err).to.be.equal(null);
           done();
         });
@@ -311,7 +321,7 @@ describe('Storage', function () {
       expect(result.files[1].contentType).to.equal('image/jpeg');
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
   });
 
   describe('Missing properties in file naming function', function () {
@@ -320,15 +330,15 @@ describe('Storage', function () {
         url: setting.mongoUrl(),
         file: function () {
           return {
-            metadata: {foo: 'bar'},
+            metadata: { foo: 'bar' },
             id: 1234
           };
         }
       });
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/missing', upload.single('photo'), (req, res) => {
-        result = {headers: req.headers, file: req.file, body: req.body};
+        result = { headers: req.headers, file: req.file, body: req.body };
         res.end();
       });
 
@@ -368,7 +378,7 @@ describe('Storage', function () {
       });
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
   });
 
   describe('Using empty values as return values', function () {
@@ -383,10 +393,10 @@ describe('Storage', function () {
           return values[counter];
         }
       });
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/empty', upload.array('photo', 3), (req, res) => {
-        result = {headers: req.headers, files: req.files, body: req.body};
+        result = { headers: req.headers, files: req.files, body: req.body };
         res.end();
       });
 
@@ -424,7 +434,7 @@ describe('Storage', function () {
       });
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
   });
 
   describe('Using strings or numbers as return values', function () {
@@ -439,10 +449,10 @@ describe('Storage', function () {
           return values[counter];
         }
       });
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/values', upload.array('photo', 2), (req, res) => {
-        result = {headers: req.headers, files: req.files, body: req.body};
+        result = { headers: req.headers, files: req.files, body: req.body };
         res.end();
       });
 
@@ -478,7 +488,7 @@ describe('Storage', function () {
       });
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
   });
 
 });

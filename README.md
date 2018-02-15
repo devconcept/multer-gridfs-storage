@@ -6,7 +6,15 @@
 
 This module is intended to be used with the v1.x branch of Multer.
 
-The new version 2 brings a simplified api and more features. If you still need the old version, you can switch to the v1.x branch.
+## Features
+
+- Compatibility with MongoDb versions 2 and 3
+- Full Node.js support from versions 0.10 to 8
+- Promise support
+- Generator functions support
+- Really simple api
+- Automatic management of MongoDb connection or the possibility to reuse an existing one
+- Delayed file storage until the connection is available  
 
 ## Installation
 
@@ -83,6 +91,8 @@ const storage = require('multer-gridfs-storage')({
 });
 ```
 
+The connected database is available in the `storage.db` property. On mongodb version 3 the client instance is also available in the `storage.client` property.
+
 #### connectionOpts
 
 Type: object
@@ -106,15 +116,32 @@ This is useful to reuse an existing connection to create more storage objects.
 Example:
 
 ```javascript
-MongoClient.connect('mongodb://yourhost:27017/database').then((database) => {
+// mongodb v2 using a database instance
+MongoClient.connect('mongodb://yourhost:27017/database').then(database => {
   storage = new GridFSStorage({ db: database });
 });
 ```
 
-or
+```javascript
+// mongodb v2 using a promise
+const promise = MongoClient.connect('mongodb://yourhost:27017/database');
+storage = new GridFSStorage({ db: promise });
+```
 
 ```javascript
-const promise = MongoClient.connect('mongodb://yourhost:27017/database');
+// mongodb v3 using a database instance
+MongoClient.connect('mongodb://yourhost:27017').then(client => {
+  const database = client.db('database')
+  storage = new GridFSStorage({ db: database });
+});
+```
+
+```javascript
+// mongodb v3 using a promise
+const promise = MongoClient
+  .connect('mongodb://yourhost:27017')
+  .then(client => client.db('database'));
+  
 storage = new GridFSStorage({ db: promise });
 ```
 

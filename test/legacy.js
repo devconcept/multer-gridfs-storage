@@ -5,7 +5,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
-const {files, cleanDb} = require('./utils/testutils');
+const { files, cleanStorage, getDb, getClient } = require('./utils/testutils');
 const request = require('supertest');
 const multer = require('multer');
 const mongo = require('mongodb');
@@ -17,7 +17,7 @@ const sinon = require('sinon');
 chai.use(require('chai-interface'));
 
 describe('Backwards compatibility', function () {
-  let result, app, storage, db, size;
+  let result, app, storage, size;
 
   before((done) => {
     app = express();
@@ -29,14 +29,13 @@ describe('Backwards compatibility', function () {
 
   describe('Using GridStore streams to save files', function () {
     before((done) => {
-      db = MongoClient.connect(setting.mongoUrl());
-      storage = new GridFsStorage({db});
+      storage = new GridFsStorage({ url:  setting.mongoUrl()});
       storage._legacy = true;
 
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/store', upload.single('photos'), (req, res) => {
-        result = {headers: req.headers, file: req.file, body: req.body};
+        result = { headers: req.headers, file: req.file, body: req.body };
         res.end();
       }, (err, req, res, next) => {
         console.log(err);
@@ -49,6 +48,7 @@ describe('Backwards compatibility', function () {
           .attach('photos', files[0])
           .end(done);
       });
+
     });
 
     it('should store the files on upload', function () {
@@ -89,7 +89,7 @@ describe('Backwards compatibility', function () {
       expect(result.file).to.have.a.property('uploadDate');
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
 
   });
 
@@ -117,10 +117,10 @@ describe('Backwards compatibility', function () {
       // Set to use GridStore
       storage._legacy = true;
 
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/config', upload.array('photos', 2), (req, res) => {
-        result = {headers: req.headers, files: req.files, body: req.body};
+        result = { headers: req.headers, files: req.files, body: req.body };
         res.end();
       });
 
@@ -160,9 +160,9 @@ describe('Backwards compatibility', function () {
 
     it('should be stored under in a collection with the provided value', function (done) {
       const db = storage.db;
-      db.collection('plants.files', {strict: true}, function (err) {
+      db.collection('plants.files', { strict: true }, function (err) {
         expect(err).to.be.equal(null);
-        db.collection('animals.files', {strict: true}, function (err) {
+        db.collection('animals.files', { strict: true }, function (err) {
           expect(err).to.be.equal(null);
           done();
         });
@@ -174,32 +174,37 @@ describe('Backwards compatibility', function () {
       expect(result.files[1].contentType).to.equal('image/jpeg');
     });
 
-    after(() => cleanDb(storage));
+    after(() => cleanStorage(storage));
 
   });
 
   describe('Using GridStore to delete files', function () {
-    let error;
+    let error, db, client;
 
-    before((done) => {
-      db = MongoClient.connect(setting.mongoUrl());
-      storage = new GridFsStorage({db});
-      storage._legacy = true;
+    before(() => {
+      return MongoClient.connect(setting.mongoUrl()).then(_db => {
+        db = getDb(_db);
+        client = getClient(_db);
+        storage = new GridFsStorage({ db });
+        storage._legacy = true;
 
-      const upload = multer({storage});
+        const upload = multer({ storage });
 
-      app.post('/delete', upload.array('photos', 1), (err, req, res, next) => {
-        result = {headers: req.headers, body: req.body, files: req.files};
-        error = err;
-        next();
-      });
+        app.post('/delete', upload.array('photos', 1), (err, req, res, next) => {
+          result = { headers: req.headers, body: req.body, files: req.files };
+          error = err;
+          next();
+        });
 
-      storage.on('connection', () => {
-        request(app)
-          .post('/delete')
-          .attach('photos', files[0])
-          .attach('photos', files[1])
-          .end(done);
+        return new Promise((resolve) => {
+          storage.on('connection', () => {
+            request(app)
+              .post('/delete')
+              .attach('photos', files[0])
+              .attach('photos', files[1])
+              .end(() => resolve());
+          });
+        });
       });
     });
 
@@ -208,76 +213,12 @@ describe('Backwards compatibility', function () {
     });
 
     it('should not have any files stored in the database', function () {
-      return db
-        .then((database) => mongo.GridStore.list(database))
-        .then((files) => {
-          expect(files).to.have.lengthOf(0);
-        });
-    });
-
-    after(() => cleanDb(storage));
-  });
-
-  describe('Missing properties in file naming function', function () {
-    const assignRef = Object.assign;
-    before((done) => {
-      Object.assign = undefined;
-      storage = GridFsStorage({
-        url: setting.mongoUrl(),
-        file: function () {
-          return {
-            metadata: {foo: 'bar'},
-            id: 1234
-          };
-        }
-      });
-      const upload = multer({storage});
-
-      app.post('/missinglegacy', upload.single('photo'), (req, res) => {
-        result = {headers: req.headers, file: req.file, body: req.body};
-        res.end();
-      });
-
-      storage.on('connection', () => {
-        request(app)
-          .post('/missinglegacy')
-          .attach('photo', files[0])
-          .end(done);
+      mongo.GridStore.list(db).then((files) => {
+        expect(files).to.have.lengthOf(0);
       });
     });
 
-    it('should have a filename property', function () {
-      expect(result.file).to.have.a.property('filename');
-      expect(result.file.filename).to.be.a('string');
-      expect(result.file.filename).to.match(/^[0-9a-f]{32}$/);
-    });
-
-    it('should have a metadata property', function () {
-      expect(result.file).to.have.a.property('metadata');
-      expect(result.file.metadata).to.have.a.property('foo');
-      expect(result.file.metadata.foo).to.equal('bar');
-    });
-
-    it('should have a id property', function () {
-      expect(result.file).to.have.a.property('id');
-      expect(result.file.id).to.equal(1234);
-    });
-
-    it('should have the default bucket name pointing to the fs collection', function () {
-      expect(result.file).to.have.a.property('bucketName');
-      expect(result.file.bucketName).to.equal('fs');
-    });
-
-    it('should have the date of the upload', function () {
-      it('should have the default bucket name pointing to the fs collection', function () {
-        expect(result.file).to.have.a.property('uploadDate');
-      });
-    });
-
-    after(() => {
-      Object.assign = assignRef;
-      return cleanDb(storage);
-    });
+    after(() => cleanStorage(storage, db, client));
   });
 
   describe('GridStore open error', function () {
@@ -296,12 +237,12 @@ describe('Backwards compatibility', function () {
           }
         })
       });
-      storage = GridFsStorage({url: setting.mongoUrl()});
+      storage = GridFsStorage({ url: setting.mongoUrl() });
       storage._legacy = true;
       storage.on('streamError', errorSpy);
       storage.on('file', fileSpy);
 
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/storeopen', upload.single('photo'), (err, req, res, next) => { // eslint-disable-line no-unused-vars
         res.end();
@@ -322,7 +263,7 @@ describe('Backwards compatibility', function () {
 
     after(() => {
       sandbox.restore();
-      cleanDb(storage);
+      cleanStorage(storage);
     });
   });
 
@@ -348,12 +289,12 @@ describe('Backwards compatibility', function () {
           }
         })
       });
-      storage = GridFsStorage({url: setting.mongoUrl()});
+      storage = GridFsStorage({ url: setting.mongoUrl() });
       storage._legacy = true;
       storage.on('streamError', errorSpy);
       storage.on('file', fileSpy);
 
-      const upload = multer({storage});
+      const upload = multer({ storage });
 
       app.post('/storeclose', upload.single('photo'), (err, req, res, next) => { // eslint-disable-line no-unused-vars
         res.end();
@@ -374,7 +315,7 @@ describe('Backwards compatibility', function () {
 
     after(() => {
       sandbox.restore();
-      cleanDb(storage);
+      cleanStorage(storage);
     });
   });
 });
