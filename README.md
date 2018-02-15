@@ -91,7 +91,7 @@ const storage = require('multer-gridfs-storage')({
 });
 ```
 
-The connected database is available in the `storage.db` property. On mongodb version 3 the client instance is also available in the `storage.client` property.
+> Note: The connected database is available in the `storage.db` property. On mongodb v3 the client instance is also available in the `storage.client` property.
 
 #### connectionOpts
 

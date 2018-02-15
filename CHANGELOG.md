@@ -1,3 +1,8 @@
+# 3.0.0
+
+ * Feature: Added support for mongodb version 3 in url connection string
+ * Feature: Added `client` property to storage object
+
 # 2.1.0
 
  * Feature: Allowed strings, numbers and null values as file configuration
