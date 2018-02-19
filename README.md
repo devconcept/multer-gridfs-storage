@@ -345,6 +345,8 @@ $ npm test
 
 Tests are written with [mocha](https://mochajs.org/) and [chai](http://chaijs.com/).
 
+> Due to incompatibilities between node 0.x versions and the [mongodb-core](https://github.com/mongodb-js/mongodb-core) packages testing for those engine versions have been excluded. If you find a bug feel free to [report it](https://github.com/devconcept/multer-gridfs-storage/issues). 
+
 Code coverage thanks to [istanbul](https://github.com/gotwarlost/istanbul)
 
 ```bash
