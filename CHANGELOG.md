@@ -1,3 +1,7 @@
+# 3.0.1
+
+ * Fix: Changed mongodb dependency version from 3 to >=2
+
 # 3.0.0
 
  * Feature: Added support for mongodb version 3 in url connection string
