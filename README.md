@@ -8,13 +8,14 @@ This module is intended to be used with the v1.x branch of Multer.
 
 ## Features
 
-- Compatibility with MongoDb versions 2 and 3
-- Full Node.js support from versions 0.10 to 8
-- Promise support
-- Generator functions support
-- Really simple api
-- Automatic management of MongoDb connection or the possibility to reuse an existing one
-- Delayed file storage until the connection is available  
+- Compatibility with MongoDb versions 2 and 3.
+- Full Node.js support from versions 4 to 8.
+- Really simple api.
+- Caching of url based connections.
+- Promise support.
+- Generator functions support.
+- Support for existing and promise based database connections.
+- Delayed file storage until the connection is available.
 
 ## Installation
 
@@ -75,13 +76,11 @@ Type: `string`
 
 Required if [`db`][db-option] option is not present
 
-The mongodb connection uri. 
+An url pointing to the database used to store the incoming files.
+ 
+With this option the module will create a mongodb connection for you. It must be a standard mongodb [connection string][connection-string].
 
-A string pointing to the database used to store the incoming files. This must be a standard mongodb [connection string][connection-string].
-
-With this option the module will create a mongodb connection for you instead. 
-
-Note: If the [`db`][db-option] option is specified this setting is ignored.
+If the [`db`][db-option] option is specified this setting is ignored.
 
 Example:
 
@@ -91,7 +90,9 @@ const storage = require('multer-gridfs-storage')({
 });
 ```
 
-> Note: The connected database is available in the `storage.db` property. On mongodb v3 the client instance is also available in the `storage.client` property.
+> The connected database is available in the `storage.db` property.
+
+> On mongodb v3 the client instance is also available in the `storage.client` property.
 
 #### connectionOpts
 
@@ -102,6 +103,18 @@ Not required
 This setting allows you to customize how this module establishes the connection if you are using the [`url`][url-option] option. 
 
 You can set this to an object like is specified in the [`MongoClient.connect`][mongoclient-connect] documentation and change the default behavior without having to create the connection yourself using the [`db`][db-option] option.
+
+#### cache
+
+Type: `boolean` or `string`
+
+Not required
+
+Default value: `false`
+
+> This option only applies when you use an url string to connect to MongoDb. Caching is not enabled when you create instances with a [database][db-option] object directly.
+
+Store this connection in the internal cache. You can also use a string to use a named cache. By default caching is disabled. See [caching](#caching) to learn more about reusing connections.
 
 #### db
 
@@ -267,11 +280,91 @@ Key | Description
 
 To see all the other properties of the file object, check the Multer's [documentation](https://github.com/expressjs/multer#file-information).
 
-> Note: 
+> Do not confuse `contentType` with Multer's `mimetype`. The first is the value in the database while the latter is the value in the request. You could choose to override the value at the moment of storing the file. In most cases both values should be equal. 
 
-> Do not confuse `contentType` with Multer's `mimetype`. The first is the value in the database while the latter is the value in the request. 
+### Caching
 
-> You could choose to override the value at the moment of storing the file. In most cases both values should be equal. 
+You can enable caching by either using a boolean or a non empty string in the [cache][cache-option] option, then when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
+
+The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances one after the other and only one of them will try to open a connection. 
+
+This greatly simplifies managing instances in different files of your app. All you have to do now is to store a url string in a configuration file to share the same connection. Scaling your application with a load-balancer, for example, can lead to spawn a great number of database connection for each child process. With this feature no additional code is required to keep opened connections to the exact number you want without any additional effort.
+
+You can also create named caches by using a string instead of a boolean value. In those cases the module will uniquely identify the cache allowing for an arbitrary number of cached connections per url and giving you the ability to decide which connection to use and how many of them should be created. 
+
+The following code will create a new connection and store if under a cache named `'default'`.
+
+```javascript
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+    url: 'mongodb://yourhost:27017/database',
+    cache: true
+});
+```
+
+Other, more complex example, could be creating several files and only two connections to handle them.
+
+```javascript
+ // file 1
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+   url: 'mongodb://yourhost:27017/database',
+   cache: '1'
+});
+```
+ 
+```javascript
+// file 2
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+    url: 'mongodb://yourhost:27017/database',
+    cache: '1'
+});
+```
+
+```javascript
+ // file 3
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+   url: 'mongodb://yourhost:27017/database',
+   cache: '2'
+});
+```
+ 
+```javascript
+// file 4
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+    url: 'mongodb://yourhost:27017/database',
+    cache: '2'
+});
+```
+
+The files 1 and 2 will use the connection cached under the key `'1'` and the files 3 and 4 will use the cache named `'2'`. You don't have to worry for managing connections anymore. By setting a simple string value the module manages them for you automatically.
+
+Of course if you want to create more connections this is still possible. Caching is disabled by default so setting a `cache: false` or not setting any cache configuration at all will cause the module to ignore caching and create a new connection each time.
+
+```javascript
+const GridFsStorage = require('multer-gridfs-storage');
+
+// Both configurations are equivalent
+
+const storage1 = new GridFsStorage({
+    url: 'mongodb://yourhost:27017/database',
+    cache: false
+});
+
+const storage2 = new GridFsStorage({
+    url: 'mongodb://yourhost:27017/database',
+});
+```
+
+Using [connectionOpts][connectionOpts-option] has a particular side effect. The cache will spawn more connections only when they differ in **their values**. Objects provided here are not compared by reference but their values will. Falsey values like `null` and `undefined` are considered equal. This is required because various options lead to completely different connections, for example when using replicas or server configurations. Only options listed in the [connect method][mongoclient-connect] are considered. If there are any additional properties they are ignored.
 
 ### Events
 
@@ -345,8 +438,6 @@ $ npm test
 
 Tests are written with [mocha](https://mochajs.org/) and [chai](http://chaijs.com/).
 
-> Due to incompatibilities between node 0.x versions and the [mongodb-core](https://github.com/mongodb-js/mongodb-core) packages testing for those engine versions have been excluded. If you find a bug feel free to [report it](https://github.com/devconcept/multer-gridfs-storage/issues). 
-
 Code coverage thanks to [istanbul](https://github.com/gotwarlost/istanbul)
 
 ```bash
@@ -373,4 +464,5 @@ $ npm coverage
 [connectionOpts-option]: #connectionOpts
 [db-option]: #db
 [file-option]: #file
+[cache-option]: #cache
 [wiki]: https://github.com/devconcept/multer-gridfs-storage/wiki

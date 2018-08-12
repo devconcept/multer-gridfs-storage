@@ -1,3 +1,10 @@
+# 3.1.0
+
+ * Feature: Added connection caching
+ * Fix: Updated dependencies
+ * Fix: Moved multer to peer dependencies
+ * Fix: Moved es6-promise to optional dependencies
+
 # 3.0.1
 
  * Fix: Changed mongodb dependency version from 3 to >=2

@@ -11,28 +11,26 @@ const express = require('express');
 const settings = require('./utils/settings');
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
-const { files, cleanStorage, version, getDb, getClient } = require('./utils/testutils');
+const {files, cleanStorage, version, getDb, getClient} = require('./utils/testutils');
 const Promise = require('bluebird');
 
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-describe('Error handling', function () {
+describe('Error handling', () => {
   let storage, app;
 
   before(() => app = express());
 
-  describe('Using invalid types as file configurations', function () {
+  describe('Using invalid types as file configurations', () => {
     let error;
     before((done) => {
-      storage = GridFsStorage({
-        url: settings.mongoUrl(),
-        file: () => {
-          return true;
-        }
+      storage = new GridFsStorage({
+        url: settings.mongoUrl,
+        file: () => true,
       });
-      const upload = multer({ storage });
+      const upload = multer({storage});
 
       app.post('/types', upload.single('photo'), (err, req, res, next) => {
         error = err;
@@ -47,7 +45,7 @@ describe('Error handling', function () {
       });
     });
 
-    it('should have given filename', function () {
+    it('should have given filename', () => {
       expect(error).to.be.an('error');
       expect(error.message).to.equal('Invalid type for file settings, got boolean');
     });
@@ -55,20 +53,20 @@ describe('Error handling', function () {
     after(() => cleanStorage(storage));
   });
 
-  describe('Catching errors', function () {
+  describe('Catching errors', () => {
     let db, client;
 
     it('should fail gracefully if an error is thrown inside the configuration function', function (done) {
       this.slow(200);
       let error;
       storage = GridFsStorage({
-        url: settings.mongoUrl(),
+        url: settings.mongoUrl,
         file: () => {
           throw new Error('Error thrown');
-        }
+        },
       });
 
-      const upload = multer({ storage });
+      const upload = multer({storage});
 
       app.post('/fail', upload.single('photo'), (err, req, res, next) => {
         error = err;
@@ -94,13 +92,13 @@ describe('Error handling', function () {
       }
 
       storage = GridFsStorage({
-        url: settings.mongoUrl(),
+        url: settings.mongoUrl,
         file: function* () { // eslint-disable-line require-yield
           throw new Error('File error');
-        }
+        },
       });
 
-      const upload = multer({ storage });
+      const upload = multer({storage});
 
       app.post('/failgen', upload.single('photo'), (err, req, res, next) => {
         error = err;
@@ -124,17 +122,17 @@ describe('Error handling', function () {
       const errorSpy = sinon.spy();
       const deprecated = sinon.spy();
 
-      MongoClient.connect(settings.mongoUrl(), function (err, _db) {
+      MongoClient.connect(settings.mongoUrl, function (err, _db) {
         if (err) {
           done(err);
         }
         db = getDb(_db);
         client = getClient(_db);
         db.collection('fs.files')
-          .createIndex('md5', { unique: true })
+          .createIndex('md5', {unique: true})
           .then(() => {
-            storage = GridFsStorage({ db });
-            const upload = multer({ storage });
+            storage = GridFsStorage({db});
+            const upload = multer({storage});
 
             app.post('/emit', upload.array('photos', 2), (err, req, res, next) => {
               next();
@@ -164,17 +162,16 @@ describe('Error handling', function () {
     afterEach(() => cleanStorage(storage, db, client));
   });
 
-  describe('MongoDb connection', function () {
+  describe('MongoDb connection', () => {
 
-    describe('Connection promise fails to connect', function () {
-      this.slow(800);
+    describe('Connection promise fails to connect', () => {
       let error, db, client;
       const errorSpy = sinon.spy();
 
       before((done) => {
         error = new Error('Failed promise');
 
-        const promise = MongoClient.connect(settings.mongoUrl())
+        const promise = MongoClient.connect(settings.mongoUrl)
           .then(_db => {
             db = getDb(_db);
             client = getClient(_db);
@@ -189,12 +186,12 @@ describe('Error handling', function () {
           });
 
         storage = GridFsStorage({
-          db: promise
+          db: promise,
         });
 
         storage.on('connectionFailed', errorSpy);
 
-        const upload = multer({ storage });
+        const upload = multer({storage});
 
         app.post('/promiseconnection', upload.array('photos', 2), (err, req, res, next) => {
           error = err;
@@ -210,27 +207,30 @@ describe('Error handling', function () {
           });
       });
 
-      it('should emit an error if the connection fails to open', function () {
+      it('should emit an error if the connection fails to open', () => {
         expect(errorSpy).to.be.calledOnce;
       });
 
-      it('should emit the promise error', function () {
+      it('should emit the promise error', () => {
         const call = errorSpy.getCall(0);
         expect(call.args[0]).to.equal(error);
       });
 
-      it('should set the database instance to null', function () {
+      it('should set the database instance to null', () => {
         expect(storage.db).to.equal(null);
       });
 
-      after(() => cleanStorage(storage, db, client));
+      after(() => {
+        sinon.restore();
+        return cleanStorage(storage, db, client);
+      });
     });
 
-    describe('Connection is not opened', function () {
+    describe('Connection is not opened', () => {
       let error;
 
       before((done) => {
-        mongo.MongoClient.connect(settings.mongoUrl())
+        mongo.MongoClient.connect(settings.mongoUrl)
           .then((_db) => {
             const db = getDb(_db);
             const client = getClient(_db);
@@ -240,8 +240,8 @@ describe('Error handling', function () {
             return db.close().then(() => db);
           })
           .then(db => {
-            storage = GridFsStorage({ db });
-            const upload = multer({ storage });
+            storage = GridFsStorage({db});
+            const upload = multer({storage});
 
             app.post('/close', upload.array('photos', 2), (err, req, res, next) => {
               error = err;
@@ -257,74 +257,66 @@ describe('Error handling', function () {
           .catch(done);
       });
 
-      it('should throw an error if database connection is not opened', function () {
+      it('should throw an error if database connection is not opened', () => {
         expect(error).to.be.an('error');
         expect(error.message).to.equal('The database connection must be open to store files');
       });
     });
 
-    describe('Connection function fails to connect', function () {
-      this.slow(100);
-      let err, connectRef;
+    describe('Connection function fails to connect', () => {
+      const err = new Error();
+      let mongoSpy;
 
       before(() => {
-        connectRef = mongo.MongoClient.connect;
-        err = new Error();
-
-        mongo.MongoClient.connect = function (url, options, cb) {
-          // Connection is always asynchronous and the connectionFailed event is emitted after all the attempts fail
-          setTimeout(() => {
-            cb(err);
-          }, 100);
-        };
+        mongoSpy = sinon
+          .stub(MongoClient, 'connect')
+          .callsFake(function (url, options, cb) {
+            setTimeout(() => {
+              cb(err);
+            });
+          });
       });
 
       it('should throw an error if the mongodb connection fails', function (done) {
-        this.slow(300);
         const connectionSpy = sinon.spy();
 
         storage = GridFsStorage({
-          url: settings.mongoUrl()
+          url: settings.mongoUrl,
         });
 
         storage.once('connectionFailed', connectionSpy);
 
         setTimeout(() => {
-          expect(connectionSpy).to.be.calledOnce;
+          expect(connectionSpy).to.have.been.calledOnce;
+          expect(mongoSpy).to.have.been.calledOnce;
           done();
-        }, 100);
+        }, 50);
       });
 
-      after(() => mongo.MongoClient.connect = connectRef);
+      after(() => sinon.restore());
     });
 
   });
 
-  describe('Crypto module', function () {
-    let error, generatedError, randomBytesRef;
+  describe('Crypto module', () => {
+    let error, randomBytesSpy;
+    const generatedError = new Error('Random bytes error');
 
     before((done) => {
-      randomBytesRef = version.major === 0 ? crypto.pseudoRandomBytes : crypto.randomBytes;
-      generatedError = new Error('Random bytes error');
-
-      function random(size, cb) {
-        if (cb) {
-          return cb(generatedError);
-        }
-        throw generatedError;
-      }
-
-      if (version.major === 0) {
-        crypto.pseudoRandomBytes = random;
-      } else {
-        crypto.randomBytes = random;
-      }
+      randomBytesSpy = sinon
+        .stub(crypto, version.major === 0 ? 'pseudoRandomBytes' : 'randomBytes')
+        .callsFake(function random(size, cb) {
+          if (cb) {
+            return cb(generatedError);
+          }
+          throw generatedError;
+        });
 
       storage = GridFsStorage({
-        url: settings.mongoUrl()
+        url: settings.mongoUrl,
       });
 
-      const upload = multer({ storage });
+      const upload = multer({storage});
 
       app.post('/randombytes', upload.single('photo'), (err, req, res, next) => {
         error = err;
@@ -339,18 +331,13 @@ describe('Error handling', function () {
       });
     });
 
-    it('should result in an error if the randomBytes function fails', function () {
+    it('should result in an error if the randomBytes function fails', () => {
       expect(error).to.equal(generatedError);
       expect(error.message).to.equal('Random bytes error');
+      expect(randomBytesSpy).to.have.been.calledOnce;
     });
 
-    after(() => {
-      if (version.major === 0) {
-        crypto.pseudoRandomBytes = randomBytesRef;
-      } else {
-        crypto.randomBytes = randomBytesRef;
-      }
-    });
+    after(() => sinon.restore());
   });
 
 })

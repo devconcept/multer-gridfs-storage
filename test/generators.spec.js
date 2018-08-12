@@ -10,18 +10,18 @@ const multer = require('multer');
 const {version, files, cleanStorage} = require('./utils/testutils');
 const Promise = require('bluebird');
 
-describe('ES6 generators', function () {
+describe('ES6 generators', () => {
   let app, storage;
 
   before(() => app = express());
 
-  describe('all options with generators', function () {
+  describe('all options with generators', () => {
     let result;
     before((done) => {
 
       storage = GridFsStorage({
-        url: setting.mongoUrl(),
-        file: function*() {
+        url: setting.mongoUrl,
+        file: function* () {
           let counter = 0;
           const data = ['foo', 'bar'];
           const sizes = [102400, 204800];
@@ -34,14 +34,15 @@ describe('ES6 generators', function () {
               id: counter + 1,
               chunkSize: sizes[counter],
               bucketName: names[counter],
-              contentType: contentTypes[counter]
+              contentType: contentTypes[counter],
             };
             counter++;
           }
-        }
+        },
+
       });
 
-      const upload = multer({storage: storage});
+      const upload = multer({storage});
 
       app.post('/options', upload.array('photos', 2), (req, res) => {
         result = {headers: req.headers, files: req.files, body: req.body};
@@ -57,7 +58,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    it('should the request contain the two uploaded files', function () {
+    it('should the request contain the two uploaded files', () => {
       // on mocha < 3 using before hook doesn't work so every test should be skipped individually
       // this pending tests should be removed when polyfills are supported
       if (version.major < 4) {
@@ -68,7 +69,7 @@ describe('ES6 generators', function () {
       expect(result.files).to.have.length(2);
     });
 
-    it('should be named with the yielded value', function () {
+    it('should be named with the yielded value', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -77,7 +78,7 @@ describe('ES6 generators', function () {
       expect(result.files[1].filename).to.equal('file2');
     });
 
-    it('should contain a metadata object with the yielded object', function () {
+    it('should contain a metadata object with the yielded object', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -86,7 +87,7 @@ describe('ES6 generators', function () {
       expect(result.files[1].metadata).to.equal('bar');
     });
 
-    it('should be stored with the yielded chunkSize value', function () {
+    it('should be stored with the yielded chunkSize value', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -95,7 +96,7 @@ describe('ES6 generators', function () {
       expect(result.files[1].chunkSize).to.equal(204800);
     });
 
-    it('should change the id with the yielded value', function () {
+    it('should change the id with the yielded value', () => {
       expect(result.files[0].id).to.equal(1);
       expect(result.files[1].id).to.equal(2);
     });
@@ -114,7 +115,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    it('should change the content type with the provided value', function () {
+    it('should change the content type with the provided value', () => {
       expect(result.files[0].contentType).to.equal('text/plain');
       expect(result.files[1].contentType).to.equal('image/jpeg');
     });
@@ -123,14 +124,14 @@ describe('ES6 generators', function () {
 
   });
 
-  describe('generator parameters', function () {
+  describe('generator parameters', () => {
     let parameters;
     before((done) => {
       parameters = [];
 
       storage = GridFsStorage({
-        url: setting.mongoUrl(),
-        file: function*(req, file) {
+        url: setting.mongoUrl,
+        file: function* (req, file) {
           let counter = 0;
           const data = ['foo', 'bar'];
           const sizes = [102400, 204800];
@@ -142,15 +143,16 @@ describe('ES6 generators', function () {
               metadata: data[counter],
               id: counter + 1,
               chunkSize: sizes[counter],
-              bucketName: names[counter]
+              bucketName: names[counter],
             };
             counter++;
             parameters.push({req: req, file: file});
           }
-        }
+        },
+
       });
 
-      const upload = multer({storage: storage});
+      const upload = multer({storage});
 
       app.post('/parameters', upload.array('photos', 2), (req, res) => {
         res.end();
@@ -165,7 +167,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    it('should the parameters be a request and a file objects', function () {
+    it('should the parameters be a request and a file objects', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -180,12 +182,12 @@ describe('ES6 generators', function () {
 
   });
 
-  describe('promises and generators', function () {
+  describe('promises and generators', () => {
     let result;
     before((done) => {
       storage = GridFsStorage({
-        url: setting.mongoUrl(),
-        file: function*() {
+        url: setting.mongoUrl,
+        file: function* () {
           let counter = 0;
           const data = ['foo', 'bar'];
           const sizes = [102400, 204800];
@@ -196,11 +198,12 @@ describe('ES6 generators', function () {
               metadata: data[counter],
               id: counter + 1,
               chunkSize: sizes[counter],
-              bucketName: names[counter]
+              bucketName: names[counter],
             });
             counter++;
           }
-        }
+        },
+
       });
 
       const upload = multer({storage});
@@ -219,7 +222,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    it('should the request contain the two uploaded files', function () {
+    it('should the request contain the two uploaded files', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -228,7 +231,7 @@ describe('ES6 generators', function () {
       expect(result.files).to.have.length(2);
     });
 
-    it('should be named with the yielded value', function () {
+    it('should be named with the yielded value', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -237,7 +240,7 @@ describe('ES6 generators', function () {
       expect(result.files[1].filename).to.equal('file2');
     });
 
-    it('should contain a metadata object with the yielded object', function () {
+    it('should contain a metadata object with the yielded object', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -246,7 +249,7 @@ describe('ES6 generators', function () {
       expect(result.files[1].metadata).to.equal('bar');
     });
 
-    it('should be stored with the yielded chunkSize value', function () {
+    it('should be stored with the yielded chunkSize value', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -255,7 +258,7 @@ describe('ES6 generators', function () {
       expect(result.files[1].chunkSize).to.equal(204800);
     });
 
-    it('should change the id with the yielded value', function () {
+    it('should change the id with the yielded value', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -282,16 +285,17 @@ describe('ES6 generators', function () {
     after(() => cleanStorage(storage));
   });
 
-  describe('finite generators', function () {
+  describe('finite generators', () => {
     let error;
     before((done) => {
       storage = GridFsStorage({
-        url: setting.mongoUrl(),
-        file: function*() {
+        url: setting.mongoUrl,
+        file: function* () {
           yield {
-            filename: 'name'
+            filename: 'name',
           };
-        }
+        },
+
       });
 
       const upload = multer({storage});
@@ -310,7 +314,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    it('should be a failed request', function () {
+    it('should be a failed request', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -331,7 +335,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    it('should throw an error about the ended generator', function () {
+    it('should throw an error about the ended generator', () => {
       if (version.major < 4) {
         return this.skip();
       }
@@ -342,14 +346,14 @@ describe('ES6 generators', function () {
     after(() => cleanStorage(storage));
   });
 
-  describe('rejected promise', function () {
+  describe('rejected promise', () => {
     let error;
     before((done) => {
       storage = GridFsStorage({
-        url: setting.mongoUrl(),
-        file: function*() {
+        url: setting.mongoUrl,
+        file: function* () {
           yield Promise.reject('reason');
-        }
+        },
       });
 
       const upload = multer({storage});
@@ -367,7 +371,7 @@ describe('ES6 generators', function () {
       });
     });
 
-    it('should be a failed request', function () {
+    it('should be a failed request', () => {
       if (version.major < 4) {
         return this.skip();
       }

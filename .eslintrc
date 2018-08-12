@@ -33,7 +33,10 @@
     "max-statements": [
       2,
       30
-    ]
+    ],
+    "comma-dangle": ["error", "always-multiline"],
+    "eqeqeq": "error"
+
   },
   "globals": {
     "Promise": true,

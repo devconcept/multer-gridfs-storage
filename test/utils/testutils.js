@@ -51,6 +51,6 @@ module.exports = {
   files,
   getDb,
   getClient,
-  cleanStorage
+  cleanStorage,
 };
 
