@@ -408,13 +408,7 @@ This event is emitted when there is an error streaming the file to the database.
  - error: The streaming error
  - conf: The failed file configuration
  
-> Note:
-
-> Previously this event was named `error` which seemed to be the most logical choice but unfortunately this introduces a problem: 
-
-> In node.js `error` events are special and crash the process if an error is emitted and there is no `error` listener attached. You could choose to handle errors in an [express middleware][error-handling] forcing you to set an empty `error` listener to avoid crashing.
- 
-> To simplify the issue this event was renamed to allow you to choose the best way to handle storage errors.
+> Previously this event was named `error` but in Node `error` events are special and crash the process if one is emitted and there is no listener attached. You could choose to handle errors in an [express middleware][error-handling] forcing you to set an empty `error` listener to avoid crashing. To simplify the issue this event was renamed to allow you to choose the best way to handle storage errors.
  
 #### Event: `'dbError'`
  
