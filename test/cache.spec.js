@@ -268,7 +268,7 @@ describe('Caching', () => {
           expect(eventSpy2).to.have.been.calledOnceWith(storage2.db);
           expect(cache.connections()).to.equal(2);
           done();
-        }, 500)
+        }, 500);
       });
 
       afterEach(() => {

@@ -400,9 +400,8 @@ describe('Backwards compatibility', () => {
 
       it('should use utils.assign if Object.assign is not present', () => {
         const assignSpy = sinon.stub(utils, 'assign');
-        let ref;
+        const ref = Object.assign;
         storage = null;
-        ref = Object.assign;
         Object.assign = undefined;
         return GridFsStorage._mergeProps({}, {}).then(() => {
           Object.assign = ref;

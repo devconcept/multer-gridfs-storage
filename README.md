@@ -9,11 +9,11 @@ This module is intended to be used with the v1.x branch of Multer.
 ## Features
 
 - Compatibility with MongoDb versions 2 and 3.
-- Full Node.js support from versions 4 to 8.
+- Full Node.js support for versions 0.10 and greater.
 - Really simple api.
 - Caching of url based connections.
 - Promise support.
-- Generator functions support.
+- Generator function support.
 - Support for existing and promise based database connections.
 - Delayed file storage until the connection is available.
 
@@ -60,15 +60,15 @@ app.post('/cool-profile', fUpload, (req, res, next) => {
 
 ## API
 
-### module(options): function
+### module(configuration): function
 
-The module returns a function that can be invoked with options to create a Multer storage engine.
+The module returns a function that can be invoked to create a Multer storage engine.
 
 Check the [wiki][wiki] for an in depth guide on how to use this module.
 
-### Options
+### Configuration
 
-The options parameter is an object with the following properties.
+The configuration parameter is an object with the following properties.
 
 #### url
 
@@ -288,11 +288,11 @@ You can enable caching by either using a boolean or a non empty string in the [c
 
 The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances one after the other and only one of them will try to open a connection. 
 
-This greatly simplifies managing instances in different files of your app. All you have to do now is to store a url string in a configuration file to share the same connection. Scaling your application with a load-balancer, for example, can lead to spawn a great number of database connection for each child process. With this feature no additional code is required to keep opened connections to the exact number you want without any additional effort.
+This greatly simplifies managing instances in different files of your app. All you have to do now is to store a url string in a configuration file to share the same connection. Scaling your application with a load-balancer, for example, can lead to spawn a great number of database connection for each child process. With this feature no additional code is required to keep opened connections to the exact number you want without any effort.
 
 You can also create named caches by using a string instead of a boolean value. In those cases the module will uniquely identify the cache allowing for an arbitrary number of cached connections per url and giving you the ability to decide which connection to use and how many of them should be created. 
 
-The following code will create a new connection and store if under a cache named `'default'`.
+The following code will create a new connection and store it under a cache named `'default'`.
 
 ```javascript
 const GridFsStorage = require('multer-gridfs-storage');
@@ -364,7 +364,7 @@ const storage2 = new GridFsStorage({
 });
 ```
 
-Using [connectionOpts][connectionOpts-option] has a particular side effect. The cache will spawn more connections only when they differ in **their values**. Objects provided here are not compared by reference but their values will. Falsey values like `null` and `undefined` are considered equal. This is required because various options lead to completely different connections, for example when using replicas or server configurations. Only options listed in the [connect method][mongoclient-connect] are considered. If there are any additional properties they are ignored.
+Using [connectionOpts][connectionOpts-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
 
 ### Events
 
