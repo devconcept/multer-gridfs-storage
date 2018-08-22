@@ -7,7 +7,7 @@ const chai = require('chai');
 const GridFsStorage = require('../index');
 const Cache = require('../lib/cache');
 const settings = require('./utils/settings');
-const {cleanStorage} = require('./utils/testutils');
+const cleanStorage = require('./utils/testutils').cleanStorage;
 
 const expect = chai.expect;
 const cache = GridFsStorage.cache;
