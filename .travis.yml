@@ -10,7 +10,8 @@ env:
   - NODE_ENV=test
 before_install:
   - npm install multer@^1.0.0
-after_install:
+install:
+  - npm install
   - ./test/legacy.sh
 before_script:
   - sleep 15
