@@ -1,6 +1,7 @@
 #!/bin/bash
 set -ev
 node_version=$(node -v);
+echo "Running in node " ${node_version};
 if  [ ${node_version:0:2} = "0." ]; then
   echo "Installing legacy dependencies";
   npm install mongodb@2;
