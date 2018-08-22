@@ -5,7 +5,10 @@ const MongoClient = require('mongodb').MongoClient;
 const settings = require('./settings');
 
 function getNodeVersion() {
-  const [major, minor, patch] = process.versions.node.split('.').map(Number);
+  const version = process.versions.node.split('.').map(Number);
+  const major = version[0];
+  const minor = version[1];
+  const patch = version[2];
   return { major, minor, patch };
 }
 
