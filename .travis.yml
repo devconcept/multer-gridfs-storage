@@ -15,5 +15,7 @@ install:
   - ./test/legacy.sh
 before_script:
   - sleep 15
+script:
+  - ./test/test.sh
 after_script:
   - npm run coveralls
