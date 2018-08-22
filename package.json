@@ -39,9 +39,6 @@
   "peerDependencies": {
     "multer": "^1.0.0"
   },
-  "optionalDependencies": {
-    "es6-promise": ">=4"
-  },
   "devDependencies": {
     "chai": "^4.1.2",
     "coveralls": "^2.13.3",

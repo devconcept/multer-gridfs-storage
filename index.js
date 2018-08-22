@@ -7,7 +7,7 @@
 
 'use strict';
 
-var GridFsStorage = require('./lib/gridfs');
+const GridFsStorage = require('./lib/gridfs');
 
 /**
  * Storage constructor function

@@ -1,77 +1,10 @@
 'use strict';
 
 const utils = require('../lib/utils');
-const util = require('util');
 const chai = require('chai');
 const expect = chai.expect;
 
 describe('Utility functions', () => {
-  describe('Assign', () => {
-    it('should throw an error if the source is null or undefined', () => {
-      function errFn1() {
-        utils.assign(null, {a: '1'});
-      }
-
-      function errFn2() {
-        utils.assign(undefined, {a: '1'});
-      }
-
-      expect(errFn1).to.throw();
-      expect(errFn2).to.throw();
-    });
-
-    it('should assign consecutive sources', () => {
-      const target = {};
-      const dest = utils.assign(target, {a: '1'}, {b: '2'});
-      expect(dest).to.equal(target);
-      expect(dest).to.have.a.property('a');
-      expect(dest.a).to.equal('1');
-      expect(dest).to.have.a.property('b');
-      expect(dest.b).to.equal('2');
-    });
-
-    it('should ignore null sources', () => {
-      const target = {};
-      const dest = utils.assign(target, null, {b: '2'});
-      expect(dest).to.equal(target);
-      expect(dest).not.to.have.a.property('a');
-      expect(dest).to.have.a.property('b');
-      expect(dest.b).to.equal('2');
-    });
-
-    it('should ignore undefined sources', () => {
-      const target = {};
-      const dest = utils.assign(target, undefined, {b: '2'});
-      expect(dest).to.equal(target);
-      expect(dest).not.to.have.a.property('a');
-      expect(dest).to.have.a.property('b');
-      expect(dest.b).to.equal('2');
-    });
-
-    it('should ignore inherited properties', () => {
-      function Parent() {
-
-      }
-
-      Parent.prototype.prop1 = '1';
-
-      function Source() {
-        Parent.call(this);
-        this.prop2 = '2';
-      }
-
-      util.inherits(Source, Parent);
-
-      const target = {};
-      const source = new Source();
-      const dest = utils.assign(target, source);
-      expect(dest).to.equal(target);
-      expect(dest).not.to.have.a.property('prop1');
-      expect(dest).to.have.a.property('prop2');
-      expect(dest.prop2).to.equal('2');
-    });
-  });
-
   describe('Compare', () => {
     it('should consider equal any falsey values', () => {
       expect(utils.compare(null, undefined)).to.equal(true);
