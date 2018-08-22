@@ -46,7 +46,7 @@
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.24.1",
     "bluebird": "^3.5.1",
-    "chai": ">=3",
+    "chai": "^4.1.2",
     "chai-interface": "^2.0.3",
     "coveralls": "^2.13.3",
     "eslint": "^2.10.2",
@@ -58,8 +58,8 @@
     "mute": "^2.0.6",
     "nyc": "^12.0.2",
     "sinon": "^6.1.5",
-    "sinon-chai": ">=2",
-    "supertest": ">=1"
+    "sinon-chai": "^3.2.0",
+    "supertest": "^3.1.0"
   },
   "engines": {
     "node": ">=0.10.0"
