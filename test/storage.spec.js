@@ -12,10 +12,7 @@ const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const md5File = require('md5-file');
 const fs = require('fs');
-const Promise = require('bluebird');
 const cache = GridFsStorage.cache;
-
-chai.use(require('chai-interface'));
 
 describe('Storage', () => {
   let result, app, storage;

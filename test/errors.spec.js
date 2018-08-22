@@ -12,7 +12,6 @@ const settings = require('./utils/settings');
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const {files, cleanStorage, version, getDb, getClient} = require('./utils/testutils');
-const Promise = require('bluebird');
 
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');

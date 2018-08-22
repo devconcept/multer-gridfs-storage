@@ -8,7 +8,6 @@ const setting = require('./utils/settings');
 const request = require('supertest');
 const multer = require('multer');
 const {version, files, cleanStorage} = require('./utils/testutils');
-const Promise = require('bluebird');
 
 describe('ES6 generators', () => {
   let app, storage;

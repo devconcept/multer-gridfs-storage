@@ -16,7 +16,6 @@ const {files, cleanStorage, getDb, getClient} = require('./utils/testutils');
 
 const MongoClient = mongo.MongoClient;
 const {expect} = chai;
-chai.use(require('chai-interface'));
 
 describe('Backwards compatibility', () => {
   let result, app, storage, size;

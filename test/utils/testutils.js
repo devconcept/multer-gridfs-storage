@@ -1,6 +1,5 @@
 'use strict';
 
-const Promise = require('bluebird');
 const path = require('path');
 const MongoClient = require('mongodb').MongoClient;
 const settings = require('./settings');
