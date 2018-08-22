@@ -1,7 +1,5 @@
 language: node_js
 node_js:
-  - "0.10"
-  - "0.12"
   - "4"
   - "6"
   - "8"
@@ -10,12 +8,7 @@ env:
   - NODE_ENV=test
 before_install:
   - npm install multer@^1.0.0
-install:
-  - npm install
-  - ./test/legacy.sh
 before_script:
   - sleep 15
-script:
-  - ./test/test.sh
 after_script:
   - npm run coveralls
