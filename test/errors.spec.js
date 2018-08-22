@@ -11,7 +11,12 @@ const express = require('express');
 const settings = require('./utils/settings');
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
-const {files, cleanStorage, version, getDb, getClient} = require('./utils/testutils');
+const testUtils = require('./utils/testutils');
+const files = testUtils.files;
+const cleanStorage = testUtils.cleanStorage;
+const version = testUtils.version;
+const getDb = testUtils.getDb;
+const getClient = testUtils.getClient;
 
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');

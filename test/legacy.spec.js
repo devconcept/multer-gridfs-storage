@@ -12,7 +12,11 @@ const crypto = require('crypto');
 const utils = require('../lib/utils');
 const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
-const {files, cleanStorage, getDb, getClient} = require('./utils/testutils');
+const testUtils = require('./utils/testutils');
+const files = testUtils.files;
+const cleanStorage = testUtils.cleanStorage;
+const getDb = testUtils.getDb;
+const getClient = testUtils.getClient;
 
 const MongoClient = mongo.MongoClient;
 const {expect} = chai;

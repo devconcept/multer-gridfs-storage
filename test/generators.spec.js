@@ -7,7 +7,10 @@ const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
 const request = require('supertest');
 const multer = require('multer');
-const {version, files, cleanStorage} = require('./utils/testutils');
+const testUtils = require('./utils/testutils');
+const files = testUtils.files;
+const cleanStorage = testUtils.cleanStorage;
+const version = testUtils.version;
 
 describe('ES6 generators', () => {
   let app, storage;

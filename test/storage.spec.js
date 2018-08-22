@@ -5,7 +5,6 @@ const chai = require('chai');
 const expect = chai.expect;
 const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
-const {files, cleanStorage, getDb, getClient} = require('./utils/testutils');
 const request = require('supertest');
 const multer = require('multer');
 const mongo = require('mongodb');
@@ -13,6 +12,11 @@ const MongoClient = mongo.MongoClient;
 const md5File = require('md5-file');
 const fs = require('fs');
 const cache = GridFsStorage.cache;
+const testUtils = require('./utils/testutils');
+const files = testUtils.files;
+const cleanStorage = testUtils.cleanStorage;
+const getDb = testUtils.getDb;
+const getClient = testUtils.getClient;
 
 describe('Storage', () => {
   let result, app, storage;

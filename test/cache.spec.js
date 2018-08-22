@@ -9,9 +9,9 @@ const Cache = require('../lib/cache');
 const settings = require('./utils/settings');
 const {cleanStorage} = require('./utils/testutils');
 
-const {expect} = chai;
-const {cache} = GridFsStorage;
-const {MongoClient} = mongo;
+const expect = chai.expect;
+const cache = GridFsStorage.cache;
+const MongoClient = mongo.MongoClient;
 chai.use(sinonChai);
 
 describe('Caching', () => {
