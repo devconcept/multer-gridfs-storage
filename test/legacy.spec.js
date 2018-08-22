@@ -397,17 +397,6 @@ describe('Backwards compatibility', () => {
         });
       });
 
-      it('should use utils.assign if Object.assign is not present', () => {
-        const assignSpy = sinon.stub(utils, 'assign');
-        const ref = Object.assign;
-        storage = null;
-        Object.assign = undefined;
-        return GridFsStorage._mergeProps({}, {}).then(() => {
-          Object.assign = ref;
-          expect(assignSpy).to.have.been.calledOnce;
-        });
-      });
-
       afterEach(() => cleanStorage(storage));
     });
 
