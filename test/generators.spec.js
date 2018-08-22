@@ -138,9 +138,9 @@ describe('ES6 generators', () => {
           const data = ['foo', 'bar'];
           const sizes = [102400, 204800];
           const names = ['plants', 'animals'];
-          parameters.push({req: req, file: file});
+          parameters.push({req, file});
           for (; ;) {
-            [req, file] = yield {
+            const result = yield {
               filename: 'file' + (counter + 1),
               metadata: data[counter],
               id: counter + 1,
@@ -148,7 +148,7 @@ describe('ES6 generators', () => {
               bucketName: names[counter],
             };
             counter++;
-            parameters.push({req: req, file: file});
+            parameters.push({req: result.req, file: result.file});
           }
         },
 
