@@ -19,7 +19,7 @@ const getDb = testUtils.getDb;
 const getClient = testUtils.getClient;
 
 const MongoClient = mongo.MongoClient;
-const {expect} = chai;
+const expect = chai.expect;
 
 describe('Backwards compatibility', () => {
   let result, app, storage, size;
