@@ -322,7 +322,9 @@ describe('Backwards compatibility', () => {
 
   describe('MongoClient and Db handling', () => {
     let client, db, server, mongoSpy;
-    const {host, port, database} = setting.connection;
+    const host = setting.connection.host;
+    const port = setting.connection.port;
+    const database = setting.connection.database;
 
     beforeEach(() => {
       server = new mongo.Server(host, port);
