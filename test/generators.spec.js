@@ -148,7 +148,7 @@ describe('ES6 generators', () => {
               bucketName: names[counter],
             };
             counter++;
-            parameters.push({req: result.req, file: result.file});
+            parameters.push({req: result[0], file: result[1]});
           }
         },
 
