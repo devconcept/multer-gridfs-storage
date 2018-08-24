@@ -148,9 +148,27 @@ describe('Caching', () => {
       });
 
       it('should allow to remove a cache by its index', () => {
+        const spy = sinon.stub(testCache._emitter, 'emit').callThrough();
         const index = testCache.initialize({url: 'a', cacheName: 'b'});
         expect(testCache.has(index)).to.equal(true);
         testCache.remove(index);
+        expect(spy.callCount).to.equal(1);
+        const call = spy.getCall(0);
+        expect(call.args[0]).to.equal('reject');
+        expect(call.args[1]).to.equal(index);
+        expect(call.args[2]).to.be.an('error');
+        expect(testCache.has(index)).to.equal(false);
+        expect(testCache.connections()).to.equal(0);
+      });
+
+      it('should not reject the cache if is not pending', () => {
+        const spy = sinon.stub(testCache._emitter, 'emit').callThrough();
+        const index = testCache.initialize({url: 'a', cacheName: 'b'});
+        const entry = testCache.get(index);
+        entry.pending = false;
+        expect(testCache.has(index)).to.equal(true);
+        testCache.remove(index);
+        expect(spy.callCount).to.equal(0);
         expect(testCache.has(index)).to.equal(false);
         expect(testCache.connections()).to.equal(0);
       });

@@ -206,9 +206,7 @@ describe('Error handling', () => {
           .post('/promiseconnection')
           .attach('photos', files[0])
           .attach('photos', files[0])
-          .end(() => {
-            setTimeout(done, 500);
-          });
+          .end(done);
       });
 
       it('should emit an error if the connection fails to open', () => {
