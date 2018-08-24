@@ -3,7 +3,9 @@
  * Feature: Added connection caching
  * Fix: Updated dependencies
  * Fix: Moved multer to peer dependencies
- * Fix: Moved es6-promise to optional dependencies
+ * Breaking change: Dropped support for node 0.x
+ * Breaking change: Removed es6-promise dependency
+ * Breaking change: Added lodash.isplainobject dependency
 
 # 3.0.1
 
