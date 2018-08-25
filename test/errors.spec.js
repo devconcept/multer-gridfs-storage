@@ -243,8 +243,8 @@ describe('Error handling', () => {
         storage.once('connectionFailed', connectionSpy);
 
         setTimeout(() => {
-          expect(connectionSpy).to.have.been.calledOnce;
-          expect(mongoSpy).to.have.been.calledOnce;
+          expect(connectionSpy.callCount).to.equal(1);
+          expect(mongoSpy.callCount).to.equal(1);
           done();
         }, 50);
       });
@@ -290,7 +290,7 @@ describe('Error handling', () => {
     it('should result in an error if the randomBytes function fails', () => {
       expect(error).to.equal(generatedError);
       expect(error.message).to.equal('Random bytes error');
-      expect(randomBytesSpy).to.have.been.calledOnce;
+      expect(randomBytesSpy.callCount).to.equal(1);
     });
 
     after(() => sinon.restore());

@@ -278,7 +278,7 @@ describe('Caching', () => {
           setTimeout(() => {
             expect(storage1.db).to.equal(storage2.db);
             expect(eventSpy).to.have.been.calledOnceWith(storage1.db);
-            expect(mongoSpy).to.have.been.calledOnce;
+            expect(mongoSpy.callCount).to.equal(1);
             expect(cache.connections()).to.equal(1);
             storage2 = null;
             done();
@@ -297,7 +297,7 @@ describe('Caching', () => {
           setTimeout(() => {
             expect(storage1.db).to.equal(storage2.db);
             expect(eventSpy).to.have.been.calledOnceWith(storage1.db);
-            expect(mongoSpy).to.have.been.calledOnce;
+            expect(mongoSpy.callCount).to.equal(1);
             expect(cache.connections()).to.equal(1);
             storage2 = null;
             done();
@@ -316,7 +316,7 @@ describe('Caching', () => {
           setTimeout(() => {
             expect(storage1.db).to.equal(storage2.db);
             expect(eventSpy).to.have.been.calledOnceWith(storage1.db);
-            expect(mongoSpy).to.have.been.calledOnce;
+            expect(mongoSpy.callCount).to.equal(1);
             expect(cache.connections()).to.equal(1);
             storage2 = null;
             done();
@@ -366,7 +366,7 @@ describe('Caching', () => {
         storage2 = new GridFsStorage({url, cache: '2'});
         const storage3 = new GridFsStorage({url, cache: '1'});
         const storage4 = new GridFsStorage({url, cache: '2'});
-        expect(mongoSpy).to.have.been.calledOnce;
+        expect(mongoSpy.callCount).to.equal(1);
 
         storage2.on('connectionFailed', conSpy);
 
@@ -375,8 +375,8 @@ describe('Caching', () => {
           expect(storage2.db).to.equal(null);
           expect(storage3.db).to.be.instanceOf(mongo.Db);
           expect(storage4.db).to.equal(null);
-          expect(conSpy).to.have.been.calledOnce;
-          expect(rejectSpy).not.to.have.been.called;
+          expect(conSpy.callCount).to.equal(1);
+          expect(rejectSpy.callCount).to.equal(0);
           expect(cache.connections()).to.equal(1);
           storage2 = null;
           done();
