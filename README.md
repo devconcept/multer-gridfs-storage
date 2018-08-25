@@ -284,7 +284,7 @@ To see all the other properties of the file object, check the Multer's [document
 
 ### Caching
 
-You can enable caching by either using a boolean or a non empty string in the [cache][cache-option] option, then when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
+You can enable caching by either using a boolean or a non empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
 
 The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances one after the other and only one of them will try to open a connection. 
 
@@ -313,9 +313,7 @@ const storage = new GridFsStorage({
    url: 'mongodb://yourhost:27017/database',
    cache: '1'
 });
-```
- 
-```javascript
+
 // file 2
 const GridFsStorage = require('multer-gridfs-storage');
 
@@ -323,9 +321,7 @@ const storage = new GridFsStorage({
     url: 'mongodb://yourhost:27017/database',
     cache: '1'
 });
-```
 
-```javascript
  // file 3
 const GridFsStorage = require('multer-gridfs-storage');
 
@@ -333,9 +329,7 @@ const storage = new GridFsStorage({
    url: 'mongodb://yourhost:27017/database',
    cache: '2'
 });
-```
- 
-```javascript
+
 // file 4
 const GridFsStorage = require('multer-gridfs-storage');
 
@@ -347,7 +341,7 @@ const storage = new GridFsStorage({
 
 The files 1 and 2 will use the connection cached under the key `'1'` and the files 3 and 4 will use the cache named `'2'`. You don't have to worry for managing connections anymore. By setting a simple string value the module manages them for you automatically.
 
-Of course if you want to create more connections this is still possible. Caching is disabled by default so setting a `cache: false` or not setting any cache configuration at all will cause the module to ignore caching and create a new connection each time.
+Connection strings are parsed and tested for similarities. In this example the urls are equivalent and only one connection will be created.
 
 ```javascript
 const GridFsStorage = require('multer-gridfs-storage');
@@ -355,14 +349,17 @@ const GridFsStorage = require('multer-gridfs-storage');
 // Both configurations are equivalent
 
 const storage1 = new GridFsStorage({
-    url: 'mongodb://yourhost:27017/database',
-    cache: false
+    url: 'mongodb://host1:27017,host2:27017/database',
+    cache: 'connections'
 });
 
 const storage2 = new GridFsStorage({
-    url: 'mongodb://yourhost:27017/database',
+    url: 'mongodb://host2:27017,host1:27017/database',
+    cache: 'connections'
 });
 ```
+
+Of course if you want to create more connections this is still possible. Caching is disabled by default so setting a `cache: false` or not setting any cache configuration at all will cause the module to ignore caching and create a new connection each time.
 
 Using [connectionOpts][connectionOpts-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
 

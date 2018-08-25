@@ -10,7 +10,6 @@ const multer = require('multer');
 const testUtils = require('./utils/testutils');
 const files = testUtils.files;
 const cleanStorage = testUtils.cleanStorage;
-const version = testUtils.version;
 
 describe('ES6 generators', () => {
   let app, storage;
@@ -61,39 +60,21 @@ describe('ES6 generators', () => {
     });
 
     it('should the request contain the two uploaded files', () => {
-      // on mocha < 3 using before hook doesn't work so every test should be skipped individually
-      // this pending tests should be removed when polyfills are supported
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files).to.be.an('array');
       expect(result.files).to.have.length(2);
     });
 
     it('should be named with the yielded value', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files[0].filename).to.equal('file1');
       expect(result.files[1].filename).to.equal('file2');
     });
 
     it('should contain a metadata object with the yielded object', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files[0].metadata).to.equal('foo');
       expect(result.files[1].metadata).to.equal('bar');
     });
 
     it('should be stored with the yielded chunkSize value', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files[0].chunkSize).to.equal(102400);
       expect(result.files[1].chunkSize).to.equal(204800);
     });
@@ -104,9 +85,6 @@ describe('ES6 generators', () => {
     });
 
     it('should be stored under in a collection with the yielded value', function (done) {
-      if (version.major < 4) {
-        return this.skip();
-      }
       const db = storage.db;
       db.collection('plants.files', {strict: true}, function (err) {
         expect(err).to.be.equal(null);
@@ -170,10 +148,6 @@ describe('ES6 generators', () => {
     });
 
     it('should the parameters be a request and a file objects', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       parameters.forEach((param) => {
         expect(param.req).to.have.any.keys('body', 'query', 'params', 'files');
         expect(param.file).to.have.all.keys('fieldname', 'originalname', 'encoding', 'mimetype');
@@ -225,55 +199,31 @@ describe('ES6 generators', () => {
     });
 
     it('should the request contain the two uploaded files', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files).to.be.an('array');
       expect(result.files).to.have.length(2);
     });
 
     it('should be named with the yielded value', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files[0].filename).to.equal('file1');
       expect(result.files[1].filename).to.equal('file2');
     });
 
     it('should contain a metadata object with the yielded object', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files[0].metadata).to.equal('foo');
       expect(result.files[1].metadata).to.equal('bar');
     });
 
     it('should be stored with the yielded chunkSize value', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files[0].chunkSize).to.equal(102400);
       expect(result.files[1].chunkSize).to.equal(204800);
     });
 
     it('should change the id with the yielded value', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(result.files[0].id).to.equal(1);
       expect(result.files[1].id).to.equal(2);
     });
 
     it('should be stored under in a collection with the yielded value', function (done) {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       const db = storage.db;
       db.collection('plants.files', {strict: true}, function (err) {
         expect(err).to.be.equal(null);
@@ -317,19 +267,11 @@ describe('ES6 generators', () => {
     });
 
     it('should be a failed request', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(error).to.be.an('error');
       expect(error.storageErrors).to.have.lengthOf(0);
     });
 
     it('should not upload any file', function (done) {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       const db = storage.db;
       db.collection('fs.files').count({}, (err, count) => {
         expect(count).to.equal(0);
@@ -338,10 +280,6 @@ describe('ES6 generators', () => {
     });
 
     it('should throw an error about the ended generator', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(error.message).to.match(/Generator ended unexpectedly/);
     });
 
@@ -374,19 +312,11 @@ describe('ES6 generators', () => {
     });
 
     it('should be a failed request', () => {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       expect(error).to.be.an('string');
       expect(error).to.equal('reason');
     });
 
     it('should not upload any file', function (done) {
-      if (version.major < 4) {
-        return this.skip();
-      }
-
       const db = storage.db;
       db.collection('fs.files').count({}, (err, count) => {
         expect(count).to.equal(0);

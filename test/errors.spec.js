@@ -14,7 +14,6 @@ const MongoClient = mongo.MongoClient;
 const testUtils = require('./utils/testutils');
 const files = testUtils.files;
 const cleanStorage = testUtils.cleanStorage;
-const version = testUtils.version;
 const getDb = testUtils.getDb;
 const getClient = testUtils.getClient;
 
@@ -91,9 +90,6 @@ describe('Error handling', () => {
 
     it('should fail gracefully if an error is thrown inside a generator function', function (done) {
       let error;
-      if (version.major < 4) {
-        this.skip();
-      }
 
       storage = GridFsStorage({
         url: settings.mongoUrl,
@@ -121,48 +117,6 @@ describe('Error handling', () => {
       });
     });
 
-    xit('should emit an error event when the file streaming fails', function (done) {
-      this.slow(500);
-      const errorSpy = sinon.spy();
-      const deprecated = sinon.spy();
-
-      MongoClient.connect(settings.mongoUrl, function (err, _db) {
-        if (err) {
-          done(err);
-        }
-        db = getDb(_db);
-        client = getClient(_db);
-        db.collection('fs.files')
-          .createIndex('md5', {unique: true})
-          .then(() => {
-            storage = GridFsStorage({db});
-            const upload = multer({storage});
-
-            app.post('/emit', upload.array('photos', 2), (err, req, res, next) => {
-              next();
-            });
-
-            storage.on('error', deprecated);
-            storage.on('streamError', errorSpy);
-
-            request(app)
-              .post('/emit')
-              // Send the same file twice so the checksum is the same
-              .attach('photos', files[0])
-              .attach('photos', files[0])
-              .end(() => {
-                expect(errorSpy).to.be.calledOnce;
-                expect(deprecated).not.to.be.called;
-                const call = errorSpy.getCall(0);
-                expect(call.args[0]).to.be.an.instanceOf(Error);
-                expect(call.args[1]).to.have.all.keys('chunkSize', 'contentType', 'filename', 'metadata', 'bucketName', 'id');
-                done();
-              });
-          })
-          .catch(done);
-      });
-    });
-
     afterEach(() => cleanStorage(storage, db, client));
   });
 
@@ -186,7 +140,7 @@ describe('Error handling', () => {
               setTimeout(() => {
                 reject(error);
               });
-            }, 300);
+            });
           });
 
         storage = GridFsStorage({
@@ -306,7 +260,7 @@ describe('Error handling', () => {
 
     before((done) => {
       randomBytesSpy = sinon
-        .stub(crypto, version.major === 0 ? 'pseudoRandomBytes' : 'randomBytes')
+        .stub(crypto, 'randomBytes')
         .callsFake(function random(size, cb) {
           if (cb) {
             return cb(generatedError);

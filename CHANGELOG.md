@@ -1,6 +1,6 @@
 # 3.1.0
 
- * Feature: Added connection caching
+ * Feature: Added caching feature
  * Fix: Updated dependencies
  * Fix: Moved multer to peer dependencies
  * Breaking change: Dropped support for node 0.x

@@ -371,41 +371,6 @@ describe('Backwards compatibility', () => {
       });
     });
 
-    describe('Legacy functions', () => {
-      it('should use pseudoRandomBytes if node is in the 0.x range', (done) => {
-        const isOldNode = sinon
-          .stub(utils, 'isOldNode')
-          .onFirstCall().callThrough()
-          .onSecondCall().callsFake(() => true);
-
-        const randomBytesSpy = sinon.stub(crypto, 'randomBytes').callThrough();
-        const psRandomBytesSpy = sinon.stub(crypto, 'pseudoRandomBytes').callThrough();
-        storage = new GridFsStorage({url: setting.mongoUrl});
-
-        const upload = multer({storage});
-
-        app.post('/rb', upload.array('photos'), (req, res) => {
-          res.end();
-        });
-
-        storage.on('connection', () => {
-          request(app)
-            .post('/rb')
-            .attach('photos', files[0])
-            .attach('photos', files[1])
-            .end(() => {
-              expect(isOldNode).to.have.been.calledTwice;
-              expect(randomBytesSpy).to.have.been.calledOnce;
-              expect(psRandomBytesSpy).to.have.been.calledOnce;
-              expect(randomBytesSpy).to.have.been.calledBefore(psRandomBytesSpy);
-              done();
-            });
-        });
-      });
-
-      afterEach(() => cleanStorage(storage));
-    });
-
     afterEach(() => sinon.restore());
   });
 });
