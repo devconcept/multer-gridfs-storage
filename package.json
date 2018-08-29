@@ -9,7 +9,7 @@
     "lint": "eslint . --fix",
     "cover": "nyc --reporter=lcov mocha --exit",
     "docs": "jsdoc -c ./conf.json --readme ./README.md",
-    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "coveralls": "npm run cover && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "preversion": "eslint ."
   },
   "keywords": [
