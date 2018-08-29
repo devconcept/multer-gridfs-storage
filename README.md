@@ -9,7 +9,7 @@ This module is intended to be used with the v1.x branch of Multer.
 ## Features
 
 - Compatibility with MongoDb versions 2 and 3.
-- Full Node.js support for versions 0.10 and greater.
+- Full Node.js support for versions 4 and greater.
 - Really simple api.
 - Caching of url based connections.
 - Promise support.
