@@ -9,13 +9,13 @@ This module is intended to be used with the v1.x branch of Multer.
 ## Features
 
 - Compatibility with MongoDb versions 2 and 3.
-- Full Node.js support for versions 4 and greater.
 - Really simple api.
+- Compatible with any Node.js version greater than 4.
 - Caching of url based connections.
-- Promise support.
-- Generator function support.
+- Compatible with Mongoose connection objects.
+- Promise and generator function support.
 - Support for existing and promise based database connections.
-- Delayed file storage until the connection is available.
+- Storage operation buffering for incoming files while the connection is opening.
 
 ## Installation
 
@@ -90,11 +90,11 @@ const storage = require('multer-gridfs-storage')({
 });
 ```
 
-> The connected database is available in the `storage.db` property.
+The connected database is available in the `storage.db` property.
 
-> On mongodb v3 the client instance is also available in the `storage.client` property.
+On mongodb v3 the client instance is also available in the `storage.client` property.
 
-#### connectionOpts
+#### options
 
 Type: object
 
@@ -112,9 +112,9 @@ Not required
 
 Default value: `false`
 
-> This option only applies when you use an url string to connect to MongoDb. Caching is not enabled when you create instances with a [database][db-option] object directly.
-
 Store this connection in the internal cache. You can also use a string to use a named cache. By default caching is disabled. See [caching](#caching) to learn more about reusing connections.
+
+> This option only applies when you use an url string to connect to MongoDb. Caching is not enabled when you create instances with a [database][db-option] object directly.
 
 #### db
 
@@ -122,40 +122,50 @@ Type: [`DB`][mongo-db] or `Promise`
 
 Required if [`url`][url-option] option is not present
 
-The database connection to use or a promise that resolves with the connection.
+The database connection to use or a promise that resolves with the connection object. Mongoose `Connection` objects are supported too.
 
 This is useful to reuse an existing connection to create more storage objects.
 
 Example:
 
 ```javascript
-// mongodb v2 using a database instance
+// mongodb v2
+ 
+// using a database instance
 MongoClient.connect('mongodb://yourhost:27017/database').then(database => {
   storage = new GridFSStorage({ db: database });
 });
-```
 
-```javascript
-// mongodb v2 using a promise
+// using a promise
 const promise = MongoClient.connect('mongodb://yourhost:27017/database');
 storage = new GridFSStorage({ db: promise });
 ```
 
 ```javascript
-// mongodb v3 using a database instance
+// mongodb v3
+
+// using a database instance
 MongoClient.connect('mongodb://yourhost:27017').then(client => {
   const database = client.db('database')
   storage = new GridFSStorage({ db: database });
 });
-```
 
-```javascript
-// mongodb v3 using a promise
+// using a promise
 const promise = MongoClient
   .connect('mongodb://yourhost:27017')
   .then(client => client.db('database'));
   
 storage = new GridFSStorage({ db: promise });
+```
+
+```javascript
+// using Mongoose
+
+const connection = mongoose.connect('mongodb://yourhost:27017/database');
+
+storage = new GridFSStorage({
+  db: connection
+});
 ```
 
 #### file
@@ -286,7 +296,7 @@ To see all the other properties of the file object, check the Multer's [document
 
 You can enable caching by either using a boolean or a non empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
 
-The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances one after the other and only one of them will try to open a connection. 
+The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances for the same cache one after the other and only one of them will try to open a connection. 
 
 This greatly simplifies managing instances in different files of your app. All you have to do now is to store a url string in a configuration file to share the same connection. Scaling your application with a load-balancer, for example, can lead to spawn a great number of database connection for each child process. With this feature no additional code is required to keep opened connections to the exact number you want without any effort.
 
@@ -361,7 +371,7 @@ const storage2 = new GridFsStorage({
 
 Of course if you want to create more connections this is still possible. Caching is disabled by default so setting a `cache: false` or not setting any cache configuration at all will cause the module to ignore caching and create a new connection each time.
 
-Using [connectionOpts][connectionOpts-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
+Using [options][options-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
 
 ### Events
 
@@ -452,7 +462,7 @@ $ npm coverage
 [error-handling]: https://github.com/expressjs/multer#error-handling 
 
 [url-option]: #url
-[connectionOpts-option]: #connectionOpts
+[options-option]: #options
 [db-option]: #db
 [file-option]: #file
 [cache-option]: #cache

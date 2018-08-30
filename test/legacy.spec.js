@@ -8,16 +8,20 @@ const mongo = require('mongodb');
 const md5File = require('md5-file');
 const fs = require('fs');
 const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
+
 const GridFsStorage = require('../index');
 const setting = require('./utils/settings');
 const testUtils = require('./utils/testutils');
+
 const files = testUtils.files;
 const cleanStorage = testUtils.cleanStorage;
 const getDb = testUtils.getDb;
 const getClient = testUtils.getClient;
-
 const MongoClient = mongo.MongoClient;
 const expect = chai.expect;
+
+chai.use(sinonChai);
 
 describe('Backwards compatibility', () => {
   let result, app, storage, size;
@@ -255,8 +259,8 @@ describe('Backwards compatibility', () => {
     });
 
     it('should emit an error event when the store fails to open', () => {
-      expect(errorSpy.callCount).to.equal(1);
-      expect(fileSpy.callCount).to.equal(0);
+      expect(errorSpy).to.have.callCount(1);
+      expect(fileSpy).to.have.callCount(0);
       const call = errorSpy.getCall(0);
       expect(call.args[0]).to.equal(err);
     });
@@ -306,8 +310,8 @@ describe('Backwards compatibility', () => {
     });
 
     it('should emit an error event when the store fails to open', () => {
-      expect(errorSpy.callCount).to.equal(1);
-      expect(fileSpy.callCount).to.equal(0);
+      expect(errorSpy).to.have.callCount(1);
+      expect(fileSpy).to.have.callCount(0);
       const call = errorSpy.getCall(0);
       expect(call.args[0]).to.equal(err);
     });
@@ -363,7 +367,7 @@ describe('Backwards compatibility', () => {
       storage = GridFsStorage({url: setting.mongoUrl});
 
       storage.on('connection', (db, client) => {
-        expect(mongoSpy.callCount).to.equal(1);
+        expect(mongoSpy).to.have.callCount(1);
         expect(db).to.be.an.instanceOf(mongo.Db);
         expect(client).to.be.an.instanceOf(MongoClient);
       });

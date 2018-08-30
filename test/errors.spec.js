@@ -26,6 +26,21 @@ describe('Error handling', () => {
 
   before(() => app = express());
 
+  describe('Using invalid configurations', () => {
+    it('should throw an error if no configuration is provided', () => {
+      function errFn() {
+        storage = new GridFsStorage({});
+      }
+
+      function errFn2() {
+        storage = new GridFsStorage();
+      }
+
+      expect(errFn).to.throw('Error creating storage engine. At least one of url or db option must be provided.');
+      expect(errFn2).to.throw('Error creating storage engine. At least one of url or db option must be provided.');
+    });
+  });
+
   describe('Using invalid types as file configurations', () => {
     let error;
     before((done) => {
@@ -123,62 +138,41 @@ describe('Error handling', () => {
   describe('MongoDb connection', () => {
 
     describe('Connection promise fails to connect', () => {
-      let error, db, client;
+      let error;
       const errorSpy = sinon.spy();
 
       before((done) => {
         error = new Error('Failed promise');
+        const promise = new Promise((resolve, reject) => {
+          setTimeout(() => reject(error), 200);
+        });
 
-        const promise = MongoClient.connect(settings.mongoUrl)
-          .then(_db => {
-            db = getDb(_db);
-            client = getClient(_db);
-            return db;
-          })
-          .then(() => {
-            return new Promise((resolve, reject) => {
-              setTimeout(() => {
-                reject(error);
-              });
-            });
-          });
+        storage = GridFsStorage({db: promise});
 
-        storage = GridFsStorage({
-          db: promise,
+        const upload = multer({storage});
+
+        app.post('/fail_promise', upload.single('photo'), (err, req, res, next) => {
+          next();
         });
 
         storage.on('connectionFailed', errorSpy);
 
-        const upload = multer({storage});
-
-        app.post('/promiseconnection', upload.array('photos', 2), (err, req, res, next) => {
-          error = err;
-          next();
-        });
-
         request(app)
-          .post('/promiseconnection')
-          .attach('photos', files[0])
-          .attach('photos', files[0])
+          .post('/fail_promise')
+          .attach('photo', files[0])
           .end(done);
       });
 
       it('should emit an error if the connection fails to open', () => {
-        expect(errorSpy).to.be.calledOnce;
+        expect(errorSpy).to.have.callCount(1);
       });
 
       it('should emit the promise error', () => {
-        const call = errorSpy.getCall(0);
-        expect(call.args[0]).to.equal(error);
+        expect(errorSpy).to.have.been.calledWith(error);
       });
 
       it('should set the database instance to null', () => {
         expect(storage.db).to.equal(null);
-      });
-
-      after(() => {
-        sinon.restore();
-        return cleanStorage(storage, db, client);
       });
     });
 
@@ -243,8 +237,8 @@ describe('Error handling', () => {
         storage.once('connectionFailed', connectionSpy);
 
         setTimeout(() => {
-          expect(connectionSpy.callCount).to.equal(1);
-          expect(mongoSpy.callCount).to.equal(1);
+          expect(connectionSpy).to.have.callCount(1);
+          expect(mongoSpy).to.have.callCount(1);
           done();
         }, 50);
       });
@@ -290,7 +284,7 @@ describe('Error handling', () => {
     it('should result in an error if the randomBytes function fails', () => {
       expect(error).to.equal(generatedError);
       expect(error.message).to.equal('Random bytes error');
-      expect(randomBytesSpy.callCount).to.equal(1);
+      expect(randomBytesSpy).to.have.callCount(1);
     });
 
     after(() => sinon.restore());

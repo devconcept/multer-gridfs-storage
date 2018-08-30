@@ -2,28 +2,33 @@
 
 const express = require('express');
 const chai = require('chai');
-const expect = chai.expect;
-const GridFsStorage = require('../index');
-const setting = require('./utils/settings');
 const request = require('supertest');
 const multer = require('multer');
+const mongoose = require('mongoose');
 const mongo = require('mongodb');
-const MongoClient = mongo.MongoClient;
 const md5File = require('md5-file');
 const fs = require('fs');
-const cache = GridFsStorage.cache;
+const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
+
+const GridFsStorage = require('../index');
+const setting = require('./utils/settings');
 const testUtils = require('./utils/testutils');
+
+const expect = chai.expect;
+const MongoClient = mongo.MongoClient;
 const files = testUtils.files;
 const cleanStorage = testUtils.cleanStorage;
 const getDb = testUtils.getDb;
 const getClient = testUtils.getClient;
+const storageReady = testUtils.storageReady;
+
+chai.use(sinonChai);
 
 describe('Storage', () => {
   let result, app, storage;
 
   before(() => app = express());
-
-  beforeEach(() => cache.clear());
 
   describe('url created instance', () => {
     before((done) => {
@@ -100,6 +105,68 @@ describe('Storage', () => {
 
     after(() => cleanStorage(storage));
 
+  });
+
+  describe('Mongoose', () => {
+    let client, db;
+
+    it('should connect using a mongoose instance', (done) => {
+      const promise = mongoose.connect(setting.mongoUrl, {useNewUrlParser: true});
+      storage = GridFsStorage({db: promise});
+      const upload = multer({storage});
+
+      app.post('/mongoose_instance', upload.array('photos', 2), (req, res) => {
+        result = {headers: req.headers, files: req.files, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', (_db) => {
+        expect(_db).to.be.instanceOf(mongoose.mongo.Db);
+        db = _db;
+        client = mongoose.connection;
+
+        request(app)
+          .post('/mongoose_instance')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end((err) => {
+            expect(err).to.equal(null);
+            expect(result.files.length).to.equal(2);
+            done(err);
+          });
+      });
+    });
+
+    it('should connect using a mongoose connection', (done) => {
+      const promise = mongoose
+        .connect(setting.mongoUrl, {useNewUrlParser: true})
+        .then(instance => instance.connection);
+      storage = GridFsStorage({db: promise});
+      const upload = multer({storage});
+
+      app.post('/mongoose_connection', upload.array('photos', 2), (req, res) => {
+        result = {headers: req.headers, files: req.files, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', (_db) => {
+        expect(_db).to.be.instanceOf(mongoose.mongo.Db);
+        db = _db;
+        client = mongoose.connection;
+
+        request(app)
+          .post('/mongoose_connection')
+          .attach('photos', files[0])
+          .attach('photos', files[1])
+          .end((err) => {
+            expect(err).to.equal(null);
+            expect(result.files.length).to.equal(2);
+            done(err);
+          });
+      });
+    });
+
+    afterEach(() => cleanStorage(storage, db, client));
   });
 
   describe('db promise based instance', () => {
@@ -495,6 +562,62 @@ describe('Storage', () => {
 
     after(() => cleanStorage(storage));
   });
+
+  describe('Using connection options', () => {
+    let storage2;
+
+    beforeEach(() => storage2 = null);
+
+    it('should be compatible with an options object on url based connections', (done) => {
+      storage = GridFsStorage({
+        url: setting.mongoUrl,
+        options: {
+          poolSize: 10,
+        },
+      });
+
+      storage.on('connection', () => {
+        expect(storage.db.serverConfig.s.poolSize).to.equal(10);
+        done();
+      });
+    });
+
+    it('should preserve compatibility with a connectionOpts options property', () => {
+      const spy = sinon.spy();
+      process.on('warning', spy);
+
+      storage = GridFsStorage({
+        url: setting.mongoUrl,
+        connectionOpts: {
+          poolSize: 10,
+        },
+      });
+
+      storage2 = GridFsStorage({
+        url: setting.mongoUrl,
+        connectionOpts: {
+          poolSize: 10,
+        },
+      });
+
+      return Promise
+        .all(storageReady(storage, storage2))
+        .then(() => {
+          expect(storage.db.serverConfig.s.poolSize).to.equal(10);
+          expect(spy).to.have.callCount(1);
+          expect(spy.getCall(0).args[0].message).to.equal('The property "connectionOpts" is deprecated. Use "options" instead.');
+        });
+    });
+
+    afterEach(() => {
+      return Promise.all([
+        cleanStorage(storage),
+        storage2 ? cleanStorage(storage2) : Promise.resolve(),
+      ]);
+    });
+  });
+
+  afterEach(() => sinon.restore());
 
 });
 
