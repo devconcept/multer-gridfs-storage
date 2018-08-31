@@ -1,6 +1,7 @@
 # 3.2.0
 
  * Feature: Support for Mongoose connections
+ * Feature: Ready method to wait for the MongoDb connection
  * Breaking change: Deprecated "connectionOpts" in favor of "options"
 
 # 3.1.0

@@ -294,13 +294,13 @@ To see all the other properties of the file object, check the Multer's [document
 
 ### Caching
 
-You can enable caching by either using a boolean or a non empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
+You can enable caching by either using a boolean or a non-empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
 
 The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances for the same cache one after the other and only one of them will try to open a connection. 
 
 This greatly simplifies managing instances in different files of your app. All you have to do now is to store a url string in a configuration file to share the same connection. Scaling your application with a load-balancer, for example, can lead to spawn a great number of database connection for each child process. With this feature no additional code is required to keep opened connections to the exact number you want without any effort.
 
-You can also create named caches by using a string instead of a boolean value. In those cases the module will uniquely identify the cache allowing for an arbitrary number of cached connections per url and giving you the ability to decide which connection to use and how many of them should be created. 
+You can also create named caches by using a string instead of a boolean value. In those cases, the module will uniquely identify the cache allowing for an arbitrary number of cached connections per url and giving you the ability to decide which connection to use and how many of them should be created. 
 
 The following code will create a new connection and store it under a cache named `'default'`.
 
@@ -427,6 +427,44 @@ This event is emitted when the underlying connection emits an error.
  
  - error: The error emitted by the database connection
 
+### Storage ready
+
+Each storage has a `ready` method that returns a promise. This allows you to watch for the MongoDb connection instead of using events. These two examples are equivalent.
+
+```javascript
+// Using event emitters
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database'
+})
+
+storage.on('connection', (db) => {
+  // Db is the database instance
+});
+
+storage.on('connectionFailed', (err) => {
+  // err is the error received from MongoDb
+});
+```
+
+```javascript
+// Using the ready method
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database'
+})
+
+storage
+  .ready()
+  .then((db) => {
+    // Db is the database instance
+  })
+  .catch((err) => {
+    // err is the error received from MongoDb
+  });
+```
+
+Remember that you don't need to wait for the connection to be ready to start uploading files. The module buffers every incoming file until the connection is ready and saves all of them as soon as possible. The `ready` method is just a convenience function to make more readable code written using the `connection` events.
 
 ## Test
 

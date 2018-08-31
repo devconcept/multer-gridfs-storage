@@ -12,7 +12,7 @@ const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 
 const GridFsStorage = require('../index');
-const setting = require('./utils/settings');
+const settings = require('./utils/settings');
 const testUtils = require('./utils/testutils');
 
 const expect = chai.expect;
@@ -32,7 +32,7 @@ describe('Storage', () => {
 
   describe('url created instance', () => {
     before((done) => {
-      storage = new GridFsStorage({url: setting.mongoUrl});
+      storage = new GridFsStorage({url: settings.mongoUrl});
 
       const upload = multer({storage});
 
@@ -68,10 +68,10 @@ describe('Storage', () => {
 
   describe('db created instance', () => {
     before(() => {
-      const promise = MongoClient.connect(setting.mongoUrl);
+      const promise = MongoClient.connect(settings.mongoUrl);
       return promise.then(_db => {
         const db = getDb(_db);
-        storage = GridFsStorage({db});
+        storage = new GridFsStorage({db});
         storage.client = getClient(_db);
 
         const upload = multer({storage});
@@ -111,8 +111,8 @@ describe('Storage', () => {
     let client, db;
 
     it('should connect using a mongoose instance', (done) => {
-      const promise = mongoose.connect(setting.mongoUrl, {useNewUrlParser: true});
-      storage = GridFsStorage({db: promise});
+      const promise = mongoose.connect(settings.mongoUrl, {useNewUrlParser: true});
+      storage = new GridFsStorage({db: promise});
       const upload = multer({storage});
 
       app.post('/mongoose_instance', upload.array('photos', 2), (req, res) => {
@@ -139,9 +139,9 @@ describe('Storage', () => {
 
     it('should connect using a mongoose connection', (done) => {
       const promise = mongoose
-        .connect(setting.mongoUrl, {useNewUrlParser: true})
+        .connect(settings.mongoUrl, {useNewUrlParser: true})
         .then(instance => instance.connection);
-      storage = GridFsStorage({db: promise});
+      storage = new GridFsStorage({db: promise});
       const upload = multer({storage});
 
       app.post('/mongoose_connection', upload.array('photos', 2), (req, res) => {
@@ -174,13 +174,13 @@ describe('Storage', () => {
     before((done) => {
 
       const promised = MongoClient
-        .connect(setting.mongoUrl).then(_db => {
+        .connect(settings.mongoUrl).then(_db => {
           db = getDb(_db);
           client = getClient(_db);
           return db;
         });
 
-      storage = GridFsStorage({db: promised});
+      storage = new GridFsStorage({db: promised});
       const upload = multer({storage});
 
 
@@ -216,7 +216,7 @@ describe('Storage', () => {
     let db, client;
     before((done) => {
       const promised = MongoClient
-        .connect(setting.mongoUrl).then((_db) => {
+        .connect(settings.mongoUrl).then((_db) => {
           db = getDb(_db);
           client = getClient(_db);
           return new Promise((resolve) => {
@@ -224,7 +224,7 @@ describe('Storage', () => {
           });
         });
 
-      storage = GridFsStorage({db: promised});
+      storage = new GridFsStorage({db: promised});
       const upload = multer({storage});
 
 
@@ -258,7 +258,7 @@ describe('Storage', () => {
   describe('default uploaded file spec', () => {
     let size;
     before((done) => {
-      storage = GridFsStorage({url: setting.mongoUrl});
+      storage = new GridFsStorage({url: settings.mongoUrl});
       const upload = multer({storage});
 
       app.post('/spec', upload.single('photo'), (req, res) => {
@@ -321,7 +321,7 @@ describe('Storage', () => {
       const names = ['plants', 'animals'];
       const contentTypes = ['text/plain', 'image/jpeg'];
       storage = new GridFsStorage({
-        url: setting.mongoUrl,
+        url: settings.mongoUrl,
         file: () => {
           counter++;
           return {
@@ -398,8 +398,8 @@ describe('Storage', () => {
 
   describe('Missing properties in file naming function', () => {
     before((done) => {
-      storage = GridFsStorage({
-        url: setting.mongoUrl,
+      storage = new GridFsStorage({
+        url: settings.mongoUrl,
         file: () => {
           return {
             metadata: {foo: 'bar'},
@@ -458,8 +458,8 @@ describe('Storage', () => {
       const values = [null, undefined, {}];
       let counter = -1;
 
-      storage = GridFsStorage({
-        url: setting.mongoUrl,
+      storage = new GridFsStorage({
+        url: settings.mongoUrl,
         file: () => {
           counter++;
           return values[counter];
@@ -514,8 +514,8 @@ describe('Storage', () => {
       const values = ['name', 10];
       let counter = -1;
 
-      storage = GridFsStorage({
-        url: setting.mongoUrl,
+      storage = new GridFsStorage({
+        url: settings.mongoUrl,
         file: () => {
           counter++;
           return values[counter];
@@ -569,8 +569,8 @@ describe('Storage', () => {
     beforeEach(() => storage2 = null);
 
     it('should be compatible with an options object on url based connections', (done) => {
-      storage = GridFsStorage({
-        url: setting.mongoUrl,
+      storage = new GridFsStorage({
+        url: settings.mongoUrl,
         options: {
           poolSize: 10,
         },
@@ -586,15 +586,15 @@ describe('Storage', () => {
       const spy = sinon.spy();
       process.on('warning', spy);
 
-      storage = GridFsStorage({
-        url: setting.mongoUrl,
+      storage = new GridFsStorage({
+        url: settings.mongoUrl,
         connectionOpts: {
           poolSize: 10,
         },
       });
 
       storage2 = GridFsStorage({
-        url: setting.mongoUrl,
+        url: settings.mongoUrl,
         connectionOpts: {
           poolSize: 10,
         },
@@ -617,8 +617,91 @@ describe('Storage', () => {
     });
   });
 
-  afterEach(() => sinon.restore());
+  describe('Ready method', () => {
+    let result, resolveSpy, rejectSpy;
 
+    describe('Connection successful', () => {
+      beforeEach(() => {
+        storage = new GridFsStorage({
+          url: settings.mongoUrl
+        });
+      });
+
+      it('should return a promise that resolves when the connection is created', () => {
+        result = storage.ready();
+        resolveSpy = sinon.spy();
+        rejectSpy = sinon.spy();
+        storage.once('connection', resolveSpy);
+        storage.once('connectionFailed', rejectSpy);
+        expect(result).to.be.a('promise');
+        result.then(db => {
+          expect(resolveSpy).to.have.callCount(1);
+          expect(rejectSpy).to.have.callCount(0);
+          expect(db).to.equal(storage.db);
+          expect(db).not.to.equal(null);
+        });
+        return result;
+      });
+
+      it('should return a promise that resolves if the connection is already created', (done) => {
+        storage.once('connection', () => {
+          result = storage.ready();
+          expect(result).to.be.a('promise');
+          result
+            .then(db => {
+              expect(db).to.equal(storage.db);
+              expect(db).not.to.equal(null);
+              done();
+            })
+            .catch(done);
+        });
+      });
+    });
+
+    describe('Connection failed', () => {
+      const error = new Error('Fake error');
+      beforeEach(() => {
+        sinon.stub(MongoClient, 'connect').callsFake(function () {
+          setTimeout(() => arguments[2](error));
+        });
+        storage = new GridFsStorage({
+          url: settings.mongoUrl
+        });
+      });
+
+      it('should return a promise that rejects when the connection fails', () => {
+        result = storage.ready();
+        resolveSpy = sinon.spy();
+        rejectSpy = sinon.spy();
+        storage.once('connection', resolveSpy);
+        storage.once('connectionFailed', rejectSpy);
+
+        expect(result).to.be.a('promise');
+        return result.catch(err => {
+          expect(resolveSpy).to.have.callCount(0);
+          expect(rejectSpy).to.have.callCount(1);
+          expect(err).to.equal(rejectSpy.getCall(0).args[0]);
+          expect(err).to.equal(error);
+        });
+      });
+
+      it('should return a promise that rejects if the module already failed connecting', (done) => {
+        storage.once('connectionFailed', (evtErr) => {
+          result = storage.ready();
+          expect(result).to.be.a('promise');
+          result.catch(err => {
+            expect(err).to.equal(evtErr);
+            expect(err).to.equal(error);
+            done();
+          });
+        });
+      });
+    });
+
+    afterEach(() => cleanStorage(storage));
+  });
+
+  afterEach(() => sinon.restore());
 });
 
 
