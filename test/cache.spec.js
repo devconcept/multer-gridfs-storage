@@ -362,31 +362,32 @@ describe('Caching', () => {
       it('should only reject connections associated to the same cache', (done) => {
         const conSpy = sinon.spy();
         const rejectSpy = sinon.spy();
-
-        storage1 = new GridFsStorage({url, cache: '1'});
-
-        setTimeout(() => {
-          mongoSpy = sinon.stub(MongoClient, 'connect').callsFake(function (url, opts, cb) {
+        mongoSpy = sinon
+          .stub(MongoClient, 'connect')
+          .callThrough()
+          .onSecondCall()
+          .callsFake(function (url, opts, cb) {
             setTimeout(() => cb(err));
           });
-          storage2 = new GridFsStorage({url, cache: '2'});
-          const storage3 = new GridFsStorage({url, cache: '1'});
-          const storage4 = new GridFsStorage({url, cache: '2'});
-          expect(mongoSpy).to.have.callCount(1);
 
-          storage2.on('connectionFailed', conSpy);
-          storage1.on('connectionFailed', rejectSpy);
+        storage1 = new GridFsStorage({url, cache: '1'});
+        storage2 = new GridFsStorage({url, cache: '2'});
+        const storage3 = new GridFsStorage({url, cache: '1'});
+        const storage4 = new GridFsStorage({url, cache: '2'});
+        expect(mongoSpy).to.have.callCount(2);
 
-          storage1.on('connection', () => {
-            expect(storage1.db).to.be.instanceOf(mongo.Db);
-            expect(storage2.db).to.equal(null);
-            expect(storage3.db).to.be.instanceOf(mongo.Db);
-            expect(storage4.db).to.equal(null);
-            expect(conSpy).to.have.callCount(1);
-            expect(rejectSpy).to.have.callCount(0);
-            expect(cache.connections()).to.equal(1);
-            done();
-          });
+        storage2.on('connectionFailed', conSpy);
+        storage1.on('connectionFailed', rejectSpy);
+
+        storage1.on('connection', () => {
+          expect(storage1.db).to.be.instanceOf(mongo.Db);
+          expect(storage2.db).to.equal(null);
+          expect(storage3.db).to.be.instanceOf(mongo.Db);
+          expect(storage4.db).to.equal(null);
+          expect(conSpy).to.have.callCount(1);
+          expect(rejectSpy).to.have.callCount(0);
+          expect(cache.connections()).to.equal(1);
+          done();
         });
       });
 
