@@ -582,7 +582,7 @@ describe('Storage', () => {
       });
     });
 
-    it('should preserve compatibility with a connectionOpts options property', () => {
+    it('should preserve compatibility with a connectionOpts options property', (done) => {
       const spy = sinon.spy();
       process.on('warning', spy);
 
@@ -600,13 +600,16 @@ describe('Storage', () => {
         },
       });
 
-      return Promise
+      Promise
         .all(storageReady(storage, storage2))
         .then(() => {
+          const expectedMessage = 'The property "connectionOpts" is deprecated. Use "options" instead.';
           expect(storage.db.serverConfig.s.poolSize).to.equal(10);
           expect(spy).to.have.callCount(1);
-          expect(spy.getCall(0).args[0].message).to.equal('The property "connectionOpts" is deprecated. Use "options" instead.');
-        });
+          expect(spy.getCall(0).args[0].message).to.equal(expectedMessage);
+          done();
+        })
+        .catch(done);
     });
 
     afterEach(() => {
