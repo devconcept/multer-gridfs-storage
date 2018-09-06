@@ -464,7 +464,9 @@ storage
   });
 ```
 
-Remember that you don't need to wait for the connection to be ready to start uploading files. The module buffers every incoming file until the connection is ready and saves all of them as soon as possible. The `ready` method is just a convenience function to make more readable code written using the `connection` events.
+Remember that you don't need to wait for the connection to be ready to start uploading files. The module buffers every incoming file until the connection is ready and saves all of them as soon as possible.
+
+The `ready` method is just a convenience function to make more readable code written using the `connection` events also with a couple of advantages. If you setup a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method will. The module keeps track of this events and resolves or rejects the promises accordingly.
 
 ## Test
 
