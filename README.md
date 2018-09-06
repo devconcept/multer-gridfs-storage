@@ -77,7 +77,7 @@ Type: `string`
 Required if [`db`][db-option] option is not present
 
 An url pointing to the database used to store the incoming files.
- 
+
 With this option the module will create a mongodb connection for you. It must be a standard mongodb [connection string][connection-string].
 
 If the [`db`][db-option] option is specified this setting is ignored.
@@ -414,17 +414,17 @@ This event is emitted when there is an error streaming the file to the database.
 
  - error: The streaming error
  - conf: The failed file configuration
- 
+
 > Previously this event was named `error` but in Node `error` events are special and crash the process if one is emitted and there is no listener attached. You could choose to handle errors in an [express middleware][error-handling] forcing you to set an empty `error` listener to avoid crashing. To simplify the issue this event was renamed to allow you to choose the best way to handle storage errors.
- 
+
 #### Event: `'dbError'`
- 
+
 This event is emitted when the underlying connection emits an error.
- 
+
  > Only available when the storage is created with the [`url`][url-option] option.
- 
+
 *Event arguments*
- 
+
  - error: The error emitted by the database connection
 
 ### Storage ready
@@ -466,7 +466,7 @@ storage
 
 Remember that you don't need to wait for the connection to be ready to start uploading files. The module buffers every incoming file until the connection is ready and saves all of them as soon as possible.
 
-The `ready` method is just a convenience function to make more readable code written using the `connection` events also with a couple of advantages. If you setup a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method it will. The module keeps track of this events and resolves or rejects the promises accordingly.
+The `ready` method is just a convenience function over code written using the `connection` events also with a  couple of advantages. If you setup a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method it will. The module keeps track of this events and resolves or rejects the promises accordingly. Promises in this case are more readable than events and more reliable.
 
 ## Test
 
@@ -499,7 +499,7 @@ $ npm coverage
 [connection-string]: https://docs.mongodb.com/manual/reference/connection-string
 [mongoclient-connect]: https://mongodb.github.io/node-mongodb-native/api-generated/mongoclient.html
 [mongo-db]: https://mongodb.github.io/node-mongodb-native/api-generated/db.html
-[error-handling]: https://github.com/expressjs/multer#error-handling 
+[error-handling]: https://github.com/expressjs/multer#error-handling
 
 [url-option]: #url
 [options-option]: #options
