@@ -10,6 +10,7 @@ const md5File = require('md5-file');
 const fs = require('fs');
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
+const util = require('util');
 
 const GridFsStorage = require('../index');
 const settings = require('./utils/settings');
@@ -583,8 +584,10 @@ describe('Storage', () => {
     });
 
     it('should preserve compatibility with a connectionOpts options property', (done) => {
-      const spy = sinon.spy();
-      process.on('warning', spy);
+      const version = process.version.slice(1).split('.').map(Number);
+      const warningSpy = sinon.spy();
+      const deprecate = sinon.stub(util, 'deprecate').callThrough();
+      process.on('warning', warningSpy);
 
       storage = new GridFsStorage({
         url: settings.mongoUrl,
@@ -605,8 +608,12 @@ describe('Storage', () => {
         .then(() => {
           const expectedMessage = 'The property "connectionOpts" is deprecated. Use "options" instead.';
           expect(storage.db.serverConfig.s.poolSize).to.equal(10);
-          expect(spy).to.have.callCount(1);
-          expect(spy.getCall(0).args[0].message).to.equal(expectedMessage);
+          expect(deprecate).to.have.callCount(1);
+          expect(deprecate.getCall(0).args[1]).to.equal(expectedMessage);
+          if (version[0] !== 4) {
+            expect(warningSpy).to.have.callCount(1);
+            expect(warningSpy.getCall(0).args[0].message).to.equal(expectedMessage);
+          }
           done();
         })
         .catch(done);
