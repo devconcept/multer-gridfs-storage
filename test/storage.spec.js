@@ -633,7 +633,7 @@ describe('Storage', () => {
     describe('Connection successful', () => {
       beforeEach(() => {
         storage = new GridFsStorage({
-          url: settings.mongoUrl
+          url: settings.mongoUrl,
         });
       });
 
@@ -675,7 +675,7 @@ describe('Storage', () => {
           setTimeout(() => arguments[2](error));
         });
         storage = new GridFsStorage({
-          url: settings.mongoUrl
+          url: settings.mongoUrl,
         });
       });
 
