@@ -9,13 +9,13 @@ This module is intended to be used with the v1.x branch of Multer.
 ## Features
 
 - Compatibility with MongoDb versions 2 and 3.
-- Full Node.js support for versions 4 and greater.
 - Really simple api.
+- Compatible with any Node.js version greater than 4.
 - Caching of url based connections.
-- Promise support.
-- Generator function support.
+- Compatible with Mongoose connection objects.
+- Promise and generator function support.
 - Support for existing and promise based database connections.
-- Delayed file storage until the connection is available.
+- Storage operation buffering for incoming files while the connection is opening.
 
 ## Installation
 
@@ -77,7 +77,7 @@ Type: `string`
 Required if [`db`][db-option] option is not present
 
 An url pointing to the database used to store the incoming files.
- 
+
 With this option the module will create a mongodb connection for you. It must be a standard mongodb [connection string][connection-string].
 
 If the [`db`][db-option] option is specified this setting is ignored.
@@ -90,11 +90,11 @@ const storage = require('multer-gridfs-storage')({
 });
 ```
 
-> The connected database is available in the `storage.db` property.
+The connected database is available in the `storage.db` property.
 
-> On mongodb v3 the client instance is also available in the `storage.client` property.
+On mongodb v3 the client instance is also available in the `storage.client` property.
 
-#### connectionOpts
+#### options
 
 Type: object
 
@@ -112,9 +112,9 @@ Not required
 
 Default value: `false`
 
-> This option only applies when you use an url string to connect to MongoDb. Caching is not enabled when you create instances with a [database][db-option] object directly.
-
 Store this connection in the internal cache. You can also use a string to use a named cache. By default caching is disabled. See [caching](#caching) to learn more about reusing connections.
+
+> This option only applies when you use an url string to connect to MongoDb. Caching is not enabled when you create instances with a [database][db-option] object directly.
 
 #### db
 
@@ -122,40 +122,50 @@ Type: [`DB`][mongo-db] or `Promise`
 
 Required if [`url`][url-option] option is not present
 
-The database connection to use or a promise that resolves with the connection.
+The database connection to use or a promise that resolves with the connection object. Mongoose `Connection` objects are supported too.
 
 This is useful to reuse an existing connection to create more storage objects.
 
 Example:
 
 ```javascript
-// mongodb v2 using a database instance
+// mongodb v2
+ 
+// using a database instance
 MongoClient.connect('mongodb://yourhost:27017/database').then(database => {
   storage = new GridFSStorage({ db: database });
 });
-```
 
-```javascript
-// mongodb v2 using a promise
+// using a promise
 const promise = MongoClient.connect('mongodb://yourhost:27017/database');
 storage = new GridFSStorage({ db: promise });
 ```
 
 ```javascript
-// mongodb v3 using a database instance
+// mongodb v3
+
+// using a database instance
 MongoClient.connect('mongodb://yourhost:27017').then(client => {
   const database = client.db('database')
   storage = new GridFSStorage({ db: database });
 });
-```
 
-```javascript
-// mongodb v3 using a promise
+// using a promise
 const promise = MongoClient
   .connect('mongodb://yourhost:27017')
   .then(client => client.db('database'));
   
 storage = new GridFSStorage({ db: promise });
+```
+
+```javascript
+// using Mongoose
+
+const connection = mongoose.connect('mongodb://yourhost:27017/database');
+
+storage = new GridFSStorage({
+  db: connection
+});
 ```
 
 #### file
@@ -284,13 +294,13 @@ To see all the other properties of the file object, check the Multer's [document
 
 ### Caching
 
-You can enable caching by either using a boolean or a non empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
+You can enable caching by either using a boolean or a non-empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
 
-The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances one after the other and only one of them will try to open a connection. 
+The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances for the same cache one after the other and only one of them will try to open a connection. 
 
 This greatly simplifies managing instances in different files of your app. All you have to do now is to store a url string in a configuration file to share the same connection. Scaling your application with a load-balancer, for example, can lead to spawn a great number of database connection for each child process. With this feature no additional code is required to keep opened connections to the exact number you want without any effort.
 
-You can also create named caches by using a string instead of a boolean value. In those cases the module will uniquely identify the cache allowing for an arbitrary number of cached connections per url and giving you the ability to decide which connection to use and how many of them should be created. 
+You can also create named caches by using a string instead of a boolean value. In those cases, the module will uniquely identify the cache allowing for an arbitrary number of cached connections per url and giving you the ability to decide which connection to use and how many of them should be created. 
 
 The following code will create a new connection and store it under a cache named `'default'`.
 
@@ -361,7 +371,7 @@ const storage2 = new GridFsStorage({
 
 Of course if you want to create more connections this is still possible. Caching is disabled by default so setting a `cache: false` or not setting any cache configuration at all will cause the module to ignore caching and create a new connection each time.
 
-Using [connectionOpts][connectionOpts-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
+Using [options][options-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
 
 ### Events
 
@@ -404,19 +414,59 @@ This event is emitted when there is an error streaming the file to the database.
 
  - error: The streaming error
  - conf: The failed file configuration
- 
+
 > Previously this event was named `error` but in Node `error` events are special and crash the process if one is emitted and there is no listener attached. You could choose to handle errors in an [express middleware][error-handling] forcing you to set an empty `error` listener to avoid crashing. To simplify the issue this event was renamed to allow you to choose the best way to handle storage errors.
- 
+
 #### Event: `'dbError'`
- 
+
 This event is emitted when the underlying connection emits an error.
- 
+
  > Only available when the storage is created with the [`url`][url-option] option.
- 
+
 *Event arguments*
- 
+
  - error: The error emitted by the database connection
 
+### Storage ready
+
+Each storage has a `ready` method that returns a promise. This allows you to watch for the MongoDb connection instead of using events. These two examples are equivalent.
+
+```javascript
+// Using event emitters
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database'
+})
+
+storage.on('connection', (db) => {
+  // Db is the database instance
+});
+
+storage.on('connectionFailed', (err) => {
+  // err is the error received from MongoDb
+});
+```
+
+```javascript
+// Using the ready method
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database'
+})
+
+storage
+  .ready()
+  .then((db) => {
+    // Db is the database instance
+  })
+  .catch((err) => {
+    // err is the error received from MongoDb
+  });
+```
+
+Remember that you don't need to wait for the connection to be ready to start uploading files. The module buffers every incoming file until the connection is ready and saves all of them as soon as possible.
+
+The `ready` method is just a convenience function over code written using the `connection` events also with a  couple of advantages. If you setup a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method it will. The module keeps track of this events and resolves or rejects the promises accordingly. Promises in this case are more readable than events and more reliable.
 
 ## Test
 
@@ -447,12 +497,12 @@ $ npm coverage
 [downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 
 [connection-string]: https://docs.mongodb.com/manual/reference/connection-string
-[mongoclient-connect]: https://mongodb.github.io/node-mongodb-native/api-generated/mongoclient.html
-[mongo-db]: https://mongodb.github.io/node-mongodb-native/api-generated/db.html
-[error-handling]: https://github.com/expressjs/multer#error-handling 
+[mongoclient-connect]: http://mongodb.github.io/node-mongodb-native/3.1/api/MongoClient.html
+[mongo-db]: http://mongodb.github.io/node-mongodb-native/3.1/api/Db.html
+[error-handling]: https://github.com/expressjs/multer#error-handling
 
 [url-option]: #url
-[connectionOpts-option]: #connectionOpts
+[options-option]: #options
 [db-option]: #db
 [file-option]: #file
 [cache-option]: #cache

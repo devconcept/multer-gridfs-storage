@@ -9,6 +9,7 @@ const Cache = require('../lib/cache');
 const settings = require('./utils/settings');
 const testUtils = require('./utils/testutils');
 const cleanStorage = testUtils.cleanStorage;
+const storageReady = testUtils.storageReady;
 
 const expect = chai.expect;
 const cache = GridFsStorage.cache;
@@ -203,7 +204,7 @@ describe('Caching', () => {
         const index = testCache.initialize({url, cacheName: 'b'});
         expect(testCache.has(index)).to.equal(true);
         testCache.remove(index);
-        expect(spy.callCount).to.equal(1);
+        expect(spy).to.have.callCount(1);
         const call = spy.getCall(0);
         expect(call.args[0]).to.equal('reject');
         expect(call.args[1]).to.equal(index);
@@ -219,7 +220,7 @@ describe('Caching', () => {
         entry.pending = false;
         expect(testCache.has(index)).to.equal(true);
         testCache.remove(index);
-        expect(spy.callCount).to.equal(0);
+        expect(spy).to.have.callCount(0);
         expect(testCache.has(index)).to.equal(false);
         expect(testCache.connections()).to.equal(0);
       });
@@ -278,7 +279,7 @@ describe('Caching', () => {
           setTimeout(() => {
             expect(storage1.db).to.equal(storage2.db);
             expect(eventSpy).to.have.been.calledOnceWith(storage1.db);
-            expect(mongoSpy.callCount).to.equal(1);
+            expect(mongoSpy).to.have.callCount(1);
             expect(cache.connections()).to.equal(1);
             storage2 = null;
             done();
@@ -297,7 +298,7 @@ describe('Caching', () => {
           setTimeout(() => {
             expect(storage1.db).to.equal(storage2.db);
             expect(eventSpy).to.have.been.calledOnceWith(storage1.db);
-            expect(mongoSpy.callCount).to.equal(1);
+            expect(mongoSpy).to.have.callCount(1);
             expect(cache.connections()).to.equal(1);
             storage2 = null;
             done();
@@ -311,12 +312,12 @@ describe('Caching', () => {
 
         storage1.on('connection', () => {
           storage2 = new GridFsStorage({url, cache: true});
-          storage2.on('connection', eventSpy);
+          storage2.once('connection', eventSpy);
 
-          setTimeout(() => {
+          storage2.once('connection', () => {
             expect(storage1.db).to.equal(storage2.db);
             expect(eventSpy).to.have.been.calledOnceWith(storage1.db);
-            expect(mongoSpy.callCount).to.equal(1);
+            expect(mongoSpy).to.have.callCount(1);
             expect(cache.connections()).to.equal(1);
             storage2 = null;
             done();
@@ -324,21 +325,23 @@ describe('Caching', () => {
         });
       });
 
-      it('should create different connections for different caches', (done) => {
+      it('should create different connections for different caches', () => {
         eventSpy = sinon.spy();
         const eventSpy2 = sinon.spy();
         storage1 = new GridFsStorage({url, cache: '1'});
         storage2 = new GridFsStorage({url, cache: '2'});
 
-        storage1.on('connection', eventSpy);
-        storage2.on('connection', eventSpy2);
-        setTimeout(() => {
-          expect(storage1.db).not.to.equal(storage2.db);
-          expect(eventSpy).to.have.been.calledOnceWith(storage1.db);
-          expect(eventSpy2).to.have.been.calledOnceWith(storage2.db);
-          expect(cache.connections()).to.equal(2);
-          done();
-        }, 500);
+        storage1.once('connection', eventSpy);
+        storage2.once('connection', eventSpy2);
+
+        return Promise
+          .all(storageReady(storage1, storage2))
+          .then(() => {
+            expect(storage1.db).not.to.equal(storage2.db);
+            expect(eventSpy).to.have.been.calledOnceWith(storage1.db);
+            expect(eventSpy2).to.have.been.calledOnceWith(storage2.db);
+            expect(cache.connections()).to.equal(2);
+          });
       });
 
       afterEach(() => {
@@ -354,35 +357,38 @@ describe('Caching', () => {
       let storage1, storage2, mongoSpy;
       const err = new Error();
 
+      beforeEach(() => storage2 = null);
+
       it('should only reject connections associated to the same cache', (done) => {
         const conSpy = sinon.spy();
         const rejectSpy = sinon.spy();
+        mongoSpy = sinon
+          .stub(MongoClient, 'connect')
+          .callThrough()
+          .onSecondCall()
+          .callsFake(function (url, opts, cb) {
+            setTimeout(() => cb(err));
+          });
 
         storage1 = new GridFsStorage({url, cache: '1'});
-        mongoSpy = sinon.stub(MongoClient, 'connect');
-        mongoSpy.callsFake(function () {
-          setTimeout(() => arguments[2](err));
-        });
         storage2 = new GridFsStorage({url, cache: '2'});
         const storage3 = new GridFsStorage({url, cache: '1'});
         const storage4 = new GridFsStorage({url, cache: '2'});
-        expect(mongoSpy.callCount).to.equal(1);
+        expect(mongoSpy).to.have.callCount(2);
 
         storage2.on('connectionFailed', conSpy);
+        storage1.on('connectionFailed', rejectSpy);
 
         storage1.on('connection', () => {
           expect(storage1.db).to.be.instanceOf(mongo.Db);
           expect(storage2.db).to.equal(null);
           expect(storage3.db).to.be.instanceOf(mongo.Db);
           expect(storage4.db).to.equal(null);
-          expect(conSpy.callCount).to.equal(1);
-          expect(rejectSpy.callCount).to.equal(0);
+          expect(conSpy).to.have.callCount(1);
+          expect(rejectSpy).to.have.callCount(0);
           expect(cache.connections()).to.equal(1);
-          storage2 = null;
           done();
         });
-
-        storage1.on('connectionFailed', rejectSpy);
       });
 
       afterEach(() => {

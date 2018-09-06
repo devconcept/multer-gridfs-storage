@@ -36,7 +36,7 @@ opts = {
 };
 ```
 
-The `UrlStorageOptions` interface requires a `url` property expecting a `string` and an optional connectionOpts to customize the internal connection.
+The `UrlStorageOptions` interface requires a `url` property expecting a `string` and an optional `options` to customize the internal connection.
 
 ```typescript
 let opts: GridFSStorage.UrlStorageOptions;

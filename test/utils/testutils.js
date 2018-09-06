@@ -4,16 +4,6 @@ const path = require('path');
 const MongoClient = require('mongodb').MongoClient;
 const settings = require('./settings');
 
-function getNodeVersion() {
-  const version = process.versions.node.split('.').map(Number);
-  const major = version[0];
-  const minor = version[1];
-  const patch = version[2];
-  return { major, minor, patch };
-}
-
-const version = getNodeVersion();
-
 const files = ['sample1.jpg', 'sample2.jpg']
   .map((file) => path.normalize(__dirname + '/../attachments/' + file));
 
@@ -48,11 +38,29 @@ function getClient(client) {
   return (client instanceof MongoClient) ? client : null;
 }
 
+function createBuffer(arr) {
+  return Buffer.from ? Buffer.from(arr) : new Buffer(arr);
+}
+
+function storageReady(args) { // eslint-disable-line no-unused-vars
+  const storage = [];
+  for (let i = 0; i < arguments.length; i++) {
+    storage.push(arguments[i]);
+  }
+  return storage.map(s => {
+    return new Promise((resolve, reject) => {
+      s.once('connection', resolve);
+      s.once('connectionFailed', reject);
+    });
+  });
+}
+
 module.exports = {
-  version,
   files,
   getDb,
   getClient,
   cleanStorage,
+  createBuffer,
+  storageReady,
 };
 
