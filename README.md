@@ -497,8 +497,8 @@ $ npm coverage
 [downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 
 [connection-string]: https://docs.mongodb.com/manual/reference/connection-string
-[mongoclient-connect]: https://mongodb.github.io/node-mongodb-native/api-generated/mongoclient.html
-[mongo-db]: https://mongodb.github.io/node-mongodb-native/api-generated/db.html
+[mongoclient-connect]: http://mongodb.github.io/node-mongodb-native/3.1/api/MongoClient.html
+[mongo-db]: http://mongodb.github.io/node-mongodb-native/3.1/api/Db.html
 [error-handling]: https://github.com/expressjs/multer#error-handling
 
 [url-option]: #url
