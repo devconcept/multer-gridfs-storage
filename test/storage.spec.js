@@ -23,6 +23,7 @@ const cleanStorage = testUtils.cleanStorage;
 const getDb = testUtils.getDb;
 const getClient = testUtils.getClient;
 const storageReady = testUtils.storageReady;
+const mongoVersion = testUtils.mongoVersion;
 
 chai.use(sinonChai);
 
@@ -562,6 +563,48 @@ describe('Storage', () => {
     });
 
     after(() => cleanStorage(storage));
+  });
+
+  describe('Disabling md5 hashes', () => {
+    before(function (done) {
+      if (!mongoVersion.startsWith('3.1')) {
+        return this.skip();
+      }
+
+      storage = new GridFsStorage({
+        url: settings.mongoUrl,
+        file: () => {
+          return {
+            disableMD5: true,
+          };
+        },
+      });
+      const upload = multer({storage});
+
+      app.post('/md5', upload.array('photo', 2), (req, res) => {
+        result = {headers: req.headers, files: req.files, body: req.body};
+        res.end();
+      });
+
+      storage.on('connection', () => {
+        request(app)
+          .post('/md5')
+          .attach('photo', files[0])
+          .attach('photo', files[0])
+          .end(done);
+      });
+    });
+
+    it('should not have a computed MD5 hash', () => {
+      expect(result.files[0].md5).to.equal(undefined);
+      expect(result.files[1].md5).to.equal(undefined);
+    });
+
+    after(() => {
+      if (mongoVersion.startsWith('3.1')) {
+        cleanStorage(storage);
+      }
+    });
   });
 
   describe('Using connection options', () => {

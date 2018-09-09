@@ -1,3 +1,7 @@
+# 3.2.1
+
+  * Feature: Added `aliases` and `disableMD5` properties to file naming configuration
+
 # 3.2.0
 
  * Feature: Support for Mongoose connections

@@ -62,7 +62,7 @@ app.post('/cool-profile', fUpload, (req, res, next) => {
 
 ### module(configuration): function
 
-The module returns a function that can be invoked to create a Multer storage engine.
+The module returns a function that can be invoked to create a Multer storage engine. It also works as a class so you can choose the best way to invoke it.
 
 Check the [wiki][wiki] for an in depth guide on how to use this module.
 
@@ -176,7 +176,9 @@ Not required
 
 A function to control the file storage in the database. Is invoked **per file** with the parameters `req` and `file`, in that order.
 
-By default, this module behaves exactly like the default Multer disk storage does. It generates a 16 bytes long name in hexadecimal format with no extension for the file to guarantee that there are very low probabilities of naming collisions. You can override this by passing your own function.
+This module uses [`GridFSBucket`](http://mongodb.github.io/node-mongodb-native/3.1/api/GridFSBucket.html) to store files in the database falling back to [`GridStore`](http://mongodb.github.io/node-mongodb-native/3.1/api/GridStore.html) in case the previous class is not found like, for example, in earlier versions of MongoDb. 
+
+By default naming behaves exactly like the default Multer disk storage. A 16 bytes long name in hexadecimal format is generated with no extension for the file to guarantee that there are very low probabilities of collisions. You can override this by passing your own function.
 
 The return value of this function is an object or a promise that resolves to an object (this also applies to generators) with the following properties. 
 
@@ -188,8 +190,10 @@ Property name | Description
 `chunkSize` | The size of file chunks in bytes (default: 261120)
 `bucketName` | The GridFs collection to store the file (default: `fs`)
 `contentType` | The content type for the file (default: inferred from the request)
+`aliases` | Optional array of strings to store in the file document's aliases field (default: `null`)
+`disableMD5` | If true, disables adding an md5 field to file data (default: `false`, available only on MongoDb >= 3.1)
 
-Any missing properties will use the defaults.
+Any missing properties will use the defaults. Also note that each property must be supported by your installed version of MongoDb.
 
 If you return `null` or `undefined` from the file function, the values for the current file will also be the defaults. This is useful when you want to conditionally change some files while leaving others untouched.
 
@@ -274,7 +278,7 @@ const upload = multer({ storage });
 
 ### File information
 
-Each file in `req.file` and `req.files` contain the following properties in addition to the ones that Multer create by default. Most of them can be set using the [`file`][file-option] configuration.
+Each saved file located in `req.file` and `req.files` contain the following properties in addition to the ones that Multer create by default. Most of them can be set using the [`file`][file-option] configuration.
 
 Key | Description
 --- | -----------
@@ -497,7 +501,7 @@ $ npm coverage
 [downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 
 [connection-string]: https://docs.mongodb.com/manual/reference/connection-string
-[mongoclient-connect]: http://mongodb.github.io/node-mongodb-native/3.1/api/MongoClient.html
+[mongoclient-connect]: http://mongodb.github.io/node-mongodb-native/3.1/api/MongoClient.html#.connect
 [mongo-db]: http://mongodb.github.io/node-mongodb-native/3.1/api/Db.html
 [error-handling]: https://github.com/expressjs/multer#error-handling
 
