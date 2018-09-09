@@ -1,3 +1,7 @@
+# 3.2.2
+
+  * Fix: Removed multer extra dependency from `package.json`
+
 # 3.2.1
 
   * Feature: Added `aliases` and `disableMD5` properties to file naming configuration
