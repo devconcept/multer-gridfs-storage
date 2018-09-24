@@ -20,7 +20,7 @@ describe('ES6 generators', () => {
     let result;
     before((done) => {
 
-      storage = GridFsStorage({
+      storage = new GridFsStorage({
         url: setting.mongoUrl,
         file: function* () {
           let counter = 0;
@@ -271,12 +271,14 @@ describe('ES6 generators', () => {
       expect(error.storageErrors).to.have.lengthOf(0);
     });
 
-    it('should not upload any file', function (done) {
+    it('should not upload any file', () => {
       const db = storage.db;
-      db.collection('fs.files').count({}, (err, count) => {
-        expect(count).to.equal(0);
-        done(err);
-      });
+      return db
+        .collection('fs.files')
+        .estimatedDocumentCount()
+        .then(count => {
+          expect(count).to.equal(0);
+        });
     });
 
     it('should throw an error about the ended generator', () => {
@@ -316,12 +318,14 @@ describe('ES6 generators', () => {
       expect(error).to.equal('reason');
     });
 
-    it('should not upload any file', function (done) {
+    it('should not upload any file', () => {
       const db = storage.db;
-      db.collection('fs.files').count({}, (err, count) => {
-        expect(count).to.equal(0);
-        done(err);
-      });
+      return db
+        .collection('fs.files')
+        .estimatedDocumentCount()
+        .then(count => {
+          expect(count).to.equal(0);
+        });
     });
 
     after(() => cleanStorage(storage));

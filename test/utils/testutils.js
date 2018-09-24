@@ -17,9 +17,11 @@ function cleanStorage(storage, db, client) {
       client = storage.client;
     }
     if (db) {
-      return db.dropDatabase().then(() => {
-        return client ? client.close() : db.close();
-      });
+      return db
+        .dropDatabase()
+        .then(() => client
+          ? client.close()
+          : db.close());
     } else {
       return Promise.resolve();
     }
