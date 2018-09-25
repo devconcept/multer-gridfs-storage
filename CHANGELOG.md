@@ -1,3 +1,7 @@
+# 3.2.3
+
+  * Fix: Solved bug in mongodb@2 and mongoose compatibility
+
 # 3.2.2
 
   * Fix: Removed multer extra dependency from `package.json`
