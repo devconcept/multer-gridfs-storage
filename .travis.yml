@@ -3,7 +3,6 @@ node_js:
   - "6"
   - "8"
   - "10"
-  - "latest"
 services: mongodb
 env:
   - NODE_ENV=test
