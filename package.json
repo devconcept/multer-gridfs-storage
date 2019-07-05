@@ -33,25 +33,25 @@
     "lodash.isplainobject": ">=0.8.0",
     "mongodb": ">=2",
     "mongodb-uri": "^0.9.7",
+    "multer": "^1.4.1",
     "pump": "^1.0.3"
   },
   "peerDependencies": {
     "multer": ">=1 <2"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "coveralls": "^2.13.3",
-    "eslint": "^2.10.2",
-    "express": "^4.16.2",
-    "istanbul": "^0.4.5",
-    "jsdoc": "^3.5.5",
-    "md5-file": "^2.0.4",
-    "mocha": "^5.2.0",
-    "mongoose": "^5.2.10",
-    "nyc": "^12.0.2",
-    "sinon": "^6.1.5",
-    "sinon-chai": "^3.2.0",
-    "supertest": "^3.1.0"
+    "chai": "^4.2.0",
+    "coveralls": "^3.0.4",
+    "eslint": "^6.0.1",
+    "express": "^4.17.1",
+    "jsdoc": "^3.6.2",
+    "md5-file": "^4.0.0",
+    "mocha": "^6.1.4",
+    "mongoose": "^5.6.3",
+    "nyc": "^14.1.1",
+    "sinon": "^7.3.2",
+    "sinon-chai": "^3.3.0",
+    "supertest": "^4.0.2"
   },
   "engines": {
     "node": ">=4"
