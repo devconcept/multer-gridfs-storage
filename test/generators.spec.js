@@ -109,7 +109,7 @@ describe('ES6 generators', () => {
     before((done) => {
       parameters = [];
 
-      storage = GridFsStorage({
+      storage = new GridFsStorage({
         url: setting.mongoUrl,
         file: function* (req, file) {
           let counter = 0;
@@ -161,7 +161,7 @@ describe('ES6 generators', () => {
   describe('promises and generators', () => {
     let result;
     before((done) => {
-      storage = GridFsStorage({
+      storage = new GridFsStorage({
         url: setting.mongoUrl,
         file: function* () {
           let counter = 0;
@@ -240,7 +240,7 @@ describe('ES6 generators', () => {
   describe('finite generators', () => {
     let error;
     before((done) => {
-      storage = GridFsStorage({
+      storage = new GridFsStorage({
         url: setting.mongoUrl,
         file: function* () {
           yield {
@@ -291,7 +291,7 @@ describe('ES6 generators', () => {
   describe('rejected promise', () => {
     let error;
     before((done) => {
-      storage = GridFsStorage({
+      storage = new GridFsStorage({
         url: setting.mongoUrl,
         file: function* () {
           yield Promise.reject('reason');

@@ -639,7 +639,7 @@ describe('Storage', () => {
         },
       });
 
-      storage2 = GridFsStorage({
+      storage2 = new GridFsStorage({
         url: settings.mongoUrl,
         connectionOpts: {
           poolSize: 10,

@@ -6,7 +6,7 @@
   },
   "extends": "eslint:recommended",
   "rules": {
-    "strict": "error",
+    "strict": "off",
     "callback-return": "warn",
     "global-require": "error",
     "new-cap": "warn",

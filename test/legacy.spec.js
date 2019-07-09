@@ -241,7 +241,7 @@ describe('Backwards compatibility', () => {
           },
         }),
       });
-      storage = GridFsStorage({url: setting.mongoUrl});
+      storage = new GridFsStorage({url: setting.mongoUrl});
       storage._legacy = true;
       storage.on('streamError', errorSpy);
       storage.on('file', fileSpy);
@@ -280,7 +280,7 @@ describe('Backwards compatibility', () => {
     before((done) => {
       emitterStub = sinon.stub().callsFake((evt, cb) => {
         if (evt === 'end') {
-          cb();
+          return cb();
         }
       });
       sinon.stub(mongo, 'GridStore').returns({
@@ -292,7 +292,7 @@ describe('Backwards compatibility', () => {
           },
         }),
       });
-      storage = GridFsStorage({url: setting.mongoUrl});
+      storage = new GridFsStorage({url: setting.mongoUrl});
       storage._legacy = true;
       storage.on('streamError', errorSpy);
       storage.on('file', fileSpy);
@@ -342,7 +342,7 @@ describe('Backwards compatibility', () => {
         }
         return Promise.resolve(db);
       });
-      storage = GridFsStorage({url: setting.mongoUrl});
+      storage = new GridFsStorage({url: setting.mongoUrl});
 
       storage.on('connection', (db, client) => {
         expect(db).to.be.an.instanceOf(mongo.Db);
@@ -364,7 +364,7 @@ describe('Backwards compatibility', () => {
         }
         return Promise.resolve(client);
       });
-      storage = GridFsStorage({url: setting.mongoUrl});
+      storage = new GridFsStorage({url: setting.mongoUrl});
 
       storage.on('connection', (db, client) => {
         expect(mongoSpy).to.have.callCount(1);

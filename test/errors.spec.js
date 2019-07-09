@@ -77,7 +77,7 @@ describe('Error handling', () => {
     it('should fail gracefully if an error is thrown inside the configuration function', function (done) {
       this.slow(200);
       let error;
-      storage = GridFsStorage({
+      storage = new GridFsStorage({
         url: settings.mongoUrl,
         file: () => {
           throw new Error('Error thrown');
@@ -106,7 +106,7 @@ describe('Error handling', () => {
     it('should fail gracefully if an error is thrown inside a generator function', function (done) {
       let error;
 
-      storage = GridFsStorage({
+      storage = new GridFsStorage({
         url: settings.mongoUrl,
         file: function* () { // eslint-disable-line require-yield
           throw new Error('File error');
@@ -147,7 +147,7 @@ describe('Error handling', () => {
           setTimeout(() => reject(error), 200);
         });
 
-        storage = GridFsStorage({db: promise});
+        storage = new GridFsStorage({db: promise});
 
         const upload = multer({storage});
 
@@ -190,7 +190,7 @@ describe('Error handling', () => {
             return db.close().then(() => db);
           })
           .then(db => {
-            storage = GridFsStorage({db});
+            storage = new GridFsStorage({db});
             const upload = multer({storage});
 
             app.post('/close', upload.array('photos', 2), (err, req, res, next) => {
@@ -230,7 +230,7 @@ describe('Error handling', () => {
       it('should throw an error if the mongodb connection fails', function (done) {
         const connectionSpy = sinon.spy();
 
-        storage = GridFsStorage({
+        storage = new GridFsStorage({
           url: settings.mongoUrl,
         });
 
@@ -262,7 +262,7 @@ describe('Error handling', () => {
           throw generatedError;
         });
 
-      storage = GridFsStorage({
+      storage = new GridFsStorage({
         url: settings.mongoUrl,
       });
 
