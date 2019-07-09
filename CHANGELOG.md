@@ -1,3 +1,7 @@
+# 3.3.0
+
+  * Update: Removed compatibility with Node 4
+
 # 3.2.3
 
   * Fix: Solved bug in mongodb@2 and mongoose compatibility
