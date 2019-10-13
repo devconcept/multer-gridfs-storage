@@ -481,7 +481,7 @@ $ npm install
 $ npm test
 ```
 
-Tests are written with [mocha](https://mochajs.org/) and [chai](http://chaijs.com/).
+Tests are written with the [ava](https://avajs.dev) testing framework.
 
 Code coverage thanks to [istanbul](https://github.com/gotwarlost/istanbul)
 
