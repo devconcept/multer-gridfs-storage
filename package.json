@@ -4,10 +4,9 @@
   "description": "Multer storage engine for GridFS",
   "main": "index.js",
   "scripts": {
-    "pretest": "npm install multer@1.3",
-    "test": "mocha --exit",
+    "test": "ava",
     "lint": "eslint . --fix",
-    "cover": "nyc --reporter=lcov mocha --exit",
+    "cover": "nyc npm test",
     "docs": "jsdoc -c ./conf.json --readme ./README.md",
     "coveralls": "npm run cover && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "preversion": "eslint ."
@@ -40,6 +39,7 @@
     "multer": ">=1 <2"
   },
   "devDependencies": {
+    "ava": "^2.4.0",
     "chai": "^4.2.0",
     "coveralls": "^3.0.4",
     "eslint": "^6.0.1",
@@ -49,6 +49,7 @@
     "mocha": "^6.1.4",
     "mongoose": "^5.6.3",
     "nyc": "^14.1.1",
+    "pify": "^4.0.1",
     "sinon": "^7.3.2",
     "sinon-chai": "^3.3.0",
     "supertest": "^4.0.2"

@@ -1,20 +1,39 @@
-'use strict';
+import url from 'url';
 
-const url = require('url');
+const hostname = process.env.MONGO_HOST || '127.0.0.1';
+const port = process.env.MONGO_PORT || 27017;
+const database = 'grid_fs_storage';
 
-const connection = {
-  host: process.env.MONGO_HOST || '127.0.0.1',
-  port: process.env.MONGO_PORT || 27017,
-  database: 'gridfsstorage',
+export const generateChar = (onlyLetters = false) => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const available = onlyLetters ? chars.slice(0, 52) : chars;
+  return available[Math.floor(Math.random() * available.length)];
 };
 
-const mongoUrl = url.format({
+export const connection = {
+  host: hostname,
+  port,
+  database,
+};
+
+export const mongoUrl = url.format({
   protocol: 'mongodb',
   slashes: true,
-  hostname: connection.host,
-  port: connection.port,
-  pathname: connection.database,
+  hostname,
+  port,
+  pathname: database,
 });
 
-module.exports.connection = connection;
-module.exports.mongoUrl = mongoUrl;
+export const generateUrl = function () {
+  let name = '';
+  for (let i = 0; i <= 10; i++) {
+    name = name + generateChar(i === 0);
+  }
+  return url.format({
+    protocol: 'mongodb',
+    slashes: true,
+    hostname,
+    port,
+    pathname: database + '_' + name,
+  })
+};
