@@ -8,7 +8,6 @@ module.exports.default = {
   helpers: [
     "test/utils/*"
   ],
-  compileEnhancements: false,
   cache: true,
   concurrency: 20,
   verbose: true,
