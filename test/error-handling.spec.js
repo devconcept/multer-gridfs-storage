@@ -28,13 +28,13 @@ test('invalid types as file configurations', async t => {
   });
   t.context.storage = storage;
   const upload = multer({storage});
-  app.post('/types', upload.single('photo'), (err, req, res, next) => {
+  app.post('/url', upload.single('photo'), (err, req, res, next) => {
     error = err;
     next();
   });
 
   await storage.ready();
-  await request(app).post('/types')
+  await request(app).post('/url')
     .attach('photo', files[0]);
 
   t.true(error instanceof Error);
@@ -54,13 +54,13 @@ test('fails gracefully if an error is thrown inside the configuration function',
 
   const upload = multer({storage});
 
-  app.post('/fail', upload.single('photo'), (err, req, res, next) => {
+  app.post('/url', upload.single('photo'), (err, req, res, next) => {
     error = err;
     next();
   });
 
   await storage.ready();
-  await request(app).post('/fail')
+  await request(app).post('/url')
     .attach('photo', files[0]);
 
   t.true(error instanceof Error);
@@ -80,13 +80,13 @@ test('fails gracefully if an error is thrown inside a generator function', async
 
   const upload = multer({storage});
 
-  app.post('/failgen', upload.single('photo'), (err, req, res, next) => {
+  app.post('/url', upload.single('photo'), (err, req, res, next) => {
     error = err;
     next();
   });
 
   await storage.ready();
-  await request(app).post('/failgen')
+  await request(app).post('/url')
     .attach('photo', files[0]);
 
   t.true(error instanceof Error);
@@ -106,14 +106,14 @@ test('connection promise fails to connect', async t => {
 
   const upload = multer({storage});
 
-  app.post('/fail_promise', upload.single('photo'), (err, req, res, next) => {
+  app.post('/url', upload.single('photo'), (err, req, res, next) => {
     next();
   });
 
   storage.on('connectionFailed', errorSpy);
 
   await request(app)
-    .post('/fail_promise')
+    .post('/url')
     .attach('photo', files[0]);
 
   t.is(errorSpy.callCount, 1);
@@ -136,13 +136,13 @@ test('connection is not opened', async t => {
   const storage = new GridFsStorage({db});
   const upload = multer({storage});
 
-  app.post('/close', upload.array('photos', 2), (err, req, res, next) => {
+  app.post('/url', upload.array('photos', 2), (err, req, res, next) => {
     error = err;
     next();
   });
 
   await request(app)
-    .post('/close')
+    .post('/url')
     .attach('photos', files[0])
     .attach('photos', files[0]);
 

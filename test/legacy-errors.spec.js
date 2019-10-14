@@ -34,12 +34,12 @@ test.serial('handle GridStore open error', async t => {
 
   const upload = multer({storage});
 
-  app.post('/storeopen', upload.single('photo'), (err, req, res, next) => { // eslint-disable-line no-unused-vars
+  app.post('/url', upload.single('photo'), (err, req, res, next) => { // eslint-disable-line no-unused-vars
     res.end();
   });
 
   await request(app)
-    .post('/storeopen')
+    .post('/url')
     .attach('photo', files[0]);
 
   t.is(errorSpy.callCount, 1);
@@ -78,12 +78,12 @@ test.serial('handle GridStore close error', async t => {
 
   const upload = multer({storage});
 
-  app.post('/storeclose', upload.single('photo'), (err, req, res, next) => { // eslint-disable-line no-unused-vars
+  app.post('/url', upload.single('photo'), (err, req, res, next) => { // eslint-disable-line no-unused-vars
     res.end();
   });
 
   await request(app)
-    .post('/storeclose')
+    .post('/url')
     .attach('photo', files[0]);
 
   t.is(errorSpy.callCount, 1);

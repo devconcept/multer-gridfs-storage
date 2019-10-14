@@ -2,12 +2,11 @@ import url from 'url';
 
 const hostname = process.env.MONGO_HOST || '127.0.0.1';
 const port = process.env.MONGO_PORT || 27017;
-const database = 'grid_fs_storage';
+const database = 'grid_storage';
 
-export const generateChar = (onlyLetters = false) => {
+export const generateChar = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const available = onlyLetters ? chars.slice(0, 52) : chars;
-  return available[Math.floor(Math.random() * available.length)];
+  return chars[Math.floor(Math.random() * chars.length)];
 };
 
 export const connection = {

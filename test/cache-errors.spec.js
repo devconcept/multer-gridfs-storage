@@ -4,7 +4,7 @@ import {spy, stub, restore} from 'sinon';
 
 import GridFsStorage from '../index';
 import {generateUrl} from './utils/settings';
-import {cleanStorage} from './utils/testutils';
+import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import Cache from "../lib/cache";
 
 const url = generateUrl();
@@ -18,9 +18,7 @@ test.serial.before(t => {
   t.context.mongoSpy = stub(MongoClient, 'connect')
     .callThrough()
     .onSecondCall()
-    .callsFake(function (url, opts, cb) {
-      setTimeout(() => cb(t.context.error));
-    });
+    .callsFake(fakeConnectCb(t.context.error));
   createStorage({cache: '1'}, {t, key: 'storage1'});
   createStorage({cache: '2'}, {t, key: 'storage2'});
   createStorage({cache: '1'}, {t, key: 'storage3'});
@@ -35,7 +33,7 @@ function createStorage(settings, {t, key} = {}) {
   return storage;
 }
 
-test.serial.cb('should only reject connections associated to the same cache', t => {
+test.serial('should only reject connections associated to the same cache', async t => {
   const {storage1, storage2, storage3, storage4, mongoSpy, cache} = t.context;
   const conSpy = spy();
   const rejectSpy = spy();
@@ -44,16 +42,14 @@ test.serial.cb('should only reject connections associated to the same cache', t 
   storage2.on('connectionFailed', conSpy);
   storage1.on('connectionFailed', rejectSpy);
 
-  storage1.on('connection', () => {
-    t.true(storage1.db instanceof Db);
-    t.is(storage2.db, null);
-    t.true(storage3.db instanceof Db);
-    t.is(storage4.db, null);
-    t.is(conSpy.callCount, 1);
-    t.is(rejectSpy.callCount, 0);
-    t.is(cache.connections(), 1);
-    t.end();
-  });
+  await storage1.ready();
+  t.true(storage1.db instanceof Db);
+  t.is(storage2.db, null);
+  t.true(storage3.db instanceof Db);
+  t.is(storage4.db, null);
+  t.is(conSpy.callCount, 1);
+  t.is(rejectSpy.callCount, 0);
+  t.is(cache.connections(), 1);
 });
 
 test.serial.afterEach.always(t => {

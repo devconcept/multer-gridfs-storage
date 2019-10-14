@@ -5,7 +5,7 @@ import {spy, stub, restore} from 'sinon';
 import GridFsStorage from '../index';
 import Cache from '../lib/cache';
 import {mongoUrl as url} from './utils/settings';
-import {cleanStorage} from './utils/testutils';
+import {delay, cleanStorage} from './utils/testutils';
 
 test.serial.beforeEach(t => {
   t.context.oldCache = GridFsStorage.cache;
@@ -23,7 +23,7 @@ function createStorage(settings, {t, key} = {}) {
   return storage;
 }
 
-test.serial.cb('creates one connection when several cached modules are invoked', t => {
+test.serial('creates one connection when several cached modules are invoked', async t => {
   const storage1 = createStorage({cache: true}, {t, key: 'storage1'});
   const storage2 = createStorage({cache: true});
   const {mongoSpy, cache} = t.context;
@@ -31,20 +31,16 @@ test.serial.cb('creates one connection when several cached modules are invoked',
   const eventSpy = spy();
   storage2.on('connection', eventSpy);
 
-  storage1.on('connection', () => {
-    setTimeout(() => {
-      t.is(storage1.db, storage2.db);
-      t.is(eventSpy.callCount, 1);
-      t.true(eventSpy.calledWith(storage1.db));
-      t.is(mongoSpy.callCount, 1);
-      t.is(cache.connections(), 1);
-
-      t.end();
-    });
-  });
+  await storage1.ready();
+  await delay();
+  t.is(storage1.db, storage2.db);
+  t.is(eventSpy.callCount, 1);
+  t.true(eventSpy.calledWith(storage1.db));
+  t.is(mongoSpy.callCount, 1);
+  t.is(cache.connections(), 1);
 });
 
-test.serial.cb('creates only one connection when several named cached modules are invoked', t => {
+test.serial('creates only one connection when several named cached modules are invoked', async t => {
   const storage1 = createStorage({cache: '1'}, {t, key: 'storage1'});
   const storage2 = createStorage({cache: '1'});
   const {mongoSpy, cache} = t.context;
@@ -52,38 +48,30 @@ test.serial.cb('creates only one connection when several named cached modules ar
   const eventSpy = spy();
   storage2.on('connection', eventSpy);
 
-  storage1.on('connection', () => {
-    setTimeout(() => {
-      t.is(storage1.db, storage2.db);
-      t.is(eventSpy.callCount, 1);
-      t.true(eventSpy.calledWith(storage1.db));
-      t.is(mongoSpy.callCount, 1);
-      t.is(cache.connections(), 1);
-
-      t.end();
-    });
-  });
+  await storage1.ready();
+  await delay();
+  t.is(storage1.db, storage2.db);
+  t.is(eventSpy.callCount, 1);
+  t.true(eventSpy.calledWith(storage1.db));
+  t.is(mongoSpy.callCount, 1);
+  t.is(cache.connections(), 1);
 });
 
-test.serial.cb('reuses the connection when a cache with the same name is already created', t => {
+test.serial('reuses the connection when a cache with the same name is already created', async t => {
   const eventSpy = spy();
   const storage1 = createStorage({cache: true}, {t, key: 'storage1'});
   const {mongoSpy, cache} = t.context;
 
-  storage1.on('connection', () => {
-    const storage2 = createStorage({cache: true});
-    storage2.once('connection', eventSpy);
+  await storage1.ready();
+  const storage2 = createStorage({cache: true});
+  storage2.once('connection', eventSpy);
 
-    storage2.once('connection', () => {
-      t.is(storage1.db, storage2.db);
-      t.is(eventSpy.callCount, 1);
-      t.true(eventSpy.calledWith(storage1.db));
-      t.is(mongoSpy.callCount, 1);
-      t.is(cache.connections(), 1);
-
-      t.end();
-    });
-  });
+  await storage2.ready();
+  t.is(storage1.db, storage2.db);
+  t.is(eventSpy.callCount, 1);
+  t.true(eventSpy.calledWith(storage1.db));
+  t.is(mongoSpy.callCount, 1);
+  t.is(cache.connections(), 1);
 });
 
 test.serial('creates different connections for different caches', async t => {

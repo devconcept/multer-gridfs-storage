@@ -56,13 +56,13 @@ test('create storage from db parameter', async t => {
   const {app, storage, upload} = t.context;
   storage.client = getClient(dbOrClient);
 
-  app.post('/db', upload.array('photos', 2), (req, res) => {
+  app.post('/url', upload.array('photos', 2), (req, res) => {
     result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   await storage.ready();
-  await request(app).post('/db')
+  await request(app).post('/url')
     .attach('photos', files[0])
     .attach('photos', files[1]);
 
@@ -82,13 +82,13 @@ test('connects to a mongoose instance', async t => {
   prepareTest(t, {db: promise});
   const {app, storage, upload} = t.context;
 
-  app.post('/mongoose_instance', upload.array('photos', 2), (req, res) => {
+  app.post('/url', upload.array('photos', 2), (req, res) => {
     result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   const instance = await storage.ready();
-  await request(app).post('/mongoose_instance')
+  await request(app).post('/url')
     .attach('photos', files[0])
     .attach('photos', files[1]);
 

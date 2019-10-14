@@ -23,13 +23,13 @@ test('handling empty name values', async t => {
   });
   const upload = multer({storage});
 
-  app.post('/empty', upload.array('photo', 3), (req, res) => {
+  app.post('/url', upload.array('photo', 3), (req, res) => {
     result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   await storage.ready();
-  await request(app).post('/empty')
+  await request(app).post('/url')
     .attach('photo', files[0])
     .attach('photo', files[0])
     .attach('photo', files[0]);
@@ -56,13 +56,13 @@ test('handling primitive values as names', async t => {
   });
   const upload = multer({storage});
 
-  app.post('/values', upload.array('photo', 2), (req, res) => {
+  app.post('/url', upload.array('photo', 2), (req, res) => {
     result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   await storage.ready();
-  await request(app).post('/values')
+  await request(app).post('/url')
     .attach('photo', files[0])
     .attach('photo', files[0]);
 

@@ -8,27 +8,21 @@ import {spy, stub, restore} from 'sinon';
 
 import GridFsStorage from '../index';
 import {generateUrl} from './utils/settings';
-import {files, cleanStorage} from './utils/testutils';
+import {files, cleanStorage, delay, fakeConnectCb} from './utils/testutils';
 
-test.serial.cb('connection function fails to connect', t => {
+test.serial('connection function fails to connect', async t => {
   const url = generateUrl();
   const err = new Error();
-  let mongoSpy = stub(MongoClient, 'connect').callsFake((url, options, cb) => {
-    setTimeout(() => {
-      cb(err);
-    });
-  });
+  let mongoSpy = stub(MongoClient, 'connect').callsFake(fakeConnectCb(err));
 
   const connectionSpy = spy();
   const storage = new GridFsStorage({url});
 
   storage.once('connectionFailed', connectionSpy);
 
-  setTimeout(() => {
-    t.is(connectionSpy.callCount, 1);
-    t.is(mongoSpy.callCount, 1);
-    t.end();
-  }, 50);
+  await delay(50);
+  t.is(connectionSpy.callCount, 1);
+  t.is(mongoSpy.callCount, 1);
 });
 
 test.serial('errors generating random bytes', async t => {
@@ -47,13 +41,13 @@ test.serial('errors generating random bytes', async t => {
   t.context.storage = storage;
   const upload = multer({storage});
 
-  app.post('/randombytes', upload.single('photo'), (err, req, res, next) => {
+  app.post('/url', upload.single('photo'), (err, req, res, next) => {
     error = err;
     next();
   });
 
   await storage.ready();
-  await request(app).post('/randombytes')
+  await request(app).post('/url')
     .attach('photo', files[0]);
 
   t.is(error, generatedError);

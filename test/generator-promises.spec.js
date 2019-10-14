@@ -25,13 +25,13 @@ async function successfulPromiseSetup(t) {
 
   const upload = multer({storage});
 
-  app.post('/promises', upload.array('photos', 2), (req, res) => {
+  app.post('/url', upload.array('photos', 2), (req, res) => {
     t.context.result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   await storage.ready();
-  await request(app).post('/promises')
+  await request(app).post('/url')
     .attach('photos', files[0])
     .attach('photos', files[1]);
 }
@@ -57,13 +57,13 @@ async function failedPromiseSetup(t) {
   t.context.storage = storage;
   const upload = multer({storage});
 
-  app.post('/rejected', upload.array('photos', 2), (err, req, res, next) => {
+  app.post('/url', upload.array('photos', 2), (err, req, res, next) => {
     t.context.error = err;
     next();
   });
 
   await storage.ready();
-  await request(app).post('/rejected')
+  await request(app).post('/url')
     .attach('photos', files[0]);
 }
 

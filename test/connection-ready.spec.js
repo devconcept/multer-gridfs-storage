@@ -2,7 +2,7 @@ import test from 'ava';
 import {MongoClient} from 'mongodb';
 import {spy, restore, stub} from 'sinon';
 
-import {cleanStorage} from './utils/testutils';
+import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import {generateUrl} from './utils/settings';
 import GridFsStorage from '../index';
 
@@ -82,8 +82,6 @@ function createStorage(t) {
 
 function forceFailure(t) {
   t.context.error = new Error('Fake error');
-  stub(MongoClient, 'connect').callsFake((url, options, callback) => {
-    setTimeout(() => callback(t.context.error));
-  });
+  stub(MongoClient, 'connect').callsFake(fakeConnectCb(t.context.error));
   createStorage(t);
 }

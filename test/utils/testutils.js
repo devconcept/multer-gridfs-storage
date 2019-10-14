@@ -46,3 +46,19 @@ export function createBuffer(arr) {
   return Buffer.from ? Buffer.from(arr) : new Buffer(arr);
 }
 
+export function delay(delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, delay);
+  });
+}
+
+export function fakeConnectCb(err = null) {
+  return (url, options, cb) => {
+    setTimeout(() => {
+      cb(err);
+    });
+  }
+}
+

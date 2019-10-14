@@ -27,13 +27,13 @@ test.before(t => {
   const upload = multer({storage});
   t.context.storage = storage;
 
-  app.post('/incoming', upload.array('photos', 2), (req, res) => {
+  app.post('/url', upload.array('photos', 2), (req, res) => {
     t.context.result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   return request(app)
-    .post('/incoming')
+    .post('/url')
     .attach('photos', files[0])
     .attach('photos', files[1]);
 });

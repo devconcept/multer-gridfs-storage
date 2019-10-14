@@ -37,13 +37,13 @@ test.before(async t => {
   t.context.storage = storage;
   const upload = multer({storage});
 
-  app.post('/config', upload.array('photos', 2), (req, res) => {
+  app.post('/url', upload.array('photos', 2), (req, res) => {
     t.context.result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   await storage.ready();
-  await request(app).post('/config')
+  await request(app).post('/url')
     .attach('photos', files[0])
     .attach('photos', files[1]);
 });

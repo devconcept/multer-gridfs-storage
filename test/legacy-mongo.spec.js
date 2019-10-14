@@ -33,14 +33,14 @@ test('legacy GridStore streams are supported', async t => {
   const f = await readFile(files[0]);
   const size = f.length;
 
-  app.post('/store', upload.single('photos'), (req, res) => {
+  app.post('/url', upload.single('photos'), (req, res) => {
     result = {headers: req.headers, file: req.file, body: req.body};
     res.end();
   });
 
   await storage.ready();
   await request(app)
-    .post('/store')
+    .post('/url')
     .attach('photos', files[0]);
 
   t.is(typeof result.file, 'object');
@@ -77,15 +77,14 @@ test('legacy streams support changing file configuration', async t => {
   });
   const {app, storage, upload} = t.context;
 
-  app.post('/config', upload.array('photos', 2), (req, res) => {
+  app.post('/url', upload.array('photos', 2), (req, res) => {
     result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   await storage.ready();
   const {db} = storage;
-  await request(app)
-    .post('/config')
+  await request(app).post('/url')
     .attach('photos', files[0])
     .attach('photos', files[1]);
 
@@ -105,7 +104,7 @@ test('legacy streams delete files correctly', async t => {
   createStorageAndUpload(t);
   const {app, upload, storage} = t.context;
 
-  app.post('/delete', upload.array('photos', 1), (err, req, res, next) => {
+  app.post('/url', upload.array('photos', 1), (err, req, res, next) => {
     result = {headers: req.headers, body: req.body, files: req.files};
     error = err;
     next();
@@ -113,8 +112,7 @@ test('legacy streams delete files correctly', async t => {
 
   await storage.ready();
   const {db} = storage;
-  await request(app)
-    .post('/delete')
+  await request(app).post('/url')
     .attach('photos', files[0])
     .attach('photos', files[1]);
 

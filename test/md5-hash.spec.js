@@ -17,13 +17,13 @@ test.before(async t => {
   t.context.storage = storage;
   const upload = multer({storage});
 
-  app.post('/md5', upload.array('photo', 2), (req, res) => {
+  app.post('/url', upload.array('photo', 2), (req, res) => {
     t.context.result = {headers: req.headers, files: req.files, body: req.body};
     res.end();
   });
 
   await storage.ready();
-  await request(app).post('/md5')
+  await request(app).post('/url')
     .attach('photo', files[0])
     .attach('photo', files[0]);
 });

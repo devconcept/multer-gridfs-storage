@@ -18,14 +18,14 @@ test.before(async t => {
   const upload = multer({storage});
   t.context.storage = storage;
 
-  app.post('/spec', upload.single('photo'), (req, res) => {
+  app.post('/url', upload.single('photo'), (req, res) => {
     t.context.result = {headers: req.headers, file: req.file, body: req.body};
     res.end();
   });
 
   await storage.ready()
     .then(() => request(app)
-      .post('/spec')
+      .post('/url')
       .attach('photo', files[0]));
 
   const f = await readFile(files[0]);
