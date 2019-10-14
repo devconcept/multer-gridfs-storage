@@ -30,30 +30,28 @@ Basic usage example:
 ```javascript
 const express = require('express');
 const multer  = require('multer');
+const GridFsStorage = require('multer-gridfs-storage');
 
 // Create a storage object with a given configuration
-const storage = require('multer-gridfs-storage')({
+const storage = new GridFsStorage({
    url: 'mongodb://yourhost:27017/database'
 });
 
 // Set multer storage engine to the newly created object
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 const app = express()
 
 // Upload your files as usual
-const sUpload = upload.single('avatar');
-app.post('/profile', sUpload, (req, res, next) => { 
+app.post('/profile', upload.single('avatar'), (req, res, next) => { 
     /*....*/ 
 })
 
-const arrUpload = upload.array('photos', 12);
-app.post('/photos/upload', arrUpload, (req, res, next) => {
+app.post('/photos/upload', upload.array('photos', 12), (req, res, next) => {
     /*....*/ 
 })
 
-const fUpload = upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'gallery', maxCount: 8 }])
-app.post('/cool-profile', fUpload, (req, res, next) => {
+app.post('/cool-profile', upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'gallery', maxCount: 8 }]), (req, res, next) => {
     /*....*/ 
 })
 ```
@@ -85,7 +83,9 @@ If the [`db`][db-option] option is specified this setting is ignored.
 Example:
 
 ```javascript
-const storage = require('multer-gridfs-storage')({
+const GridFsStorage = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
     url: 'mongodb://yourhost:27017/database'
 });
 ```
@@ -130,6 +130,7 @@ Example:
 
 ```javascript
 // mongodb v2
+const GridFsStorage = require('multer-gridfs-storage');
  
 // using a database instance
 MongoClient.connect('mongodb://yourhost:27017/database').then(database => {
