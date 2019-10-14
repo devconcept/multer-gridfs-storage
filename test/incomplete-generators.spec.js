@@ -12,10 +12,9 @@ test.before(async t => {
 	const app = express();
 	const storage = new GridFsStorage({
 		url,
-		* file() {
+		*file() {
 			yield {filename: 'name'};
 		}
-
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
@@ -27,7 +26,8 @@ test.before(async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 });

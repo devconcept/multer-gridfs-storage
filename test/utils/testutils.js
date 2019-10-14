@@ -4,8 +4,9 @@ import {connection} from './settings';
 
 export {version as mongoVersion} from 'mongodb/package.json';
 
-export const files = ['sample1.jpg', 'sample2.jpg']
-	.map(file => path.resolve(__dirname, '/../attachments/', file));
+export const files = ['sample1.jpg', 'sample2.jpg'].map(file =>
+	path.join(__dirname, '/../attachments/', file)
+);
 
 export async function cleanStorage(storage, {client, db} = {}) {
 	if (storage) {
@@ -18,11 +19,17 @@ export async function cleanStorage(storage, {client, db} = {}) {
 		if (db) {
 			await db.dropDatabase();
 			if (client) {
-				if (Object.hasOwnProperty.call(client, 'isConnected') && client.isConnected()) {
+				if (
+					Object.hasOwnProperty.call(client, 'isConnected') &&
+					client.isConnected()
+				) {
 					client.close();
 				}
 
-				if (Object.hasOwnProperty.call(client, 'readyState') && client.readyState === 1) {
+				if (
+					Object.hasOwnProperty.call(client, 'readyState') &&
+					client.readyState === 1
+				) {
 					client.close();
 				}
 			} else {
@@ -41,7 +48,7 @@ export function getDb(client) {
 }
 
 export function getClient(client) {
-	return (client instanceof MongoClient) ? client : null;
+	return client instanceof MongoClient ? client : null;
 }
 
 export function createBuffer(arr) {
@@ -66,7 +73,10 @@ export function fakeConnectCb(err = null) {
 			return;
 		}
 
-		return delay().then(() => err ? Promise.reject(err) : Promise.resolve());
+		return delay().then(() => (err ? Promise.reject(err) : Promise.resolve()));
 	};
 }
 
+export function hasOwn(obj, prop) {
+	return Object.prototype.hasOwnProperty.call(obj, prop);
+}

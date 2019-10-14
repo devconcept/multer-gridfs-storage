@@ -13,9 +13,9 @@ async function successfulPromiseSetup(t) {
 	t.context.filePrefix = 'file';
 	const storage = new GridFsStorage({
 		url,
-		* file() {
+		*file() {
 			let counter = 0;
-			for (; ;) {
+			for (;;) {
 				yield Promise.resolve({filename: t.context.filePrefix + (counter + 1)});
 				counter++;
 			}
@@ -31,7 +31,8 @@ async function successfulPromiseSetup(t) {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 }
@@ -45,7 +46,9 @@ test('yielding a promise is resolved as file configuration', async t => {
 	const {result} = t.context;
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
-	result.files.forEach((f, idx) => t.is(f.filename, t.context.filePrefix + (idx + 1)));
+	result.files.forEach((f, idx) =>
+		t.is(f.filename, t.context.filePrefix + (idx + 1))
+	);
 });
 
 async function failedPromiseSetup(t) {
@@ -54,7 +57,7 @@ async function failedPromiseSetup(t) {
 	t.context.rejectedError = new Error('reason');
 	const storage = new GridFsStorage({
 		url,
-		* file() {
+		*file() {
 			yield Promise.reject(t.context.rejectedError);
 		}
 	});
@@ -67,7 +70,8 @@ async function failedPromiseSetup(t) {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0]);
 }
 

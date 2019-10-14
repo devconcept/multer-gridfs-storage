@@ -36,7 +36,8 @@ test('preserves compatibility with a connectionOpts options property', async t =
 	t.context.storage = storage;
 
 	await storage.ready();
-	const expectedMessage = 'The property "connectionOpts" is deprecated. Use "options" instead.';
+	const expectedMessage =
+		'The property "connectionOpts" is deprecated. Use "options" instead.';
 	t.is(storage.db.serverConfig.s.poolSize, 10);
 	t.is(deprecate.callCount, 1);
 	t.is(deprecate.getCall(0).args[1], expectedMessage);

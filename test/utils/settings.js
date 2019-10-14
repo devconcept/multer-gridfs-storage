@@ -5,7 +5,8 @@ const port = process.env.MONGO_PORT || 27017;
 const database = 'grid_storage';
 
 export const generateChar = () => {
-	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	const chars =
+		'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 	return chars[Math.floor(Math.random() * chars.length)];
 };
 
@@ -23,7 +24,7 @@ export const mongoUrl = url.format({
 	pathname: database
 });
 
-export const generateUrl = function () {
+export const generateUrl = function() {
 	let name = '';
 	for (let i = 0; i <= 10; i++) {
 		name += generateChar(i === 0);

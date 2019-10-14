@@ -34,31 +34,31 @@ function createStorage(settings, {t, key} = {}) {
 	return storage;
 }
 
-test.serial('should only reject connections associated to the same cache', async t => {
-	const {storage1, storage2, storage3, storage4, mongoSpy, cache} = t.context;
-	const conSpy = spy();
-	const rejectSpy = spy();
-	t.is(mongoSpy.callCount, 2);
+test.serial(
+	'should only reject connections associated to the same cache',
+	async t => {
+		const {storage1, storage2, storage3, storage4, mongoSpy, cache} = t.context;
+		const conSpy = spy();
+		const rejectSpy = spy();
+		t.is(mongoSpy.callCount, 2);
 
-	storage2.on('connectionFailed', conSpy);
-	storage1.on('connectionFailed', rejectSpy);
+		storage2.on('connectionFailed', conSpy);
+		storage1.on('connectionFailed', rejectSpy);
 
-	await storage1.ready();
-	t.true(storage1.db instanceof Db);
-	t.is(storage2.db, null);
-	t.true(storage3.db instanceof Db);
-	t.is(storage4.db, null);
-	t.is(conSpy.callCount, 1);
-	t.is(rejectSpy.callCount, 0);
-	t.is(cache.connections(), 1);
-});
+		await storage1.ready();
+		t.true(storage1.db instanceof Db);
+		t.is(storage2.db, null);
+		t.true(storage3.db instanceof Db);
+		t.is(storage4.db, null);
+		t.is(conSpy.callCount, 1);
+		t.is(rejectSpy.callCount, 0);
+		t.is(cache.connections(), 1);
+	}
+);
 
 test.serial.afterEach.always(t => {
 	const {storage1, storage2, oldCache} = t.context;
 	GridFsStorage.cache = oldCache;
 	restore();
-	return Promise.all([
-		cleanStorage(storage1),
-		cleanStorage(storage2)
-	]);
+	return Promise.all([cleanStorage(storage1), cleanStorage(storage2)]);
 });

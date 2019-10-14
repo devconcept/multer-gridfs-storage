@@ -11,6 +11,9 @@
     "coveralls": "npm run coverage | coveralls",
     "preversion": "eslint ."
   },
+  "xo": {
+    "prettier": true
+  },
   "keywords": [
     "multer",
     "mongodb",
@@ -27,6 +30,7 @@
     "url": "git+https://github.com/devconcept/multer-gridfs-storage.git"
   },
   "dependencies": {
+    "has-own-prop": "^2.0.0",
     "is-generator": "^1.0.3",
     "is-promise": "^2.1.0",
     "lodash.isplainobject": ">=0.8.0",

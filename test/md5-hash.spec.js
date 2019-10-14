@@ -23,7 +23,8 @@ test.before(async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photo', files[0])
 		.attach('photo', files[0]);
 });
@@ -32,7 +33,7 @@ test.after.always('cleanup', t => {
 	cleanStorage(t.context.storage);
 });
 
-test('files don\'t have a computed MD5 hash', t => {
+test("files don't have a computed MD5 hash", t => {
 	const [major, minor] = mongoVersion.split('.');
 	if (major < 3 || (major === 3 && minor < 1)) {
 		return t.pass('Md5 hash is not supported in this mongo version');

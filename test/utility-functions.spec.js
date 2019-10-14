@@ -1,6 +1,13 @@
 import test from 'ava';
 import {parse} from 'mongodb-uri';
-import {compare, compareArrays, compareBy, compareUris, getDatabase, hasKeys} from '../lib/utils';
+import {
+	compare,
+	compareArrays,
+	compareBy,
+	compareUris,
+	getDatabase,
+	hasKeys
+} from '../lib/utils';
 import {createBuffer} from './utils/testutils';
 
 /* Compare */
@@ -69,13 +76,27 @@ test('compare includes arrays when comparing', t => {
 });
 
 test('compare includes buffers when comparing', t => {
-	t.true(compare({a: {b: createBuffer([1, 2])}}, {a: {b: createBuffer([1, 2])}}));
-	t.false(compare({a: {b: createBuffer([1, 2])}}, {a: {b: createBuffer([2, 2])}}));
+	t.true(
+		compare({a: {b: createBuffer([1, 2])}}, {a: {b: createBuffer([1, 2])}})
+	);
+	t.false(
+		compare({a: {b: createBuffer([1, 2])}}, {a: {b: createBuffer([2, 2])}})
+	);
 });
 
 test('compare includes buffers inside arrays when comparing', t => {
-	t.true(compare({a: {b: ['1', createBuffer([1, 2])]}}, {a: {b: ['1', createBuffer([1, 2])]}}));
-	t.false(compare({a: {b: ['1', createBuffer([1, 2])]}}, {a: {b: ['1', createBuffer([2, 2])]}}));
+	t.true(
+		compare(
+			{a: {b: ['1', createBuffer([1, 2])]}},
+			{a: {b: ['1', createBuffer([1, 2])]}}
+		)
+	);
+	t.false(
+		compare(
+			{a: {b: ['1', createBuffer([1, 2])]}},
+			{a: {b: ['1', createBuffer([2, 2])]}}
+		)
+	);
 });
 
 /* HasKeys */
@@ -92,7 +113,9 @@ test('should return false when the object has no properties', t => {
 /* CompareArrays */
 test('should return true when the arrays contains identical string or buffer values', t => {
 	t.true(compareArrays(['a', 'b'], ['a', 'b']));
-	t.true(compareArrays([createBuffer([1, 2]), 'b'], [createBuffer([1, 2]), 'b']));
+	t.true(
+		compareArrays([createBuffer([1, 2]), 'b'], [createBuffer([1, 2]), 'b'])
+	);
 });
 
 test('should return false when the arrays contains different values or they are compared by reference', t => {
@@ -114,24 +137,34 @@ test('should return the type of the objects when they have the same type', t => 
 
 /* CompareUris */
 test('should return true for urls that contain the same hosts in different order', t => {
-	t.true(compareUris(
-		parse('mongodb://host1:1234,host2:5678/database'),
-		parse('mongodb://host2:5678,host1:1234/database')
-	));
+	t.true(
+		compareUris(
+			parse('mongodb://host1:1234,host2:5678/database'),
+			parse('mongodb://host2:5678,host1:1234/database')
+		)
+	);
 });
 
 test('should return false for urls with different parameters', t => {
-	t.false(compareUris(
-		parse('mongodb://host1:1234,host2:5678/database?authSource=admin'),
-		parse('mongodb://host2:5678,host1:1234/database')
-	));
+	t.false(
+		compareUris(
+			parse('mongodb://host1:1234,host2:5678/database?authSource=admin'),
+			parse('mongodb://host2:5678,host1:1234/database')
+		)
+	);
 });
 
 test('should return true for urls with the same parameters in different order', t => {
-	t.true(compareUris(
-		parse('mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000'),
-		parse('mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin')
-	));
+	t.true(
+		compareUris(
+			parse(
+				'mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000'
+			),
+			parse(
+				'mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin'
+			)
+		)
+	);
 });
 
 /* GetDatabase */

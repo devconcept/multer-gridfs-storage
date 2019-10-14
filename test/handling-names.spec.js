@@ -33,7 +33,8 @@ test('handling empty name values', async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photo', files[0])
 		.attach('photo', files[0])
 		.attach('photo', files[0]);
@@ -66,11 +67,14 @@ test('handling primitive values as names', async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photo', files[0])
 		.attach('photo', files[0]);
 
-	result.files.forEach((f, idx) => t.is(f.filename, t.context.values[idx].toString()));
+	result.files.forEach((f, idx) =>
+		t.is(f.filename, t.context.values[idx].toString())
+	);
 	result.files.forEach(file => t.is(file.metadata, null));
 	result.files.forEach(file => t.is(file.bucketName, 'fs'));
 	result.files.forEach(file => t.is(file.chunkSize, 261120));

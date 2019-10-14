@@ -18,8 +18,14 @@ test('invalid configurations', t => {
 	const errFn = () => new GridFsStorage({});
 	const errFn2 = () => new GridFsStorage();
 
-	t.throws(errFn, 'Error creating storage engine. At least one of url or db option must be provided.');
-	t.throws(errFn2, 'Error creating storage engine. At least one of url or db option must be provided.');
+	t.throws(
+		errFn,
+		'Error creating storage engine. At least one of url or db option must be provided.'
+	);
+	t.throws(
+		errFn2,
+		'Error creating storage engine. At least one of url or db option must be provided.'
+	);
 });
 
 test('invalid types as file configurations', async t => {
@@ -38,7 +44,8 @@ test('invalid types as file configurations', async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photo', files[0]);
 
 	t.true(error instanceof Error);
@@ -64,7 +71,8 @@ test('fails gracefully if an error is thrown inside the configuration function',
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photo', files[0]);
 
 	t.true(error instanceof Error);
@@ -77,7 +85,8 @@ test('fails gracefully if an error is thrown inside a generator function', async
 	const app = express();
 	const storage = new GridFsStorage({
 		url,
-		* file() {
+		/* eslint-disable-next-line require-yield */
+		*file() {
 			throw new Error('File error');
 		}
 	});
@@ -90,7 +99,8 @@ test('fails gracefully if an error is thrown inside a generator function', async
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photo', files[0]);
 
 	t.true(error instanceof Error);
@@ -110,8 +120,9 @@ test('connection promise fails to connect', async t => {
 
 	const upload = multer({storage});
 
+	/* eslint-disable-next-line no-unused-vars, handle-callback-err */
 	app.post('/url', upload.single('photo'), (err, req, res, next) => {
-		next();
+		res.end();
 	});
 
 	storage.on('connectionFailed', errorSpy);
@@ -154,4 +165,3 @@ test('connection is not opened', async t => {
 	t.true(error instanceof Error);
 	t.is(error.message, 'The database connection must be open to store files');
 });
-

@@ -24,56 +24,65 @@ function createStorage(settings, {t, key} = {}) {
 	return storage;
 }
 
-test.serial('creates one connection when several cached modules are invoked', async t => {
-	const storage1 = createStorage({cache: true}, {t, key: 'storage1'});
-	const storage2 = createStorage({cache: true});
-	const {mongoSpy, cache} = t.context;
+test.serial(
+	'creates one connection when several cached modules are invoked',
+	async t => {
+		const storage1 = createStorage({cache: true}, {t, key: 'storage1'});
+		const storage2 = createStorage({cache: true});
+		const {mongoSpy, cache} = t.context;
 
-	const eventSpy = spy();
-	storage2.on('connection', eventSpy);
+		const eventSpy = spy();
+		storage2.on('connection', eventSpy);
 
-	await storage1.ready();
-	await delay();
-	t.is(storage1.db, storage2.db);
-	t.is(eventSpy.callCount, 1);
-	t.true(eventSpy.calledWith(storage1.db));
-	t.is(mongoSpy.callCount, 1);
-	t.is(cache.connections(), 1);
-});
+		await storage1.ready();
+		await delay();
+		t.is(storage1.db, storage2.db);
+		t.is(eventSpy.callCount, 1);
+		t.true(eventSpy.calledWith(storage1.db));
+		t.is(mongoSpy.callCount, 1);
+		t.is(cache.connections(), 1);
+	}
+);
 
-test.serial('creates only one connection when several named cached modules are invoked', async t => {
-	const storage1 = createStorage({cache: '1'}, {t, key: 'storage1'});
-	const storage2 = createStorage({cache: '1'});
-	const {mongoSpy, cache} = t.context;
+test.serial(
+	'creates only one connection when several named cached modules are invoked',
+	async t => {
+		const storage1 = createStorage({cache: '1'}, {t, key: 'storage1'});
+		const storage2 = createStorage({cache: '1'});
+		const {mongoSpy, cache} = t.context;
 
-	const eventSpy = spy();
-	storage2.on('connection', eventSpy);
+		const eventSpy = spy();
+		storage2.on('connection', eventSpy);
 
-	await storage1.ready();
-	await delay();
-	t.is(storage1.db, storage2.db);
-	t.is(eventSpy.callCount, 1);
-	t.true(eventSpy.calledWith(storage1.db));
-	t.is(mongoSpy.callCount, 1);
-	t.is(cache.connections(), 1);
-});
+		await storage1.ready();
+		await delay();
+		t.is(storage1.db, storage2.db);
+		t.is(eventSpy.callCount, 1);
+		t.true(eventSpy.calledWith(storage1.db));
+		t.is(mongoSpy.callCount, 1);
+		t.is(cache.connections(), 1);
+	}
+);
 
-test.serial('reuses the connection when a cache with the same name is already created', async t => {
-	const eventSpy = spy();
-	const storage1 = createStorage({cache: true}, {t, key: 'storage1'});
-	const {mongoSpy, cache} = t.context;
+test.serial(
+	'reuses the connection when a cache with the same name is already created',
+	async t => {
+		const eventSpy = spy();
+		const storage1 = createStorage({cache: true}, {t, key: 'storage1'});
+		const {mongoSpy, cache} = t.context;
 
-	await storage1.ready();
-	const storage2 = createStorage({cache: true});
-	storage2.once('connection', eventSpy);
+		await storage1.ready();
+		const storage2 = createStorage({cache: true});
+		storage2.once('connection', eventSpy);
 
-	await storage2.ready();
-	t.is(storage1.db, storage2.db);
-	t.is(eventSpy.callCount, 1);
-	t.true(eventSpy.calledWith(storage1.db));
-	t.is(mongoSpy.callCount, 1);
-	t.is(cache.connections(), 1);
-});
+		await storage2.ready();
+		t.is(storage1.db, storage2.db);
+		t.is(eventSpy.callCount, 1);
+		t.true(eventSpy.calledWith(storage1.db));
+		t.is(mongoSpy.callCount, 1);
+		t.is(cache.connections(), 1);
+	}
+);
 
 test.serial('creates different connections for different caches', async t => {
 	const {mongoSpy, cache} = t.context;
@@ -99,8 +108,5 @@ test.serial.afterEach.always(t => {
 	const {storage1, storage2, oldCache} = t.context;
 	GridFsStorage.cache = oldCache;
 	restore();
-	return Promise.all([
-		cleanStorage(storage1),
-		cleanStorage(storage2)
-	]);
+	return Promise.all([cleanStorage(storage1), cleanStorage(storage2)]);
 });

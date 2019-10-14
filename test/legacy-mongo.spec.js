@@ -88,7 +88,8 @@ test('legacy streams support changing file configuration', async t => {
 
 	await storage.ready();
 	const {db} = storage;
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
@@ -99,7 +100,9 @@ test('legacy streams support changing file configuration', async t => {
 	result.files.forEach((f, idx) => t.is(f.chunkSize, sizes[idx]));
 	result.files.forEach((f, idx) => t.is(f.id, ids[idx]));
 	result.files.forEach((f, idx) => t.is(f.contentType, contentTypes[idx]));
-	const collections = await db.listCollections({name: {$in: ['plants.files', 'animals.files']}}).toArray();
+	const collections = await db
+		.listCollections({name: {$in: ['plants.files', 'animals.files']}})
+		.toArray();
 	t.is(collections.length, 2);
 });
 
@@ -117,7 +120,8 @@ test('legacy streams delete files correctly', async t => {
 
 	await storage.ready();
 	const {db} = storage;
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 

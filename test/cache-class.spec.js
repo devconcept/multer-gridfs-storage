@@ -77,26 +77,41 @@ test('new cache is created if a different url is used', t => {
 });
 
 test('cache is reused if a similar url is used', t => {
-	cachesShouldBeEqual(t, 'mongodb://host1:1234,host2:5678/database', 'mongodb://host2:5678,host1:1234/database');
+	cachesShouldBeEqual(
+		t,
+		'mongodb://host1:1234,host2:5678/database',
+		'mongodb://host2:5678,host1:1234/database'
+	);
 });
 
 test('new cache is created if an url with more hosts is used', t => {
-	cachesShouldBeDifferent(t, 'mongodb://host1:1234/database', 'mongodb://host1:1234,host2:5678/database');
+	cachesShouldBeDifferent(
+		t,
+		'mongodb://host1:1234/database',
+		'mongodb://host1:1234,host2:5678/database'
+	);
 });
 
 test('new cache is created if urls with different hosts are used', t => {
-	cachesShouldBeDifferent(t, 'mongodb://host1:1234/database', 'mongodb://host2:5678/database');
+	cachesShouldBeDifferent(
+		t,
+		'mongodb://host1:1234/database',
+		'mongodb://host2:5678/database'
+	);
 });
 
 test('cache is reused if similar options are used in the url', t => {
-	const firstUrl = 'mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000';
-	const secondUrl = 'mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin';
+	const firstUrl =
+		'mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000';
+	const secondUrl =
+		'mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin';
 	cachesShouldBeEqual(t, firstUrl, secondUrl);
 });
 
 test('new cache is created if urls with different options are used', t => {
 	const firstUrl = 'mongodb://host1:1234/database?authSource=admin';
-	const secondUrl = 'mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin';
+	const secondUrl =
+		'mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin';
 	cachesShouldBeDifferent(t, firstUrl, secondUrl);
 });
 

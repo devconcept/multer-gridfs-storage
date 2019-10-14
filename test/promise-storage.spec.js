@@ -12,11 +12,13 @@ import GridFsStorage from '..';
 test.before(async t => {
 	const url = generateUrl();
 	const app = express();
-	const promised = MongoClient.connect(url, {useNewUrlParser: true}).then(_db => {
-		t.context.db = getDb(_db);
-		t.context.client = getClient(_db);
-		return t.context.db;
-	});
+	const promised = MongoClient.connect(url, {useNewUrlParser: true}).then(
+		_db => {
+			t.context.db = getDb(_db);
+			t.context.client = getClient(_db);
+			return t.context.db;
+		}
+	);
 
 	const storage = new GridFsStorage({db: promised});
 	const upload = multer({storage});
@@ -28,7 +30,8 @@ test.before(async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 });

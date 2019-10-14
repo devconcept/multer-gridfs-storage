@@ -48,7 +48,8 @@ test.serial('errors generating random bytes', async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photo', files[0]);
 
 	t.is(error, generatedError);

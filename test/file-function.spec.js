@@ -31,7 +31,6 @@ test.before(async t => {
 				contentType: t.context.contentTypes[counter - 1]
 			};
 		}
-
 	});
 
 	t.context.storage = storage;
@@ -43,7 +42,8 @@ test.before(async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 });
@@ -61,7 +61,9 @@ test('request contains the two uploaded files', t => {
 
 test('files are named with the provided value', t => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.filename, t.context.filenamePrefix + (idx + 1)));
+	result.files.forEach((f, idx) =>
+		t.is(f.filename, t.context.filenamePrefix + (idx + 1))
+	);
 });
 
 test('files contain a metadata object with the provided object', t => {
@@ -82,11 +84,15 @@ test('files have the provided id value', t => {
 test('files are stored under a collection with the provided name', async t => {
 	const {storage} = t.context;
 	const {db} = storage;
-	const collections = await db.listCollections({name: {$in: ['plants.files', 'animals.files']}}).toArray();
+	const collections = await db
+		.listCollections({name: {$in: ['plants.files', 'animals.files']}})
+		.toArray();
 	t.is(collections.length, 2);
 });
 
 test('files are stored with the provided content-type value', t => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.contentType, t.context.contentTypes[idx]));
+	result.files.forEach((f, idx) =>
+		t.is(f.contentType, t.context.contentTypes[idx])
+	);
 });

@@ -15,15 +15,15 @@ const md5File = pify(md5FileCb);
 function prepareTest(t, error) {
 	const url = generateUrl();
 	const app = express();
-	const promised = error ?
-		delay(1000).then(() => Promise.reject(error)) :
-		delay(1000)
-			.then(() => MongoClient.connect(url, {useNewUrlParser: true}))
-			.then(db => {
-				t.context.db = getDb(db);
-				t.context.client = getClient(db);
-				return t.context.db;
-			});
+	const promised = error
+		? delay(1000).then(() => Promise.reject(error))
+		: delay(1000)
+				.then(() => MongoClient.connect(url, {useNewUrlParser: true}))
+				.then(db => {
+					t.context.db = getDb(db);
+					t.context.client = getClient(db);
+					return t.context.db;
+				});
 
 	const storage = new GridFsStorage({db: promised});
 	const upload = multer({storage});
@@ -47,7 +47,8 @@ test('buffers incoming files while the connection is opening', async t => {
 		res.end();
 	});
 
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
@@ -55,10 +56,13 @@ test('buffers incoming files while the connection is opening', async t => {
 	t.truthy(result.files);
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
-	for (let i = 0; i < result.files.length; i++) {
-		const file = result.files[i];
-		t.is(file.md5, await md5File(files[i]));
-	}
+	const md5 = await Promise.all(
+		result.files.map(async (f, idx) => {
+			const computed = await md5File(files[idx]);
+			return {md5: f.md5, computed};
+		})
+	);
+	t.true(md5.every(f => f.md5 === f.computed));
 });
 
 test('rejects incoming files if the connection does not open', async t => {
@@ -66,11 +70,13 @@ test('rejects incoming files if the connection does not open', async t => {
 	const error = new Error('Failed error');
 	prepareTest(t, error);
 	const {storage, app, upload} = t.context;
+	/* eslint-disable-next-line no-unused-vars */
 	app.post('/url', upload.array('photos', 2), (err, req, res, next) => {
 		result = err;
 		res.end();
 	});
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 

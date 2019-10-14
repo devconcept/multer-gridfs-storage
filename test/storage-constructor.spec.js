@@ -38,17 +38,21 @@ test('create storage from url parameter', async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
 	t.truthy(result.files);
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
-	for (let i = 0; i < result.files.length; i++) {
-		const file = result.files[i];
-		t.is(file.md5, await md5File(files[i]));
-	}
+	const md5 = await Promise.all(
+		result.files.map(async (f, idx) => {
+			const computed = await md5File(files[idx]);
+			return {md5: f.md5, computed};
+		})
+	);
+	t.true(md5.every(f => f.md5 === f.computed));
 });
 
 test('create storage from db parameter', async t => {
@@ -66,17 +70,21 @@ test('create storage from db parameter', async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
 	t.truthy(result.files);
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
-	for (let i = 0; i < result.files.length; i++) {
-		const file = result.files[i];
-		t.is(file.md5, await md5File(files[i]));
-	}
+	const md5 = await Promise.all(
+		result.files.map(async (f, idx) => {
+			const computed = await md5File(files[idx]);
+			return {md5: f.md5, computed};
+		})
+	);
+	t.true(md5.every(f => f.md5 === f.computed));
 });
 
 test('connects to a mongoose instance', async t => {
@@ -92,7 +100,8 @@ test('connects to a mongoose instance', async t => {
 	});
 
 	const instance = await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
@@ -100,10 +109,13 @@ test('connects to a mongoose instance', async t => {
 	t.truthy(result.files);
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
-	for (let i = 0; i < result.files.length; i++) {
-		const file = result.files[i];
-		t.is(file.md5, await md5File(files[i]));
-	}
+	const md5 = await Promise.all(
+		result.files.map(async (f, idx) => {
+			const computed = await md5File(files[idx]);
+			return {md5: f.md5, computed};
+		})
+	);
+	t.true(md5.every(f => f.md5 === f.computed));
 
 	storage.client = mongoose.connection;
 });
@@ -112,6 +124,7 @@ test('creates an instance without the new keyword', async t => {
 	const url = generateUrl();
 	let result = {};
 	const app = express();
+	/* eslint-disable-next-line new-cap */
 	const storage = GridFsStorage({url});
 	const upload = multer({storage});
 	t.context.storage = storage;
@@ -122,15 +135,19 @@ test('creates an instance without the new keyword', async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
 	t.truthy(result.files);
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
-	for (let i = 0; i < result.files.length; i++) {
-		const file = result.files[i];
-		t.is(file.md5, await md5File(files[i]));
-	}
+	const md5 = await Promise.all(
+		result.files.map(async (f, idx) => {
+			const computed = await md5File(files[idx]);
+			return {md5: f.md5, computed};
+		})
+	);
+	t.true(md5.every(f => f.md5 === f.computed));
 });

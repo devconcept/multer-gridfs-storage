@@ -19,10 +19,10 @@ test.before(async t => {
 	t.context.contentTypes = ['text/plain', 'image/jpeg'];
 	const storage = new GridFsStorage({
 		url,
-		* file(req, file) {
+		*file(req, file) {
 			let counter = 0;
 			t.context.params = [{req, file}];
-			for (; ;) {
+			for (;;) {
 				const res = yield {
 					filename: t.context.filePrefix + (counter + 1),
 					metadata: t.context.metadatas[counter],
@@ -47,7 +47,8 @@ test.before(async t => {
 	});
 
 	await storage.ready();
-	await request(app).post('/url')
+	await request(app)
+		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 });
@@ -64,7 +65,9 @@ test('the request contains the two uploaded files', t => {
 
 test('files are named with the yielded value', t => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.filename, t.context.filePrefix + (idx + 1)));
+	result.files.forEach((f, idx) =>
+		t.is(f.filename, t.context.filePrefix + (idx + 1))
+	);
 });
 
 test('files contain a metadata object with the yielded object', t => {
@@ -85,13 +88,17 @@ test('should change the id with the yielded value', t => {
 test('files are stored under a collection with the yielded name', async t => {
 	const {storage} = t.context;
 	const {db} = storage;
-	const collections = await db.listCollections({name: {$in: ['plants.files', 'animals.files']}}).toArray();
+	const collections = await db
+		.listCollections({name: {$in: ['plants.files', 'animals.files']}})
+		.toArray();
 	t.is(collections.length, 2);
 });
 
 test('files are stored with the yielded content-type value', t => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.contentType, t.context.contentTypes[idx]));
+	result.files.forEach((f, idx) =>
+		t.is(f.contentType, t.context.contentTypes[idx])
+	);
 });
 
 test('should the parameters be a request and a file objects', t => {
@@ -99,7 +106,11 @@ test('should the parameters be a request and a file objects', t => {
 	params.forEach(p => {
 		const {req, file} = p;
 		t.is(req, appReq);
-		['body', 'query', 'params', 'files'].every(k => t.true(Object.hasOwnProperty.call(req, k)));
-		['fieldname', 'originalname', 'encoding', 'mimetype'].every(k => t.true(Object.hasOwnProperty.call(file, k)));
+		['body', 'query', 'params', 'files'].every(k =>
+			t.true(Object.hasOwnProperty.call(req, k))
+		);
+		['fieldname', 'originalname', 'encoding', 'mimetype'].every(k =>
+			t.true(Object.hasOwnProperty.call(file, k))
+		);
 	});
 });
