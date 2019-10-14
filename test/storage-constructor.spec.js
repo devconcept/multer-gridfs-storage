@@ -103,4 +103,31 @@ test('connects to a mongoose instance', async t => {
   storage.client = mongoose.connection;
 });
 
+test('creates an instance without the new keyword', async t => {
+  const url = generateUrl();
+  let result = {};
+  const app = express();
+  const storage = GridFsStorage({url});
+  const upload = multer({storage});
+  t.context.storage = storage;
+
+  app.post('/url', upload.array('photos', 2), (req, res) => {
+    result = {headers: req.headers, files: req.files, body: req.body};
+    res.end();
+  });
+
+  await storage.ready();
+  await request(app).post('/url')
+    .attach('photos', files[0])
+    .attach('photos', files[1]);
+
+  t.truthy(result.files);
+  t.true(result.files instanceof Array);
+  t.is(result.files.length, 2);
+  for (let i = 0; i < result.files.length; i++) {
+    const file = result.files[i];
+    t.is(file.md5, await md5File(files[i]));
+  }
+});
+
 test.afterEach.always('cleanup', t => cleanStorage(t.context.storage));

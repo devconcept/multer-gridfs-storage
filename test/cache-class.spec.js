@@ -236,4 +236,12 @@ test('should not remove any caches when there are no matches', t => {
   t.is(cache.connections(), 2);
 });
 
+test('should remove all entries from the cache', t => {
+  const {cache} = t.context;
+  cache.initialize({url, cacheName: 'a'});
+  t.is(cache.connections(), 1);
+  cache.clear();
+  t.is(cache.connections(), 0);
+});
+
 test.afterEach.always(() => restore());
