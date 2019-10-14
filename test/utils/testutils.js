@@ -55,10 +55,15 @@ export function delay(delay = 0) {
 }
 
 export function fakeConnectCb(err = null) {
-  return (url, options, cb) => {
-    setTimeout(() => {
-      cb(err);
-    });
+  return (...args) => {
+    if (args.length === 3) {
+      const cb = args[2];
+      setTimeout(() => {
+        cb(err);
+      });
+      return;
+    }
+    return delay().then(() => err ? Promise.reject(err) : Promise.resolve());
   }
 }
 
