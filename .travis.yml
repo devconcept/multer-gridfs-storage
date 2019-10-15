@@ -1,15 +1,12 @@
-jobs:
-	include:
-		- stage: test
-			language: node_js
-			node_js:
-				- "8"
-				- "10"
-				- "12"
-			services: mongodb
-			env:
-				- NODE_ENV=test
-			before_script:
-				- sleep 15
-			after_script:
-				- npm run coveralls
+language: node_js
+node_js:
+  - "8"
+  - "10"
+  - "12"
+services: mongodb
+env:
+  - NODE_ENV=test
+before_script:
+  - sleep 15
+after_script:
+  - npm run coveralls
