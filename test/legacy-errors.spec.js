@@ -6,10 +6,15 @@ import mongo, {MongoClient, Db, Server} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
 import {connection, generateUrl} from './utils/settings';
-import {cleanStorage, files} from './utils/testutils';
+import {cleanStorage, files, mongoVersion} from './utils/testutils';
 import GridFsStorage from '..';
 
 const {host, port, database} = connection;
+
+test.serial.afterEach.always(t => {
+	restore();
+	return cleanStorage(t.context.storage);
+});
 
 test.serial('handle GridStore open error', async t => {
 	const url = generateUrl();
@@ -114,28 +119,25 @@ test.serial('handles MongoClient and Db objects', async t => {
 	t.is(storage.client, null);
 });
 
-test.serial('handles the client instance returned in mongo 3', async t => {
-	const url = generateUrl();
-	const server = new Server(host, port);
-	const db = new Db(database, server);
-	const client = new MongoClient(server);
-	stub(client, 'db').callsFake(() => db);
-	const mongoSpy = stub(MongoClient, 'connect').callsFake((...args) => {
-		const callback = args.length > 2 ? args[2] : null;
-		if (callback) {
-			return callback(null, client);
-		}
+if (!mongoVersion.startsWith('2')) {
+	test.serial('handles the client instance returned in mongo 3', async t => {
+		const url = generateUrl();
+		const server = new Server(host, port);
+		const db = new Db(database, server);
+		const client = new MongoClient(server);
+		stub(client, 'db').callsFake(() => db);
+		const mongoSpy = stub(MongoClient, 'connect').callsFake((...args) => {
+			const callback = args.length > 2 ? args[2] : null;
+			if (callback) {
+				return callback(null, client);
+			}
 
-		return Promise.resolve(client);
+			return Promise.resolve(client);
+		});
+		const storage = new GridFsStorage({url});
+		await storage.ready();
+		t.is(mongoSpy.callCount, 1);
+		t.true(db instanceof Db);
+		t.true(client instanceof MongoClient);
 	});
-	const storage = new GridFsStorage({url});
-	await storage.ready();
-	t.is(mongoSpy.callCount, 1);
-	t.true(db instanceof Db);
-	t.true(client instanceof MongoClient);
-});
-
-test.serial.afterEach.always(t => {
-	restore();
-	return cleanStorage(t.context.storage);
-});
+}
