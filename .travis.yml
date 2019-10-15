@@ -10,3 +10,8 @@ before_script:
   - sleep 15
 after_script:
   - npm run coveralls
+jobs:
+	include:
+		- stage: compatibility
+		before_script:
+			- npm install mongodb@2
