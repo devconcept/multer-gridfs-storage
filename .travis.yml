@@ -13,6 +13,3 @@ jobs:
 				- sleep 15
 			after_script:
 				- npm run coveralls
-		- stage: compatibility
-			before_script:
-				- npm install mongodb@2
