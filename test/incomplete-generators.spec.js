@@ -46,9 +46,9 @@ test('does not upload any file', async t => {
 	const {storage} = t.context;
 	const {db} = storage;
 	const collection = await db.collection('fs.files');
-	const count = collection.estimatedDocumentCount
+	const count = await (collection.estimatedDocumentCount
 		? collection.estimatedDocumentCount()
-		: collection.count();
+		: collection.count());
 	t.is(count, 0);
 });
 
