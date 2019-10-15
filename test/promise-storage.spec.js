@@ -3,11 +3,14 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import {MongoClient} from 'mongodb';
-import {sync as md5File} from 'md5-file';
+import pify from 'pify';
+import md5FileCb from 'md5-file';
 
 import {files, cleanStorage, getDb, getClient} from './utils/testutils';
 import {generateUrl} from './utils/settings';
 import GridFsStorage from '..';
+
+const md5File = pify(md5FileCb);
 
 test.before(async t => {
 	const url = generateUrl();
@@ -47,10 +50,13 @@ test('store the files on upload', t => {
 	t.is(result.files.length, 2);
 });
 
-test('each stored file the same MD5 signature than the uploaded file', t => {
+test('each stored file the same MD5 signature than the uploaded file', async t => {
 	const {result} = t.context;
-	for (let i = 0; i < result.files.length; i++) {
-		const file = result.files[i];
-		t.is(file.md5, md5File(files[i]));
-	}
+	const md5 = await Promise.all(
+		result.files.map(async (f, idx) => {
+			const computed = await md5File(files[idx]);
+			return {md5: f.md5, computed};
+		})
+	);
+	t.true(md5.every(f => f.md5 === f.computed));
 });

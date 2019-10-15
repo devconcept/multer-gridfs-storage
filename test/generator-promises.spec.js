@@ -4,15 +4,14 @@ import request from 'supertest';
 import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 async function successfulPromiseSetup(t) {
-	const url = generateUrl();
 	const app = express();
 	t.context.filePrefix = 'file';
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		*file() {
 			let counter = 0;
 			for (;;) {
@@ -52,11 +51,10 @@ test('yielding a promise is resolved as file configuration', async t => {
 });
 
 async function failedPromiseSetup(t) {
-	const url = generateUrl();
 	const app = express();
 	t.context.rejectedError = new Error('reason');
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		*file() {
 			yield Promise.reject(t.context.rejectedError);
 		}

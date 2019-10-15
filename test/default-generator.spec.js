@@ -5,11 +5,10 @@ import multer from 'multer';
 import {ObjectID} from 'mongodb';
 
 import {files, cleanStorage} from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 test.before(async t => {
-	const url = generateUrl();
 	const app = express();
 	t.context.filePrefix = 'file';
 	t.context.metadatas = ['foo', 'bar'];
@@ -18,7 +17,7 @@ test.before(async t => {
 	t.context.collections = ['plants', 'animals'];
 	t.context.contentTypes = ['text/plain', 'image/jpeg'];
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		*file(req, file) {
 			let counter = 0;
 			t.context.params = [{req, file}];

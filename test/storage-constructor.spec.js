@@ -23,7 +23,7 @@ function prepareTest(t, opts) {
 }
 
 test.afterEach.always('cleanup', t => {
-	cleanStorage(t.context.storage);
+	return cleanStorage(t.context.storage);
 });
 
 test('create storage from url parameter', async t => {

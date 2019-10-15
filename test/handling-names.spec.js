@@ -4,22 +4,21 @@ import request from 'supertest';
 import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 test.afterEach.always('cleanup', t => {
-	cleanStorage(t.context.storage);
+	return cleanStorage(t.context.storage);
 });
 
 test('handling empty name values', async t => {
-	const url = generateUrl();
 	const app = express();
 	const values = [null, undefined, {}];
 	let counter = -1;
 	let result = {};
 
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		file: () => {
 			counter++;
 			return values[counter];
@@ -46,14 +45,13 @@ test('handling empty name values', async t => {
 });
 
 test('handling primitive values as names', async t => {
-	const url = generateUrl();
 	const app = express();
 	t.context.values = ['name', 10];
 	let counter = -1;
 	let result = {};
 
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		file: () => {
 			counter++;
 			return t.context.values[counter];

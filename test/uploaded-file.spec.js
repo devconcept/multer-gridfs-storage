@@ -6,15 +6,14 @@ import multer from 'multer';
 import pify from 'pify';
 
 import {files, cleanStorage, hasOwn} from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {generateUrl, storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 const readFile = pify(readFileCb);
 
 test.before(async t => {
-	const url = generateUrl();
 	const app = express();
-	const storage = new GridFsStorage({url});
+	const storage = new GridFsStorage(storageOpts());
 	const upload = multer({storage});
 	t.context.storage = storage;
 

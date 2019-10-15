@@ -5,7 +5,7 @@ import multer from 'multer';
 import mongo, {MongoClient, Db, Server} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
-import {connection, generateUrl} from './utils/settings';
+import {connection, generateUrl, storageOpts} from './utils/settings';
 import {cleanStorage, files, mongoVersion} from './utils/testutils';
 import GridFsStorage from '..';
 
@@ -55,7 +55,6 @@ test.serial('handle GridStore open error', async t => {
 });
 
 test.serial('handle GridStore close error', async t => {
-	const url = generateUrl();
 	const app = express();
 	const errorSpy = spy();
 	const fileSpy = spy();
@@ -75,7 +74,7 @@ test.serial('handle GridStore close error', async t => {
 			}
 		})
 	});
-	const storage = new GridFsStorage({url});
+	const storage = new GridFsStorage(storageOpts());
 	storage._legacy = true;
 	t.context.storage = storage;
 	storage.on('streamError', errorSpy);
@@ -111,7 +110,7 @@ test.serial('handles MongoClient and Db objects', async t => {
 
 		return Promise.resolve(db);
 	});
-	const storage = new GridFsStorage({url});
+	const storage = new GridFsStorage(storageOpts());
 
 	await storage.ready();
 	t.is(mongoSpy.callCount, 1);

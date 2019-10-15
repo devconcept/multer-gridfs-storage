@@ -3,12 +3,11 @@ import {MongoClient} from 'mongodb';
 import {spy, restore, stub} from 'sinon';
 
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 function createStorage(t) {
-	const url = generateUrl();
-	t.context.storage = new GridFsStorage({url});
+	t.context.storage = new GridFsStorage(storageOpts());
 }
 
 function forceFailure(t) {

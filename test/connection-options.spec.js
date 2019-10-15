@@ -15,7 +15,7 @@ test('is compatible with an options object on url based connections', async t =>
 	const url = generateUrl();
 	const storage = new GridFsStorage({
 		url,
-		options: {poolSize: 10}
+		options: {useNewUrlParser: true, poolSize: 10}
 	});
 	t.context.storage = storage;
 
@@ -31,7 +31,7 @@ test('preserves compatibility with a connectionOpts options property', async t =
 
 	const storage = new GridFsStorage({
 		url,
-		connectionOpts: {poolSize: 10}
+		connectionOpts: {useNewUrlParser: true, poolSize: 10}
 	});
 	t.context.storage = storage;
 

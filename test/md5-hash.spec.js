@@ -4,14 +4,13 @@ import request from 'supertest';
 import multer from 'multer';
 
 import {files, cleanStorage, mongoVersion} from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 test.before(async t => {
-	const url = generateUrl();
 	const app = express();
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		file: () => ({disableMD5: true})
 	});
 	t.context.storage = storage;

@@ -5,7 +5,7 @@ import express from 'express';
 import {MongoClient} from 'mongodb';
 import {spy, restore} from 'sinon';
 
-import {generateUrl} from './utils/settings';
+import {generateUrl, storageOpts} from './utils/settings';
 import {files, cleanStorage, getDb, getClient} from './utils/testutils';
 import GridFsStorage from '..';
 
@@ -33,7 +33,7 @@ test('invalid types as file configurations', async t => {
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		file: () => true
 	});
 	t.context.storage = storage;
@@ -57,7 +57,7 @@ test('fails gracefully if an error is thrown inside the configuration function',
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		file: () => {
 			throw new Error('Error thrown');
 		}
@@ -84,7 +84,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		/* eslint-disable-next-line require-yield */
 		*file() {
 			throw new Error('File error');

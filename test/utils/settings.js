@@ -28,3 +28,10 @@ export const generateUrl = function() {
 		pathname: database + '_' + random({length: 10, type: 'hex'})
 	});
 };
+
+export const storageOpts = function() {
+	return {
+		url: generateUrl(),
+		options: {useNewUrlParser: true, useUnifiedTopology: true}
+	};
+};

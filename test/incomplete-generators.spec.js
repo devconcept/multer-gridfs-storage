@@ -4,14 +4,14 @@ import request from 'supertest';
 import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {generateUrl, storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 test.before(async t => {
 	const url = generateUrl();
 	const app = express();
 	const storage = new GridFsStorage({
-		url,
+		...storageOpts(),
 		*file() {
 			yield {filename: 'name'};
 		}
