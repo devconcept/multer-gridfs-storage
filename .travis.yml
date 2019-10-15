@@ -1,6 +1,7 @@
-matrix:
+jobs:
 	include:
-		- language: node_js
+		- stage: test
+			language: node_js
 			node_js:
 				- "8"
 				- "10"
@@ -12,16 +13,3 @@ matrix:
 				- sleep 15
 			after_script:
 				- npm run coveralls
-		- language: node_js
-			node_js:
-				- "8"
-				- "10"
-				- "12"
-			services: mongodb
-			env:
-				- NODE_ENV=test
-			before_script:
-				- npm install mongodb@2
-			after_script:
-				- npm run coveralls
-
