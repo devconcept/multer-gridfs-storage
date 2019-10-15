@@ -33,7 +33,7 @@ test.before(async t => {
 });
 
 test.after.always('cleanup', t => {
-	cleanStorage(t.context.storage);
+	return cleanStorage(t.context.storage);
 });
 
 test('is a failed request', t => {
@@ -45,7 +45,10 @@ test('is a failed request', t => {
 test('does not upload any file', async t => {
 	const {storage} = t.context;
 	const {db} = storage;
-	const count = await db.collection('fs.files').estimatedDocumentCount();
+	const collection = await db.collection('fs.files');
+	const count = collection.estimatedDocumentCount
+		? collection.estimatedDocumentCount()
+		: collection.count();
 	t.is(count, 0);
 });
 

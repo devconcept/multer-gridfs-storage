@@ -81,6 +81,9 @@ test('yielding a promise rejection is handled properly', async t => {
 	const {db} = storage;
 	t.true(error instanceof Error);
 	t.is(error, t.context.rejectedError);
-	const count = await db.collection('fs.files').estimatedDocumentCount();
+	const collection = await db.collection('fs.files');
+	const count = collection.estimatedDocumentCount
+		? collection.estimatedDocumentCount()
+		: collection.count();
 	t.is(count, 0);
 });
