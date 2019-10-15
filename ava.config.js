@@ -3,7 +3,7 @@ module.exports.default = {
 	files: ['test/**/*.spec.js'],
 	helpers: ['test/utils/*'],
 	cache: true,
-	concurrency: 20,
+	concurrency: 10,
 	verbose: true,
 	tap: false,
 	failFast: true

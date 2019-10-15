@@ -46,6 +46,7 @@
   "devDependencies": {
     "ava": "^2.4.0",
     "coveralls": "^3.0.7",
+    "crypto-random-string": "^3.0.1",
     "eslint": "^6.5.1",
     "express": "^4.17.1",
     "jsdoc": "^3.6.3",
