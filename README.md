@@ -17,7 +17,7 @@ This module is intended to be used with the v1.x branch of Multer.
 - Support for existing and promise based database connections.
 - Storage operation buffering for incoming files while the connection is opening.
 
-## ⚙ Installation
+## 🚀 Installation
 
 Using npm
 
@@ -297,7 +297,7 @@ To see all the other properties of the file object, check the Multer's [document
 
 > Do not confuse `contentType` with Multer's `mimetype`. The first is the value in the database while the latter is the value in the request. You could choose to override the value at the moment of storing the file. In most cases both values should be equal. 
 
-### Caching
+### 📀 Caching
 
 You can enable caching by either using a boolean or a non-empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
 
@@ -378,7 +378,7 @@ Of course if you want to create more connections this is still possible. Caching
 
 Using [options][options-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
 
-### Events
+### ⚡ Events
 
 Each storage object is also a standard Node.js Event Emitter. This is done to ensure that some internal events can also be handled in user code.
 
@@ -473,7 +473,7 @@ Remember that you don't need to wait for the connection to be ready to start upl
 
 The `ready` method is just a convenience function over code written using the `connection` events also with a  couple of advantages. If you setup a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method it will. The module keeps track of this events and resolves or rejects the promises accordingly. Promises in this case are more readable than events and more reliable.
 
-## Test
+## 🧪 Test
 
 To run the test suite, first install the dependencies, then run `npm test`:
 
@@ -490,7 +490,7 @@ Code coverage thanks to [istanbul](https://istanbul.js.org/)
 $ npm run coverage
 ```
 
-## License
+## 📜 License
 
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
 
