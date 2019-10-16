@@ -6,7 +6,7 @@
 
 This module is intended to be used with the v1.x branch of Multer.
 
-## Features
+## 🔥 Features
 
 - Compatibility with MongoDb versions 2 and 3.
 - Really simple api.
@@ -17,7 +17,7 @@ This module is intended to be used with the v1.x branch of Multer.
 - Support for existing and promise based database connections.
 - Storage operation buffering for incoming files while the connection is opening.
 
-## Installation
+## ⚙ Installation
 
 Using npm
 
@@ -56,7 +56,7 @@ app.post('/cool-profile', upload.fields([{ name: 'avatar', maxCount: 1 }, { name
 })
 ```
 
-## API
+## 📄 API
 
 ### module(configuration): function
 
@@ -493,6 +493,30 @@ $ npm run coverage
 ## License
 
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
+
+```
+MIT License
+
+Copyright (c) 2019 Daybrush
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 [travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
 [travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master "Build status"
