@@ -3,11 +3,20 @@ import {MongoClient, Db} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
 import Cache from '../lib/cache';
-import {generateUrl} from './utils/settings';
+import {generateUrl, storageOpts} from './utils/settings';
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import GridFsStorage from '..';
 
 const url = generateUrl();
+
+function createStorage(settings, {t, key} = {}) {
+	const storage = new GridFsStorage({url, ...settings});
+	if (t && key) {
+		t.context[key] = storage;
+	}
+
+	return storage;
+}
 
 test.serial.before(t => {
 	t.context.oldCache = GridFsStorage.cache;
@@ -25,17 +34,8 @@ test.serial.before(t => {
 	createStorage({cache: '2'}, {t, key: 'storage4'});
 });
 
-function createStorage(settings, {t, key} = {}) {
-	const storage = new GridFsStorage({url, ...settings});
-	if (t && key) {
-		t.context[key] = storage;
-	}
-
-	return storage;
-}
-
 test.serial(
-	'should only reject connections associated to the same cache',
+	' rejects only connections associated to the same cache',
 	async t => {
 		const {storage1, storage2, storage3, storage4, mongoSpy, cache} = t.context;
 		const conSpy = spy();

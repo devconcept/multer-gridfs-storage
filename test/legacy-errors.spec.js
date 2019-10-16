@@ -5,7 +5,7 @@ import multer from 'multer';
 import mongo, {MongoClient, Db, Server} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
-import {connection, generateUrl, storageOpts} from './utils/settings';
+import {connection, storageOpts} from './utils/settings';
 import {cleanStorage, files, mongoVersion} from './utils/testutils';
 import GridFsStorage from '..';
 
@@ -17,7 +17,6 @@ test.serial.afterEach.always(t => {
 });
 
 test.serial('handle GridStore open error', async t => {
-	const url = generateUrl();
 	const app = express();
 	const errorSpy = spy();
 	const fileSpy = spy();
@@ -31,7 +30,7 @@ test.serial('handle GridStore open error', async t => {
 			}
 		})
 	});
-	const storage = new GridFsStorage({url});
+	const storage = new GridFsStorage(storageOpts());
 	t.context.storage = storage;
 	storage._legacy = true;
 	storage.on('streamError', errorSpy);
@@ -98,7 +97,6 @@ test.serial('handle GridStore close error', async t => {
 });
 
 test.serial('handles MongoClient and Db objects', async t => {
-	const url = generateUrl();
 	const server = new Server(host, port);
 	const db = new Db(database, server);
 
@@ -120,7 +118,6 @@ test.serial('handles MongoClient and Db objects', async t => {
 
 if (!mongoVersion.startsWith('2')) {
 	test.serial('handles the client instance returned in mongo 3', async t => {
-		const url = generateUrl();
 		const server = new Server(host, port);
 		const db = new Db(database, server);
 		const client = new MongoClient(server);
@@ -133,7 +130,7 @@ if (!mongoVersion.startsWith('2')) {
 
 			return Promise.resolve(client);
 		});
-		const storage = new GridFsStorage({url});
+		const storage = new GridFsStorage(storageOpts());
 		await storage.ready();
 		t.is(mongoSpy.callCount, 1);
 		t.true(db instanceof Db);

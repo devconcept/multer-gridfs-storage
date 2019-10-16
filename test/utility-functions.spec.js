@@ -100,43 +100,43 @@ test('compare includes buffers inside arrays when comparing', t => {
 });
 
 /* HasKeys */
-test('should return true when the object has at least one property', t => {
+test('returns true when the object has at least one property', t => {
 	t.true(hasKeys({a: 1}));
 });
 
-test('should return false when the object has no properties', t => {
+test('returns false when the object has no properties', t => {
 	t.false(hasKeys({}));
 	/* eslint-disable-next-line no-new-object */
 	t.false(hasKeys(new Object()));
 });
 
 /* CompareArrays */
-test('should return true when the arrays contains identical string or buffer values', t => {
+test('returns true when the arrays contains identical string or buffer values', t => {
 	t.true(compareArrays(['a', 'b'], ['a', 'b']));
 	t.true(
 		compareArrays([createBuffer([1, 2]), 'b'], [createBuffer([1, 2]), 'b'])
 	);
 });
 
-test('should return false when the arrays contains different values or they are compared by reference', t => {
+test('returns false when the arrays contains different values or they are compared by reference', t => {
 	t.false(compareArrays(['a', 'b'], ['b', 'b']));
 	t.false(compareArrays([undefined], [null]));
 	t.false(compareArrays([{a: 1}], [{a: 1}]));
 });
 
 /* CompareBy */
-test('should return identity when the objects have different types', t => {
+test('returns identity when the objects have different types', t => {
 	t.is(compareBy(createBuffer([1, 2]), ['a', 'b']), 'identity');
 });
 
-test('should return the type of the objects when they have the same type', t => {
+test('returns the type of the objects when they have the same type', t => {
 	t.is(compareBy([], ['a', 'b']), 'array');
 	t.is(compareBy(createBuffer([1, 2]), createBuffer(['a', 'b'])), 'buffer');
 	t.is(compareBy({}, {a: 1}), 'object');
 });
 
 /* CompareUris */
-test('should return true for urls that contain the same hosts in different order', t => {
+test('returns true for urls that contain the same hosts in different order', t => {
 	t.true(
 		compareUris(
 			parse('mongodb://host1:1234,host2:5678/database'),
@@ -145,7 +145,7 @@ test('should return true for urls that contain the same hosts in different order
 	);
 });
 
-test('should return false for urls with different parameters', t => {
+test('returns false for urls with different parameters', t => {
 	t.false(
 		compareUris(
 			parse('mongodb://host1:1234,host2:5678/database?authSource=admin'),
@@ -154,7 +154,7 @@ test('should return false for urls with different parameters', t => {
 	);
 });
 
-test('should return true for urls with the same parameters in different order', t => {
+test('returns true for urls with the same parameters in different order', t => {
 	t.true(
 		compareUris(
 			parse(
@@ -168,17 +168,17 @@ test('should return true for urls with the same parameters in different order', 
 });
 
 /* GetDatabase */
-test('should return the database object fom a mongoose instance', t => {
+test('returns the database object fom a mongoose instance', t => {
 	const database = {};
 	t.is(getDatabase({connection: {db: database}}), database);
 });
 
-test('should return the database object fom a mongoose connection instance', t => {
+test('returns the database object fom a mongoose connection instance', t => {
 	const database = {};
 	t.is(getDatabase({db: database}), database);
 });
 
-test('should return the database object directly if is not a mongoose object', t => {
+test('returns the database object directly if is not a mongoose object', t => {
 	const database = {};
 	t.is(getDatabase(database), database);
 });

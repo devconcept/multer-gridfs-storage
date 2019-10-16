@@ -29,7 +29,6 @@ test('invalid configurations', t => {
 });
 
 test('invalid types as file configurations', async t => {
-	const url = generateUrl();
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
@@ -53,7 +52,6 @@ test('invalid types as file configurations', async t => {
 });
 
 test('fails gracefully if an error is thrown inside the configuration function', async t => {
-	const url = generateUrl();
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
@@ -80,7 +78,6 @@ test('fails gracefully if an error is thrown inside the configuration function',
 });
 
 test('fails gracefully if an error is thrown inside a generator function', async t => {
-	const url = generateUrl();
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({

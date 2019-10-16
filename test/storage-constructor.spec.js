@@ -8,7 +8,7 @@ import md5FileCb from 'md5-file';
 import {MongoClient} from 'mongodb';
 
 import {files, cleanStorage, getDb, getClient} from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {generateUrl, storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 const md5File = pify(md5FileCb);
@@ -27,9 +27,8 @@ test.afterEach.always('cleanup', t => {
 });
 
 test('create storage from url parameter', async t => {
-	const url = generateUrl();
 	let result = {};
-	prepareTest(t, {url});
+	prepareTest(t, storageOpts());
 	const {app, storage, upload} = t.context;
 
 	app.post('/url', upload.array('photos', 2), (req, res) => {
@@ -121,11 +120,10 @@ test('connects to a mongoose instance', async t => {
 });
 
 test('creates an instance without the new keyword', async t => {
-	const url = generateUrl();
 	let result = {};
 	const app = express();
 	/* eslint-disable-next-line new-cap */
-	const storage = GridFsStorage({url});
+	const storage = GridFsStorage(storageOpts());
 	const upload = multer({storage});
 	t.context.storage = storage;
 

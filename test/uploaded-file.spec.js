@@ -6,7 +6,7 @@ import multer from 'multer';
 import pify from 'pify';
 
 import {files, cleanStorage, hasOwn} from './utils/testutils';
-import {generateUrl, storageOpts} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 const readFile = pify(readFileCb);
