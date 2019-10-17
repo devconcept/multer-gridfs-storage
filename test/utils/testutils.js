@@ -1,6 +1,8 @@
 import path from 'path';
+import {parse} from 'mongodb-uri';
 import {MongoClient} from 'mongodb';
 import {connection} from './settings';
+import hasOwn from 'has-own-prop';
 
 export {version as mongoVersion} from 'mongodb/package.json';
 
@@ -20,14 +22,14 @@ export async function cleanStorage(storage, {client, db} = {}) {
 			await db.dropDatabase();
 			if (client) {
 				if (
-					Object.hasOwnProperty.call(client, 'isConnected') &&
+					hasOwn(client, 'isConnected') &&
 					client.isConnected()
 				) {
 					client.close();
 				}
 
 				if (
-					Object.hasOwnProperty.call(client, 'readyState') &&
+					hasOwn(client, 'readyState') &&
 					client.readyState === 1
 				) {
 					client.close();
@@ -39,9 +41,23 @@ export async function cleanStorage(storage, {client, db} = {}) {
 	}
 }
 
-export function getDb(client) {
+export async function dropDatabase(url) {
+	if (url) {
+		const _db = await MongoClient.connect(url, {useNewUrlParser: true});
+		const db = getDb(_db, url);
+		const client = getClient(_db);
+		await db.dropDatabase();
+		if (client) {
+			return client.close();
+		}
+		return db.close();
+	}
+}
+
+export function getDb(client, url) {
 	if (client instanceof MongoClient) {
-		return client.db(connection.database);
+		const {database} = parse(url);
+		return client.db(database || connection.database);
 	}
 
 	return client;
@@ -49,10 +65,6 @@ export function getDb(client) {
 
 export function getClient(client) {
 	return client instanceof MongoClient ? client : null;
-}
-
-export function createBuffer(arr) {
-	return Buffer.from ? Buffer.from(arr) : Buffer.from(arr);
 }
 
 export function delay(delay = 0) {
@@ -75,8 +87,4 @@ export function fakeConnectCb(err = null) {
 
 		return delay().then(() => (err ? Promise.reject(err) : Promise.resolve()));
 	};
-}
-
-export function hasOwn(obj, prop) {
-	return Object.prototype.hasOwnProperty.call(obj, prop);
 }

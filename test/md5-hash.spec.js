@@ -29,7 +29,7 @@ test.before(async t => {
 });
 
 test.after.always('cleanup', t => {
-	cleanStorage(t.context.storage);
+	return cleanStorage(t.context.storage);
 });
 
 test("files don't have a computed MD5 hash", t => {

@@ -6,12 +6,13 @@ import {MongoClient} from 'mongodb';
 import {spy, restore} from 'sinon';
 
 import {generateUrl, storageOpts} from './utils/settings';
-import {files, cleanStorage, getDb, getClient} from './utils/testutils';
+import {files, cleanStorage, getDb, getClient, dropDatabase} from './utils/testutils';
 import GridFsStorage from '..';
 
-test.afterEach.always(t => {
+test.afterEach.always(async t => {
 	restore();
-	return cleanStorage(t.context.storage);
+	await cleanStorage(t.context.storage);
+	return dropDatabase(t.context.url)
 });
 
 test('invalid configurations', t => {
@@ -135,10 +136,11 @@ test('connection promise fails to connect', async t => {
 
 test('connection is not opened', async t => {
 	const url = generateUrl();
+	t.context.url = url;
 	let error = {};
 	const app = express();
 	const _db = await MongoClient.connect(url, {useNewUrlParser: true});
-	const db = getDb(_db);
+	const db = getDb(_db, url);
 	const client = getClient(_db);
 	if (client) {
 		await client.close();
@@ -161,4 +163,20 @@ test('connection is not opened', async t => {
 
 	t.true(error instanceof Error);
 	t.is(error.message, 'The database connection must be open to store files');
+});
+
+test('event is emitted when there is an error in the database', async t => {
+	const url = generateUrl();
+	t.context.url = url;
+	const error = new Error('Database error');
+	const errorSpy = spy();
+	const _db = await MongoClient.connect(url, {useNewUrlParser: true});
+	const db = getDb(_db, url);
+
+	const storage = new GridFsStorage({db});
+	storage.on('dbError', errorSpy);
+	db.emit('error', error);
+
+	t.is(errorSpy.callCount, 1);
+	t.is(errorSpy.getCall(0).args[0], error);
 });

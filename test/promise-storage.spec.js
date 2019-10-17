@@ -6,7 +6,7 @@ import {MongoClient} from 'mongodb';
 import pify from 'pify';
 import md5FileCb from 'md5-file';
 
-import {files, cleanStorage, getDb, getClient} from './utils/testutils';
+import {files, cleanStorage, getDb, getClient, dropDatabase} from './utils/testutils';
 import {generateUrl} from './utils/settings';
 import GridFsStorage from '..';
 
@@ -14,10 +14,11 @@ const md5File = pify(md5FileCb);
 
 test.before(async t => {
 	const url = generateUrl();
+	t.context.url = url;
 	const app = express();
 	const promised = MongoClient.connect(url, {useNewUrlParser: true}).then(
 		_db => {
-			t.context.db = getDb(_db);
+			t.context.db = getDb(_db, url);
 			t.context.client = getClient(_db);
 			return t.context.db;
 		}
@@ -39,9 +40,10 @@ test.before(async t => {
 		.attach('photos', files[1]);
 });
 
-test.after.always('cleanup', t => {
-	const {db, client, storage} = t.context;
-	return cleanStorage(storage, {db, client});
+test.after.always('cleanup', async t => {
+	const {db, client, storage, url} = t.context;
+	await cleanStorage(storage, {db, client});
+	return dropDatabase(url);
 });
 
 test('store the files on upload', t => {

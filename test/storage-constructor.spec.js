@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import md5FileCb from 'md5-file';
 import {MongoClient} from 'mongodb';
 
-import {files, cleanStorage, getDb, getClient} from './utils/testutils';
+import {files, cleanStorage, getDb, getClient, dropDatabase} from './utils/testutils';
 import {generateUrl, storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
@@ -22,8 +22,10 @@ function prepareTest(t, opts) {
 	t.context.app = app;
 }
 
-test.afterEach.always('cleanup', t => {
-	return cleanStorage(t.context.storage);
+test.afterEach.always('cleanup', async t => {
+	const {storage, url} = t.context;
+	await cleanStorage(storage);
+	return dropDatabase(url);
 });
 
 test('create storage from url parameter', async t => {
@@ -56,12 +58,13 @@ test('create storage from url parameter', async t => {
 
 test('create storage from db parameter', async t => {
 	const url = generateUrl();
+	t.context.url = url;
 	let result = {};
-	const dbOrClient = await MongoClient.connect(url, {useNewUrlParser: true});
-	const db = getDb(dbOrClient);
+	const _db = await MongoClient.connect(url, {useNewUrlParser: true});
+	const db = getDb(_db, url);
 	prepareTest(t, {db});
 	const {app, storage, upload} = t.context;
-	storage.client = getClient(dbOrClient);
+	storage.client = getClient(_db);
 
 	app.post('/url', upload.array('photos', 2), (req, res) => {
 		result = {headers: req.headers, files: req.files, body: req.body};
@@ -88,6 +91,7 @@ test('create storage from db parameter', async t => {
 
 test('connects to a mongoose instance', async t => {
 	const url = generateUrl();
+	t.context.url = url;
 	let result = {};
 	const promise = mongoose.connect(url, {useNewUrlParser: true});
 	prepareTest(t, {db: promise});

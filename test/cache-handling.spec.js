@@ -15,6 +15,13 @@ test.serial.beforeEach(t => {
 	t.context.mongoSpy = stub(MongoClient, 'connect').callThrough();
 });
 
+test.serial.afterEach.always(t => {
+	const {storage1, storage2, oldCache} = t.context;
+	GridFsStorage.cache = oldCache;
+	restore();
+	return Promise.all([cleanStorage(storage1), cleanStorage(storage2)]);
+});
+
 function createStorage(settings, {t, key} = {}) {
 	const storage = new GridFsStorage({url, ...settings});
 	if (t && key) {
@@ -102,11 +109,4 @@ test.serial('creates different connections for different caches', async t => {
 	t.is(eventSpy2.callCount, 1);
 	t.true(eventSpy2.calledWith(storage2.db));
 	t.is(cache.connections(), 2);
-});
-
-test.serial.afterEach.always(t => {
-	const {storage1, storage2, oldCache} = t.context;
-	GridFsStorage.cache = oldCache;
-	restore();
-	return Promise.all([cleanStorage(storage1), cleanStorage(storage2)]);
 });

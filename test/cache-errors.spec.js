@@ -3,7 +3,7 @@ import {MongoClient, Db} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
 import Cache from '../lib/cache';
-import {generateUrl, storageOpts} from './utils/settings';
+import {generateUrl} from './utils/settings';
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import GridFsStorage from '..';
 

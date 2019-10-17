@@ -4,8 +4,9 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import pify from 'pify';
+import hasOwn from 'has-own-prop';
 
-import {files, cleanStorage, hasOwn} from './utils/testutils';
+import {files, cleanStorage} from './utils/testutils';
 import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 

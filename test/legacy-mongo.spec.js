@@ -27,7 +27,7 @@ test.beforeEach(t => {
 });
 
 test.afterEach.always(t => {
-	cleanStorage(t.context.storage);
+	return cleanStorage(t.context.storage);
 });
 
 test('legacy GridStore streams are supported', async t => {

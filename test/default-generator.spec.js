@@ -53,7 +53,7 @@ test.before(async t => {
 });
 
 test.after.always('cleanup', t => {
-	cleanStorage(t.context.storage);
+	return cleanStorage(t.context.storage);
 });
 
 test('the request contains the two uploaded files', t => {

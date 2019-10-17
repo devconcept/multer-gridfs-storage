@@ -6,7 +6,7 @@ import {MongoClient} from 'mongodb';
 import pify from 'pify';
 import md5FileCb from 'md5-file';
 
-import {files, cleanStorage, getDb, getClient, delay} from './utils/testutils';
+import {files, cleanStorage, getDb, getClient, delay, dropDatabase} from './utils/testutils';
 import {generateUrl} from './utils/settings';
 import GridFsStorage from '..';
 
@@ -14,13 +14,14 @@ const md5File = pify(md5FileCb);
 
 function prepareTest(t, error) {
 	const url = generateUrl();
+	t.context.url = url;
 	const app = express();
 	const promised = error
 		? delay(1000).then(() => Promise.reject(error))
 		: delay(1000)
 				.then(() => MongoClient.connect(url, {useNewUrlParser: true}))
 				.then(db => {
-					t.context.db = getDb(db);
+					t.context.db = getDb(db, url);
 					t.context.client = getClient(db);
 					return t.context.db;
 				});
@@ -32,9 +33,10 @@ function prepareTest(t, error) {
 	t.context.app = app;
 }
 
-test.afterEach.always('cleanup', t => {
-	const {db, client, storage} = t.context;
-	return cleanStorage(storage, {db, client});
+test.afterEach.always('cleanup', async t => {
+	const {db, client, storage, url} = t.context;
+	await cleanStorage(storage, {db, client});
+	return dropDatabase(url);
 });
 
 test('buffers incoming files while the connection is opening', async t => {

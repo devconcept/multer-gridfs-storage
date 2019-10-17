@@ -8,7 +8,6 @@ import {
 	getDatabase,
 	hasKeys
 } from '../lib/utils';
-import {createBuffer} from './utils/testutils';
 
 /* Compare */
 test('compare considers equal any falsey values', t => {
@@ -77,24 +76,24 @@ test('compare includes arrays when comparing', t => {
 
 test('compare includes buffers when comparing', t => {
 	t.true(
-		compare({a: {b: createBuffer([1, 2])}}, {a: {b: createBuffer([1, 2])}})
+		compare({a: {b: Buffer.from([1, 2])}}, {a: {b: Buffer.from([1, 2])}})
 	);
 	t.false(
-		compare({a: {b: createBuffer([1, 2])}}, {a: {b: createBuffer([2, 2])}})
+		compare({a: {b: Buffer.from([1, 2])}}, {a: {b: Buffer.from([2, 2])}})
 	);
 });
 
 test('compare includes buffers inside arrays when comparing', t => {
 	t.true(
 		compare(
-			{a: {b: ['1', createBuffer([1, 2])]}},
-			{a: {b: ['1', createBuffer([1, 2])]}}
+			{a: {b: ['1', Buffer.from([1, 2])]}},
+			{a: {b: ['1', Buffer.from([1, 2])]}}
 		)
 	);
 	t.false(
 		compare(
-			{a: {b: ['1', createBuffer([1, 2])]}},
-			{a: {b: ['1', createBuffer([2, 2])]}}
+			{a: {b: ['1', Buffer.from([1, 2])]}},
+			{a: {b: ['1', Buffer.from([2, 2])]}}
 		)
 	);
 });
@@ -114,7 +113,7 @@ test('returns false when the object has no properties', t => {
 test('returns true when the arrays contains identical string or buffer values', t => {
 	t.true(compareArrays(['a', 'b'], ['a', 'b']));
 	t.true(
-		compareArrays([createBuffer([1, 2]), 'b'], [createBuffer([1, 2]), 'b'])
+		compareArrays([Buffer.from([1, 2]), 'b'], [Buffer.from([1, 2]), 'b'])
 	);
 });
 
@@ -126,12 +125,12 @@ test('returns false when the arrays contains different values or they are compar
 
 /* CompareBy */
 test('returns identity when the objects have different types', t => {
-	t.is(compareBy(createBuffer([1, 2]), ['a', 'b']), 'identity');
+	t.is(compareBy(Buffer.from([1, 2]), ['a', 'b']), 'identity');
 });
 
 test('returns the type of the objects when they have the same type', t => {
 	t.is(compareBy([], ['a', 'b']), 'array');
-	t.is(compareBy(createBuffer([1, 2]), createBuffer(['a', 'b'])), 'buffer');
+	t.is(compareBy(Buffer.from([1, 2]), Buffer.from(['a', 'b'])), 'buffer');
 	t.is(compareBy({}, {a: 1}), 'object');
 });
 
