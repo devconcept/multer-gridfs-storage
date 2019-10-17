@@ -13,13 +13,13 @@ import {
 	getClient,
 	dropDatabase
 } from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 const md5File = pify(md5FileCb);
 
 test.before(async t => {
-	const url = generateUrl();
+	const {url} = storageOpts();
 	t.context.url = url;
 	const app = express();
 	const promised = MongoClient.connect(url, {useNewUrlParser: true}).then(

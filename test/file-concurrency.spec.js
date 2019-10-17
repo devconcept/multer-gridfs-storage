@@ -14,13 +14,13 @@ import {
 	delay,
 	dropDatabase
 } from './utils/testutils';
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 const md5File = pify(md5FileCb);
 
 function prepareTest(t, error) {
-	const url = generateUrl();
+	const {url} = storageOpts();
 	t.context.url = url;
 	const app = express();
 	const promised = error

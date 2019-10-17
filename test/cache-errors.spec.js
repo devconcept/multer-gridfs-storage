@@ -3,11 +3,11 @@ import {MongoClient, Db} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
 import Cache from '../lib/cache';
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import GridFsStorage from '..';
 
-const url = generateUrl();
+const {url} = storageOpts();
 
 function createStorage(settings, {t, key} = {}) {
 	const storage = new GridFsStorage({url, ...settings});

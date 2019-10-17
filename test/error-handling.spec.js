@@ -5,7 +5,7 @@ import express from 'express';
 import {MongoClient} from 'mongodb';
 import {spy, restore} from 'sinon';
 
-import {generateUrl, storageOpts} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import {
 	files,
 	cleanStorage,
@@ -141,7 +141,7 @@ test('connection promise fails to connect', async t => {
 });
 
 test('connection is not opened', async t => {
-	const url = generateUrl();
+	const {url} = storageOpts();
 	t.context.url = url;
 	let error = {};
 	const app = express();
@@ -155,6 +155,7 @@ test('connection is not opened', async t => {
 	}
 
 	const storage = new GridFsStorage({db});
+	storage.client = client;
 	const upload = multer({storage});
 
 	app.post('/url', upload.array('photos', 2), (err, req, res, next) => {
@@ -172,7 +173,7 @@ test('connection is not opened', async t => {
 });
 
 test('event is emitted when there is an error in the database', async t => {
-	const url = generateUrl();
+	const {url} = storageOpts();
 	t.context.url = url;
 	const error = new Error('Database error');
 	const errorSpy = spy();

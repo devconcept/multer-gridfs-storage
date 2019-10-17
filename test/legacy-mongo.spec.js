@@ -7,7 +7,7 @@ import {ObjectID, GridStore} from 'mongodb';
 import md5FileCb from 'md5-file';
 import pify from 'pify';
 
-import {generateUrl} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import {cleanStorage, files} from './utils/testutils';
 import GridFsStorage from '..';
 
@@ -15,7 +15,7 @@ const readFile = pify(readFileCb);
 const md5File = pify(md5FileCb);
 
 function createStorageAndUpload(t, opts = {}) {
-	const url = generateUrl();
+	const {url} = storageOpts();
 	const storage = new GridFsStorage({url, ...opts});
 	t.context.storage = storage;
 	storage._legacy = true;

@@ -3,6 +3,7 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import {ObjectID} from 'mongodb';
+import hasOwn from 'has-own-prop';
 
 import {files, cleanStorage} from './utils/testutils';
 import {storageOpts} from './utils/settings';
@@ -106,10 +107,10 @@ test('should the parameters be a request and a file objects', t => {
 		const {req, file} = p;
 		t.is(req, appReq);
 		['body', 'query', 'params', 'files'].every(k =>
-			t.true(Object.hasOwnProperty.call(req, k))
+			t.true(hasOwn(req, k))
 		);
 		['fieldname', 'originalname', 'encoding', 'mimetype'].every(k =>
-			t.true(Object.hasOwnProperty.call(file, k))
+			t.true(hasOwn(file, k))
 		);
 	});
 });

@@ -14,7 +14,7 @@ import {
 	getClient,
 	dropDatabase
 } from './utils/testutils';
-import {generateUrl, storageOpts} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
 const md5File = pify(md5FileCb);
@@ -63,7 +63,7 @@ test('create storage from url parameter', async t => {
 });
 
 test('create storage from db parameter', async t => {
-	const url = generateUrl();
+	const {url} = storageOpts();
 	t.context.url = url;
 	let result = {};
 	const _db = await MongoClient.connect(url, {useNewUrlParser: true});
@@ -96,7 +96,7 @@ test('create storage from db parameter', async t => {
 });
 
 test('connects to a mongoose instance', async t => {
-	const url = generateUrl();
+	const {url} = storageOpts();
 	t.context.url = url;
 	let result = {};
 	const promise = mongoose.connect(url, {useNewUrlParser: true});

@@ -19,19 +19,15 @@ export const mongoUrl = url.format({
 	pathname: database
 });
 
-export const generateUrl = function() {
-	return url.format({
-		protocol: 'mongodb',
-		slashes: true,
-		hostname,
-		port,
-		pathname: database + '_' + random({length: 10, type: 'hex'})
-	});
-};
-
-export const storageOpts = function() {
+export const storageOpts = function () {
 	return {
-		url: generateUrl(),
+		url: url.format({
+			protocol: 'mongodb',
+			slashes: true,
+			hostname,
+			port,
+			pathname: database + '_' + random({length: 10, type: 'hex'})
+		}),
 		options: {useNewUrlParser: true, useUnifiedTopology: true}
 	};
 };
