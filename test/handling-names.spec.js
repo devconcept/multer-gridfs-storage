@@ -24,6 +24,7 @@ test('handling empty name values', async t => {
 			return values[counter];
 		}
 	});
+	t.context.storage = storage;
 	const upload = multer({storage});
 
 	app.post('/url', upload.array('photo', 3), (req, res) => {
@@ -46,7 +47,7 @@ test('handling empty name values', async t => {
 
 test('handling primitive values as names', async t => {
 	const app = express();
-	t.context.values = ['name', 10];
+	const values = ['name', 10];
 	let counter = -1;
 	let result = {};
 
@@ -54,9 +55,10 @@ test('handling primitive values as names', async t => {
 		...storageOpts(),
 		file: () => {
 			counter++;
-			return t.context.values[counter];
+			return values[counter];
 		}
 	});
+	t.context.storage = storage;
 	const upload = multer({storage});
 
 	app.post('/url', upload.array('photo', 2), (req, res) => {
@@ -71,7 +73,7 @@ test('handling primitive values as names', async t => {
 		.attach('photo', files[0]);
 
 	result.files.forEach((f, idx) =>
-		t.is(f.filename, t.context.values[idx].toString())
+		t.is(f.filename, values[idx].toString())
 	);
 	result.files.forEach(file => t.is(file.metadata, null));
 	result.files.forEach(file => t.is(file.bucketName, 'fs'));
