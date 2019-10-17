@@ -116,7 +116,7 @@ test.serial('handles MongoClient and Db objects', async t => {
 	t.is(storage.client, null);
 });
 
-if (!mongoVersion.startsWith('2')) {
+if (mongoVersion[0] !== 2) {
 	test.serial('handles the client instance returned in mongo 3', async t => {
 		const server = new Server(host, port);
 		const db = new Db(database, server);

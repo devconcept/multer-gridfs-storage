@@ -33,7 +33,7 @@ test.after.always('cleanup', t => {
 });
 
 test("files don't have a computed MD5 hash", t => {
-	const [major, minor] = mongoVersion.split('.');
+	const [major, minor] = mongoVersion;
 	if (major < 3 || (major === 3 && minor < 1)) {
 		return t.pass('Md5 hash is not supported in this mongo version');
 	}

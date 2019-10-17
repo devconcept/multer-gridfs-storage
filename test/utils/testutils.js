@@ -3,8 +3,9 @@ import {parse} from 'mongodb-uri';
 import {MongoClient} from 'mongodb';
 import hasOwn from 'has-own-prop';
 import {connection} from './settings';
+import {version} from 'mongodb/package.json'
 
-export {version as mongoVersion} from 'mongodb/package.json';
+export const mongoVersion = version.split('.').map(Number);
 
 export const files = ['sample1.jpg', 'sample2.jpg'].map(file =>
 	path.join(__dirname, '/../attachments/', file)

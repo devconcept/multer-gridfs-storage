@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import {cleanStorage} from './utils/testutils';
+import {cleanStorage, mongoVersion} from './utils/testutils';
 import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
@@ -17,5 +17,5 @@ test('is compatible with an options object on url based connections', async t =>
 	t.context.storage = storage;
 
 	await storage.ready();
-	t.is(storage.db.serverConfig.s.options.poolSize, 10);
+	t.is(mongoVersion[0] === 3 ? storage.db.serverConfig.s.options.poolSize : storage.db.serverConfig.s.poolSize, 10);
 });
