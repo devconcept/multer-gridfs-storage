@@ -6,7 +6,14 @@ import {MongoClient} from 'mongodb';
 import pify from 'pify';
 import md5FileCb from 'md5-file';
 
-import {files, cleanStorage, getDb, getClient, delay, dropDatabase} from './utils/testutils';
+import {
+	files,
+	cleanStorage,
+	getDb,
+	getClient,
+	delay,
+	dropDatabase
+} from './utils/testutils';
 import {generateUrl} from './utils/settings';
 import GridFsStorage from '..';
 

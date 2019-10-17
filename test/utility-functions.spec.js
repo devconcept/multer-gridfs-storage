@@ -75,9 +75,7 @@ test('compare includes arrays when comparing', t => {
 });
 
 test('compare includes buffers when comparing', t => {
-	t.true(
-		compare({a: {b: Buffer.from([1, 2])}}, {a: {b: Buffer.from([1, 2])}})
-	);
+	t.true(compare({a: {b: Buffer.from([1, 2])}}, {a: {b: Buffer.from([1, 2])}}));
 	t.false(
 		compare({a: {b: Buffer.from([1, 2])}}, {a: {b: Buffer.from([2, 2])}})
 	);
@@ -112,9 +110,7 @@ test('returns false when the object has no properties', t => {
 /* CompareArrays */
 test('returns true when the arrays contains identical string or buffer values', t => {
 	t.true(compareArrays(['a', 'b'], ['a', 'b']));
-	t.true(
-		compareArrays([Buffer.from([1, 2]), 'b'], [Buffer.from([1, 2]), 'b'])
-	);
+	t.true(compareArrays([Buffer.from([1, 2]), 'b'], [Buffer.from([1, 2]), 'b']));
 });
 
 test('returns false when the arrays contains different values or they are compared by reference', t => {

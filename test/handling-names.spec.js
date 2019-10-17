@@ -72,9 +72,7 @@ test('handling primitive values as names', async t => {
 		.attach('photo', files[0])
 		.attach('photo', files[0]);
 
-	result.files.forEach((f, idx) =>
-		t.is(f.filename, values[idx].toString())
-	);
+	result.files.forEach((f, idx) => t.is(f.filename, values[idx].toString()));
 	result.files.forEach(file => t.is(file.metadata, null));
 	result.files.forEach(file => t.is(file.bucketName, 'fs'));
 	result.files.forEach(file => t.is(file.chunkSize, 261120));

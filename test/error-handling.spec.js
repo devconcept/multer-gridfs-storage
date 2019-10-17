@@ -6,13 +6,19 @@ import {MongoClient} from 'mongodb';
 import {spy, restore} from 'sinon';
 
 import {generateUrl, storageOpts} from './utils/settings';
-import {files, cleanStorage, getDb, getClient, dropDatabase} from './utils/testutils';
+import {
+	files,
+	cleanStorage,
+	getDb,
+	getClient,
+	dropDatabase
+} from './utils/testutils';
 import GridFsStorage from '..';
 
 test.afterEach.always(async t => {
 	restore();
 	await cleanStorage(t.context.storage);
-	return dropDatabase(t.context.url)
+	return dropDatabase(t.context.url);
 });
 
 test('invalid configurations', t => {
@@ -176,7 +182,9 @@ test('event is emitted when there is an error in the database', async t => {
 	const storage = new GridFsStorage({db});
 	storage.on('dbError', errorSpy);
 	db.emit('error', error);
+	db.emit('error');
 
-	t.is(errorSpy.callCount, 1);
+	t.is(errorSpy.callCount, 2);
 	t.is(errorSpy.getCall(0).args[0], error);
+	t.true(errorSpy.getCall(1).args[0] instanceof Error);
 });

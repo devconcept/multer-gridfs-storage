@@ -1,8 +1,8 @@
 import path from 'path';
 import {parse} from 'mongodb-uri';
 import {MongoClient} from 'mongodb';
-import {connection} from './settings';
 import hasOwn from 'has-own-prop';
+import {connection} from './settings';
 
 export {version as mongoVersion} from 'mongodb/package.json';
 
@@ -21,17 +21,11 @@ export async function cleanStorage(storage, {client, db} = {}) {
 		if (db) {
 			await db.dropDatabase();
 			if (client) {
-				if (
-					hasOwn(client, 'isConnected') &&
-					client.isConnected()
-				) {
+				if (hasOwn(client, 'isConnected') && client.isConnected()) {
 					client.close();
 				}
 
-				if (
-					hasOwn(client, 'readyState') &&
-					client.readyState === 1
-				) {
+				if (hasOwn(client, 'readyState') && client.readyState === 1) {
 					client.close();
 				}
 			} else {
@@ -50,6 +44,7 @@ export async function dropDatabase(url) {
 		if (client) {
 			return client.close();
 		}
+
 		return db.close();
 	}
 }

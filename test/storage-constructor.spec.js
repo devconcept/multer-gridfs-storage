@@ -7,7 +7,13 @@ import mongoose from 'mongoose';
 import md5FileCb from 'md5-file';
 import {MongoClient} from 'mongodb';
 
-import {files, cleanStorage, getDb, getClient, dropDatabase} from './utils/testutils';
+import {
+	files,
+	cleanStorage,
+	getDb,
+	getClient,
+	dropDatabase
+} from './utils/testutils';
 import {generateUrl, storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
