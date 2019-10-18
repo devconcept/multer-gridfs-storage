@@ -178,7 +178,7 @@ const db = client.db('database')
 const storage = new GridFSStorage({ db, client});
 ```
 
-This is not strictly necessary but recommended to make your code more resilient to future changes in the mongodb library.
+This is not strictly necessary but recommended to keep the storage in sync with the underlying connection status and to make your code more resilient to future changes in the mongodb library.
 
 #### file
 
