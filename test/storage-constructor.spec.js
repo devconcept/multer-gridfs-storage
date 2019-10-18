@@ -63,10 +63,10 @@ test('create storage from url parameter', async t => {
 });
 
 test('create storage from db parameter', async t => {
-	const {url} = storageOpts();
+	const {url, options} = storageOpts();
 	t.context.url = url;
 	let result = {};
-	const _db = await MongoClient.connect(url, {useNewUrlParser: true});
+	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 	prepareTest(t, {db});
 	const {app, storage, upload} = t.context;
@@ -96,10 +96,10 @@ test('create storage from db parameter', async t => {
 });
 
 test('connects to a mongoose instance', async t => {
-	const {url} = storageOpts();
+	const {url, options} = storageOpts();
 	t.context.url = url;
 	let result = {};
-	const promise = mongoose.connect(url, {useNewUrlParser: true});
+	const promise = mongoose.connect(url, options);
 	prepareTest(t, {db: promise});
 	const {app, storage, upload} = t.context;
 
@@ -148,6 +148,40 @@ test('creates an instance without the new keyword', async t => {
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
+	t.truthy(result.files);
+	t.true(Array.isArray(result.files));
+	t.is(result.files.length, 2);
+	const md5 = await Promise.all(
+		result.files.map(async (f, idx) => {
+			const computed = await md5File(files[idx]);
+			return {md5: f.md5, computed};
+		})
+	);
+	t.true(md5.every(f => f.md5 === f.computed));
+});
+
+test('accept the client as one of the parameters', async t => {
+	const {url, options} = storageOpts();
+	t.context.url = url;
+	let result = {};
+	const _db = await MongoClient.connect(url, options);
+	const db = getDb(_db, url);
+	const client = getClient(_db);
+	prepareTest(t, {db, client});
+	const {app, storage, upload} = t.context;
+
+	app.post('/url', upload.array('photos', 2), (req, res) => {
+		result = {headers: req.headers, files: req.files, body: req.body};
+		res.end();
+	});
+
+	await storage.ready();
+	await request(app)
+		.post('/url')
+		.attach('photos', files[0])
+		.attach('photos', files[1]);
+
+	t.is(client, storage.client);
 	t.truthy(result.files);
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);

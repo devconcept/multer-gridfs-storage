@@ -1,3 +1,9 @@
+# 4.0.0
+
+  * Feature: Added the `client` option to the constructor
+  * Update: Removed Node 6 is support
+  * Update: Removed the `connectionOpts` setting
+
 # 3.3.0
 
   * Update: Removed compatibility with Node 4

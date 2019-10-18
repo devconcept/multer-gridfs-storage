@@ -154,8 +154,7 @@ test('connection is not opened', async t => {
 		await db.close();
 	}
 
-	const storage = new GridFsStorage({db});
-	storage.client = client;
+	const storage = new GridFsStorage({db, client});
 	const upload = multer({storage});
 
 	app.post('/url', upload.array('photos', 2), (err, req, res, next) => {

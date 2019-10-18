@@ -17,5 +17,10 @@ test('is compatible with an options object on url based connections', async t =>
 	t.context.storage = storage;
 
 	await storage.ready();
-	t.is(mongoVersion[0] === 3 ? storage.db.serverConfig.s.options.poolSize : storage.db.serverConfig.s.poolSize, 10);
+	t.is(
+		mongoVersion[0] === 3
+			? storage.db.serverConfig.s.options.poolSize
+			: storage.db.serverConfig.s.poolSize,
+		10
+	);
 });

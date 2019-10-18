@@ -106,9 +106,7 @@ test('should the parameters be a request and a file objects', t => {
 	params.forEach(p => {
 		const {req, file} = p;
 		t.is(req, appReq);
-		['body', 'query', 'params', 'files'].every(k =>
-			t.true(hasOwn(req, k))
-		);
+		['body', 'query', 'params', 'files'].every(k => t.true(hasOwn(req, k)));
 		['fieldname', 'originalname', 'encoding', 'mimetype'].every(k =>
 			t.true(hasOwn(file, k))
 		);

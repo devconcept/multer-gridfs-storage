@@ -19,7 +19,7 @@ export const mongoUrl = url.format({
 	pathname: database
 });
 
-export const storageOpts = function () {
+export const storageOpts = function() {
 	return {
 		url: url.format({
 			protocol: 'mongodb',

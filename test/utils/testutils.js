@@ -2,8 +2,8 @@ import path from 'path';
 import {parse} from 'mongodb-uri';
 import {MongoClient} from 'mongodb';
 import hasOwn from 'has-own-prop';
+import {version} from 'mongodb/package.json';
 import {connection} from './settings';
-import {version} from 'mongodb/package.json'
 
 export const mongoVersion = version.split('.').map(Number);
 
