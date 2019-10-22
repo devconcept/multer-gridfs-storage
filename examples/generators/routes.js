@@ -9,6 +9,7 @@ const {generateBytes} = GridFsStorage;
 
 const genStorage = new GridFsStorage({
 	url,
+	options: {useNewUrlParser: true, useUnifiedTopology: true},
 	async *file(req, file) {
 		let counter = 0;
 		for (;;) {
