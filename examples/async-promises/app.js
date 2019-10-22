@@ -9,7 +9,10 @@ const routes = require('./routes');
 const app = express();
 const port = 3000;
 
-app.use(logger('dev'));
+if (process.env.NODE_ENV === 'development') {
+	app.use(logger('dev'));
+}
+
 app.use('/', routes);
 
 app.use(function(req, res, next) {
@@ -21,10 +24,13 @@ app.use(function(err, req, res, next) {
 	res.status(err.status || 500);
 	res.send(err.message);
 });
+
 app.set('port', port);
 
 const server = http.createServer(app);
+
 server.listen(port);
+
 server.on('error', error => {
 	if (error.syscall !== 'listen') {
 		throw error;
@@ -40,8 +46,14 @@ server.on('error', error => {
 
 	throw error;
 });
+
 server.on('listening', () => {
 	const addr = server.address();
 	const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
 	debug('Listening on ' + bind);
 });
+
+module.exports = {
+	server,
+	app
+};

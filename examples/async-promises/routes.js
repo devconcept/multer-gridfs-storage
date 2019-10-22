@@ -3,7 +3,8 @@ const express = require('express');
 const multer = require('multer');
 const GridFsStorage = require('multer-gridfs-storage');
 
-const {url} = require('./settings');
+const {url1, url2} = require('./settings');
+const options = {useNewUrlParser: true, useUnifiedTopology: true};
 /* eslint-disable-next-line new-cap */
 const router = express.Router();
 
@@ -20,7 +21,8 @@ function generateName() {
 }
 
 const asyncStorage = new GridFsStorage({
-	url,
+	url: url1,
+	options,
 	file: async () => {
 		const random = await generateName();
 		return `my_file_${random}`;
@@ -32,7 +34,8 @@ router.post('/async', asyncUpload.single('field'), (req, res) => {
 });
 
 const promiseStorage = new GridFsStorage({
-	url,
+	url: url2,
+	options,
 	file: () => {
 		return generateName().then(random => {
 			return `my_file_${random}`;
