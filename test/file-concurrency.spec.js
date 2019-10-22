@@ -3,8 +3,6 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import {MongoClient} from 'mongodb';
-import pify from 'pify';
-import md5FileCb from 'md5-file';
 
 import {
 	files,
@@ -15,9 +13,8 @@ import {
 	dropDatabase
 } from './utils/testutils';
 import {storageOpts} from './utils/settings';
+import {fileMatchMd5Hash} from './utils/macros';
 import GridFsStorage from '..';
-
-const md5File = pify(md5FileCb);
 
 function prepareTest(t, error) {
 	const {url} = storageOpts();
@@ -62,16 +59,7 @@ test('buffers incoming files while the connection is opening', async t => {
 		.attach('photos', files[1]);
 
 	await storage.ready();
-	t.truthy(result.files);
-	t.true(Array.isArray(result.files));
-	t.is(result.files.length, 2);
-	const md5 = await Promise.all(
-		result.files.map(async (f, idx) => {
-			const computed = await md5File(files[idx]);
-			return {md5: f.md5, computed};
-		})
-	);
-	t.true(md5.every(f => f.md5 === f.computed));
+	return fileMatchMd5Hash(t, result.files);
 });
 
 test('rejects incoming files if the connection does not open', async t => {

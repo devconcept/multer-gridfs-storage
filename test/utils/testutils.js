@@ -3,7 +3,7 @@ import {parse} from 'mongodb-uri';
 import {MongoClient} from 'mongodb';
 import hasOwn from 'has-own-prop';
 import {version} from 'mongodb/package.json';
-import {connection} from './settings';
+import {connection, storageOpts} from './settings';
 
 export const mongoVersion = version.split('.').map(Number);
 
@@ -21,24 +21,29 @@ export async function cleanStorage(storage, {client, db} = {}) {
 
 		if (db) {
 			await db.dropDatabase();
-			if (client) {
-				if (hasOwn(client, 'isConnected') && client.isConnected()) {
-					client.close();
-				}
-
-				if (hasOwn(client, 'readyState') && client.readyState === 1) {
-					client.close();
-				}
-			} else {
-				db.close();
-			}
+			return closeConnections({db, client});
 		}
+	}
+}
+
+export function closeConnections({db, client}) {
+	if (client) {
+		if (hasOwn(client, 'readyState') && client.readyState === 1) {
+			return client.close();
+		}
+
+		if (hasOwn(client, 'isConnected') && client.isConnected()) {
+			return client.close();
+		}
+	} else {
+		return db.close();
 	}
 }
 
 export async function dropDatabase(url) {
 	if (url) {
-		const _db = await MongoClient.connect(url, {useNewUrlParser: true});
+		const {options} = storageOpts();
+		const _db = await MongoClient.connect(url, options);
 		const db = getDb(_db, url);
 		const client = getClient(_db);
 		await db.dropDatabase();

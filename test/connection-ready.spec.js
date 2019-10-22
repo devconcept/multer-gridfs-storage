@@ -6,6 +6,12 @@ import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import {storageOpts} from './utils/settings';
 import GridFsStorage from '..';
 
+test.afterEach.always('cleanup', t => {
+	const {storage} = t.context;
+	restore();
+	return cleanStorage(storage);
+});
+
 function createStorage(t) {
 	t.context.storage = new GridFsStorage(storageOpts());
 }
@@ -15,12 +21,6 @@ function forceFailure(t) {
 	stub(MongoClient, 'connect').callsFake(fakeConnectCb(t.context.error));
 	createStorage(t);
 }
-
-test.afterEach.always('cleanup', t => {
-	const {storage} = t.context;
-	restore();
-	return cleanStorage(storage);
-});
 
 test.serial(
 	'returns a promise that rejects when the connection fails',
