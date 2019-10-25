@@ -17,13 +17,13 @@ import {fileMatchMd5Hash} from './utils/macros';
 import GridFsStorage from '..';
 
 function prepareTest(t, error) {
-	const {url} = storageOpts();
+	const {url, options} = storageOpts();
 	t.context.url = url;
 	const app = express();
 	const promised = error
 		? delay(1000).then(() => Promise.reject(error))
 		: delay(1000)
-				.then(() => MongoClient.connect(url, {useNewUrlParser: true}))
+				.then(() => MongoClient.connect(url, options))
 				.then(db => {
 					t.context.db = getDb(db, url);
 					t.context.client = getClient(db);

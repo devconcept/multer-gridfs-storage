@@ -16,10 +16,10 @@ import {fileMatchMd5Hash} from './utils/macros';
 import GridFsStorage from '..';
 
 test.before(async t => {
-	const {url} = storageOpts();
+	const {url, options} = storageOpts();
 	t.context.url = url;
 	const app = express();
-	const promised = MongoClient.connect(url, {useNewUrlParser: true}).then(
+	const promised = MongoClient.connect(url, options).then(
 		_db => {
 			t.context.db = getDb(_db, url);
 			t.context.client = getClient(_db);

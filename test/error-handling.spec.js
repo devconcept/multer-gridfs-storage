@@ -90,7 +90,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 	const storage = new GridFsStorage({
 		...storageOpts(),
 		/* eslint-disable-next-line require-yield */
-		*file() {
+		* file() {
 			throw new Error('File error');
 		}
 	});
@@ -149,7 +149,7 @@ test('connection is not opened', async t => {
 	const db = getDb(_db, url);
 	const client = getClient(_db);
 	if (client) {
-		await client.close();
+		await client.close(true);
 	} else {
 		await db.close();
 	}
@@ -172,11 +172,11 @@ test('connection is not opened', async t => {
 });
 
 test('event is emitted when there is an error in the database', async t => {
-	const {url} = storageOpts();
+	const {url, options} = storageOpts();
 	t.context.url = url;
 	const error = new Error('Database error');
 	const errorSpy = spy();
-	const _db = await MongoClient.connect(url, {useNewUrlParser: true});
+	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 
 	const storage = new GridFsStorage({db});
