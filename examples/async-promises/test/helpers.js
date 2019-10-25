@@ -5,6 +5,7 @@ export async function cleanup({db, client}) {
 	if (db) {
 		await db.dropDatabase();
 	}
+
 	if (client && client.isConnected()) {
 		return client.close();
 	}

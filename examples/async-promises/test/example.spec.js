@@ -8,7 +8,7 @@ import {cleanup, getDb, getFile} from './helpers';
 
 const options = {useNewUrlParser: true, useUnifiedTopology: true};
 
-test.afterEach.always('cleanup', async t => {
+test.afterEach.always('cleanup', t => {
 	const {db, client} = t.context;
 	return cleanup({db, client});
 });
