@@ -90,7 +90,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 	const storage = new GridFsStorage({
 		...storageOpts(),
 		/* eslint-disable-next-line require-yield */
-		* file() {
+		*file() {
 			throw new Error('File error');
 		}
 	});

@@ -10,7 +10,7 @@ import {
 	cleanStorage,
 	getDb,
 	getClient,
-	dropDatabase
+	dropDatabase, delay
 } from './utils/testutils';
 import {storageOpts} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
@@ -130,6 +130,7 @@ test('accept the client as one of the parameters', async t => {
 	const client = getClient(_db);
 	prepareTest(t, {db, client});
 	const {app, storage, upload} = t.context;
+	t.is(storage.client, client);
 
 	app.post('/url', upload.array('photos', 2), (req, res) => {
 		result = {headers: req.headers, files: req.files, body: req.body};
@@ -142,5 +143,31 @@ test('accept the client as one of the parameters', async t => {
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
+	return fileMatchMd5Hash(t, result.files);
+});
+
+test('waits for the client if is a promise', async t => {
+	const {url, options} = storageOpts();
+	t.context.url = url;
+	let result = {};
+	const _db = await MongoClient.connect(url, options);
+	const db = getDb(_db, url);
+	const client = delay(100).then(() => getClient(_db));
+	prepareTest(t, {db, client});
+	const {app, storage, upload} = t.context;
+	t.is(storage.client, null);
+
+	app.post('/url', upload.array('photos', 2), (req, res) => {
+		result = {headers: req.headers, files: req.files, body: req.body};
+		res.end();
+	});
+
+	await storage.ready();
+	await request(app)
+		.post('/url')
+		.attach('photos', files[0])
+		.attach('photos', files[1]);
+
+	t.not(storage.client, null);
 	return fileMatchMd5Hash(t, result.files);
 });

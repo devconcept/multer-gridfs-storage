@@ -2,8 +2,9 @@ import test from 'ava';
 import {restore, stub} from 'sinon';
 
 import Cache from '../lib/cache';
-import {mongoUrl as url} from './utils/settings';
+import {storageOpts} from './utils/settings';
 
+const {url} = storageOpts();
 const url2 = 'mongodb://mongoserver.com:27017/testdatabase';
 
 test.beforeEach(t => {

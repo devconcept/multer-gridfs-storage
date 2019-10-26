@@ -11,14 +11,6 @@ export const connection = {
 	database
 };
 
-export const mongoUrl = url.format({
-	protocol: 'mongodb',
-	slashes: true,
-	hostname,
-	port,
-	pathname: database
-});
-
 export const storageOpts = function() {
 	return {
 		url: url.format({

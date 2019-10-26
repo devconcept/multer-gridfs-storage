@@ -9,6 +9,7 @@ test.afterEach.always('cleanup', t => {
 });
 
 test('is compatible with an options object on url based connections', async t => {
+	const [major] = mongoVersion;
 	const {url, options} = storageOpts();
 	const storage = new GridFsStorage({
 		url,
@@ -17,10 +18,8 @@ test('is compatible with an options object on url based connections', async t =>
 	t.context.storage = storage;
 
 	await storage.ready();
-	t.is(
-		mongoVersion[0] === 3
-			? storage.db.serverConfig.s.options.poolSize
-			: storage.db.serverConfig.s.poolSize,
-		10
-	);
+	const value = major === 3
+		? storage.db.serverConfig.s.options.poolSize
+		: storage.db.serverConfig.s.poolSize;
+	t.is(value, 10);
 });

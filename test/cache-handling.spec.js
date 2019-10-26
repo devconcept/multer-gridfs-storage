@@ -3,9 +3,11 @@ import {MongoClient} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
 import Cache from '../lib/cache';
-import {mongoUrl as url} from './utils/settings';
+import {storageOpts} from './utils/settings';
 import {delay, cleanStorage} from './utils/testutils';
 import GridFsStorage from '..';
+
+const {url, options} = storageOpts();
 
 test.serial.beforeEach(t => {
 	t.context.oldCache = GridFsStorage.cache;
@@ -23,7 +25,7 @@ test.serial.afterEach.always(t => {
 });
 
 function createStorage(settings, {t, key} = {}) {
-	const storage = new GridFsStorage({url, ...settings});
+	const storage = new GridFsStorage({url, options, ...settings});
 	if (t && key) {
 		t.context[key] = storage;
 	}
