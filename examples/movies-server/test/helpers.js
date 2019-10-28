@@ -32,29 +32,3 @@ export function generateBytes() {
 		});
 	});
 }
-
-// Replace with proper library
-export function waitForStream(readable, writable, event = 'end') {
-	let processed = false;
-	return new Promise((resolve, reject) => {
-		const process = (fn, toDestroy) => {
-			return result => {
-				if (!processed) {
-					processed = true;
-					readable.removeAllListeners();
-					writable.removeAllListeners();
-					if (toDestroy) {
-						toDestroy.destroy();
-					}
-
-					fn(result);
-				}
-			};
-		};
-
-		readable.once('error', process(reject, writable));
-		writable.once('error', process(reject, readable));
-		writable.once(event, process(resolve));
-		readable.pipe(writable);
-	});
-}

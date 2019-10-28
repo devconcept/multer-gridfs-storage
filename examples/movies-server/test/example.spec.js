@@ -2,11 +2,12 @@ import {createReadStream} from 'fs';
 import test from 'ava';
 import request from 'supertest';
 import {MongoClient, GridFSBucket} from 'mongodb';
+import waitForStream from 'promisepipe';
 
 import {url} from '../settings';
 import {dbReady} from '../connection';
 import {app} from '../app';
-import {cleanup, getDb, getFile, waitForStream, generateBytes} from './helpers';
+import {cleanup, getDb, getFile, generateBytes} from './helpers';
 
 test.serial.afterEach.always('cleanup', t => {
 	const {db, client} = t.context;
@@ -44,7 +45,7 @@ test.serial('read files from database', async t => {
 	const {filename: name} = await generateBytes();
 	const dbStream = file.openUploadStream(name);
 	const fileStream = createReadStream(getFile());
-	await waitForStream(fileStream, dbStream, 'finish');
+	await waitForStream(fileStream, dbStream);
 
 	const response = await request(app).get('/movie/' + dbStream.id.toString());
 
@@ -68,7 +69,7 @@ test.serial('delete files from database', async t => {
 	const {filename: name} = await generateBytes();
 	const dbStream = file.openUploadStream(name);
 	const fileStream = createReadStream(getFile());
-	await waitForStream(fileStream, dbStream, 'finish');
+	await waitForStream(fileStream, dbStream);
 
 	const response = await request(app).delete(
 		'/movie/' + dbStream.id.toString()

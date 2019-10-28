@@ -4,8 +4,8 @@
   "description": "Complete file storage and download example using multer and gridfs",
   "main": "index.js",
   "scripts": {
-		"run": "node app.js",
-		"test": "ava"
+    "run": "node app.js",
+    "test": "ava"
   },
   "keywords": [
     "multer",
@@ -31,6 +31,7 @@
     "ava": "^2.4.0",
     "mongodb": "^3.3.3",
     "mongodb-uri": "^0.9.7",
+    "promisepipe": "^3.0.0",
     "supertest": "^4.0.2"
   }
 }
