@@ -31,11 +31,10 @@ Basic usage example:
 const express = require('express');
 const multer  = require('multer');
 const GridFsStorage = require('multer-gridfs-storage');
+const url = 'mongodb://yourhost:27017/database';
 
 // Create a storage object with a given configuration
-const storage = new GridFsStorage({
-   url: 'mongodb://yourhost:27017/database'
-});
+const storage = new GridFsStorage({ url });
 
 // Set multer storage engine to the newly created object
 const upload = multer({ storage });
@@ -148,9 +147,7 @@ const storage = new GridFSStorage({ db: promise });
 
 const connection = mongoose.connect('mongodb://yourhost:27017/database');
 
-const storage = new GridFSStorage({
-  db: connection
-});
+const storage = new GridFSStorage({ db: connection });
 ```
 
 ```javascript
@@ -184,7 +181,7 @@ const db = client.then(cl => cl.db('database'));
 const storage = new GridFSStorage({ db, client});
 ```
 
-This is not strictly necessary but recommended to keep the storage in sync with the underlying connection status and to make your code more resilient to future changes in the mongodb library.
+Using this feature is highly recommended to keep the storage in sync with the underlying connection status and to make your code more resilient to future changes in the mongodb library.
 
 #### file
 
