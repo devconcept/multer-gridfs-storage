@@ -33,6 +33,7 @@ test.serial(
 		storage.once('connectionFailed', rejectSpy);
 
 		const result = storage.ready();
+		/* eslint-disable-next-line promise/prefer-await-to-then */
 		t.is(typeof result.then, 'function');
 		const err = await t.throwsAsync(async () => {
 			await result;
@@ -51,6 +52,7 @@ test.serial.cb(
 		const {storage} = t.context;
 		storage.once('connectionFailed', evtErr => {
 			const result = storage.ready();
+			/* eslint-disable-next-line promise/prefer-await-to-then */
 			t.is(typeof result.then, 'function');
 			result.catch(error => {
 				t.is(error, evtErr);
@@ -69,11 +71,13 @@ test('returns a promise that resolves when the connection is created', async t =
 	storage.once('connection', resolveSpy);
 	storage.once('connectionFailed', rejectSpy);
 	const result = storage.ready();
-	const db = await result;
+	const {db, client} = await result;
+	/* eslint-disable-next-line promise/prefer-await-to-then */
 	t.is(typeof result.then, 'function');
 	t.is(resolveSpy.callCount, 1);
 	t.is(rejectSpy.callCount, 0);
 	t.is(db, storage.db);
+	t.is(client, storage.client);
 	t.not(db, null);
 });
 
@@ -84,11 +88,15 @@ test.cb(
 		const {storage} = t.context;
 		storage.once('connection', () => {
 			const result = storage.ready();
+			/* eslint-disable-next-line promise/prefer-await-to-then */
 			t.is(typeof result.then, 'function');
+
 			result
-				.then(db => {
-					t.is(db, storage.db);
-					t.not(db, null);
+				/* eslint-disable-next-line promise/prefer-await-to-then */
+				.then(result => {
+					t.truthy(result);
+					t.is(result.db, storage.db);
+					t.is(result.client, storage.client);
 					t.end();
 				})
 				.catch(t.end);

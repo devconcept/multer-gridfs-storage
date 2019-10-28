@@ -4,17 +4,20 @@ import request from 'supertest';
 import multer from 'multer';
 import mongoose from 'mongoose';
 import {MongoClient} from 'mongodb';
-
+import delay from 'delay';
 import {
 	files,
 	cleanStorage,
 	getDb,
 	getClient,
-	dropDatabase, delay
+	dropDatabase,
+	mongoVersion
 } from './utils/testutils';
 import {storageOpts} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
 import GridFsStorage from '..';
+
+const [major] = mongoVersion;
 
 function prepareTest(t, opts) {
 	const app = express();
@@ -87,13 +90,13 @@ test('connects to a mongoose instance', async t => {
 		res.end();
 	});
 
-	const instance = await storage.ready();
+	const {db} = await storage.ready();
 	await request(app)
 		.post('/url')
 		.attach('photos', files[0])
 		.attach('photos', files[1]);
 
-	t.true(instance instanceof mongoose.mongo.Db);
+	t.true(db instanceof mongoose.mongo.Db);
 	await fileMatchMd5Hash(t, result.files);
 
 	storage.client = mongoose.connection;
@@ -120,54 +123,56 @@ test('creates an instance without the new keyword', async t => {
 
 	return fileMatchMd5Hash(t, result.files);
 });
+if (major >= 3) {
+	test('accept the client as one of the parameters', async t => {
+		const {url, options} = storageOpts();
+		t.context.url = url;
+		let result = {};
+		const _db = await MongoClient.connect(url, options);
+		const db = getDb(_db, url);
+		const client = getClient(_db);
+		prepareTest(t, {db, client});
+		const {app, storage, upload} = t.context;
+		t.is(storage.client, client);
 
-test('accept the client as one of the parameters', async t => {
-	const {url, options} = storageOpts();
-	t.context.url = url;
-	let result = {};
-	const _db = await MongoClient.connect(url, options);
-	const db = getDb(_db, url);
-	const client = getClient(_db);
-	prepareTest(t, {db, client});
-	const {app, storage, upload} = t.context;
-	t.is(storage.client, client);
+		app.post('/url', upload.array('photos', 2), (req, res) => {
+			result = {headers: req.headers, files: req.files, body: req.body};
+			res.end();
+		});
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+		await storage.ready();
+		await request(app)
+			.post('/url')
+			.attach('photos', files[0])
+			.attach('photos', files[1]);
+
+		return fileMatchMd5Hash(t, result.files);
 	});
 
-	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photos', files[0])
-		.attach('photos', files[1]);
+	test('waits for the client if is a promise', async t => {
+		const {url, options} = storageOpts();
+		t.context.url = url;
+		let result = {};
+		const _db = await MongoClient.connect(url, options);
+		const db = getDb(_db, url);
+		/* eslint-disable-next-line promise/prefer-await-to-then */
+		const client = delay(100).then(() => getClient(_db));
+		prepareTest(t, {db, client});
+		const {app, storage, upload} = t.context;
+		t.is(storage.client, null);
 
-	return fileMatchMd5Hash(t, result.files);
-});
+		app.post('/url', upload.array('photos', 2), (req, res) => {
+			result = {headers: req.headers, files: req.files, body: req.body};
+			res.end();
+		});
 
-test('waits for the client if is a promise', async t => {
-	const {url, options} = storageOpts();
-	t.context.url = url;
-	let result = {};
-	const _db = await MongoClient.connect(url, options);
-	const db = getDb(_db, url);
-	const client = delay(100).then(() => getClient(_db));
-	prepareTest(t, {db, client});
-	const {app, storage, upload} = t.context;
-	t.is(storage.client, null);
+		await storage.ready();
+		await request(app)
+			.post('/url')
+			.attach('photos', files[0])
+			.attach('photos', files[1]);
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+		t.not(storage.client, null);
+		return fileMatchMd5Hash(t, result.files);
 	});
-
-	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photos', files[0])
-		.attach('photos', files[1]);
-
-	t.not(storage.client, null);
-	return fileMatchMd5Hash(t, result.files);
-});
+}

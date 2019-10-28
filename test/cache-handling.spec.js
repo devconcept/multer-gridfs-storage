@@ -1,10 +1,11 @@
 import test from 'ava';
 import {MongoClient} from 'mongodb';
+import delay from 'delay';
 import {spy, stub, restore} from 'sinon';
 
 import Cache from '../lib/cache';
 import {storageOpts} from './utils/settings';
-import {delay, cleanStorage} from './utils/testutils';
+import {cleanStorage} from './utils/testutils';
 import GridFsStorage from '..';
 
 const {url, options} = storageOpts();
@@ -47,7 +48,8 @@ test.serial(
 		await delay();
 		t.is(storage1.db, storage2.db);
 		t.is(eventSpy.callCount, 1);
-		t.true(eventSpy.calledWith(storage1.db));
+		const call = eventSpy.getCall(0);
+		t.is(call.args[0].db, storage1.db);
 		t.is(mongoSpy.callCount, 1);
 		t.is(cache.connections(), 1);
 	}
@@ -67,7 +69,8 @@ test.serial(
 		await delay();
 		t.is(storage1.db, storage2.db);
 		t.is(eventSpy.callCount, 1);
-		t.true(eventSpy.calledWith(storage1.db));
+		const call = eventSpy.getCall(0);
+		t.is(call.args[0].db, storage1.db);
 		t.is(mongoSpy.callCount, 1);
 		t.is(cache.connections(), 1);
 	}
@@ -87,7 +90,8 @@ test.serial(
 		await storage2.ready();
 		t.is(storage1.db, storage2.db);
 		t.is(eventSpy.callCount, 1);
-		t.true(eventSpy.calledWith(storage1.db));
+		const call = eventSpy.getCall(0);
+		t.is(call.args[0].db, storage1.db);
 		t.is(mongoSpy.callCount, 1);
 		t.is(cache.connections(), 1);
 	}
@@ -107,8 +111,10 @@ test.serial('creates different connections for different caches', async t => {
 	t.not(storage1.db, storage2.db);
 	t.is(mongoSpy.callCount, 2);
 	t.is(eventSpy.callCount, 1);
-	t.true(eventSpy.calledWith(storage1.db));
+	const call = eventSpy.getCall(0);
+	t.is(call.args[0].db, storage1.db);
 	t.is(eventSpy2.callCount, 1);
-	t.true(eventSpy2.calledWith(storage2.db));
+	const call2 = eventSpy2.getCall(0);
+	t.is(call2.args[0].db, storage2.db);
 	t.is(cache.connections(), 2);
 });

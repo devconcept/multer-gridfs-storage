@@ -37,6 +37,7 @@ const promiseStorage = new GridFsStorage({
 	url: url2,
 	options,
 	file: () => {
+		/* eslint-disable-next-line promise/prefer-await-to-then */
 		return generateName().then(random => {
 			return `my_file_${random}`;
 		});

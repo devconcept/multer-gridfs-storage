@@ -2,6 +2,8 @@ import path from 'path';
 import {parse} from 'mongodb-uri';
 import {MongoClient} from 'mongodb';
 import hasOwn from 'has-own-prop';
+import delay from 'delay';
+
 import {version} from 'mongodb/package.json';
 import {connection, storageOpts} from './settings';
 
@@ -68,16 +70,8 @@ export function getClient(client) {
 	return client instanceof MongoClient ? client : null;
 }
 
-export function delay(delay = 0) {
-	return new Promise(resolve => {
-		setTimeout(() => {
-			resolve();
-		}, delay);
-	});
-}
-
 export function fakeConnectCb(err = null) {
-	return (...args) => {
+	return async (...args) => {
 		if (args.length === 3) {
 			const cb = args[2];
 			setTimeout(() => {
@@ -86,6 +80,9 @@ export function fakeConnectCb(err = null) {
 			return;
 		}
 
-		return delay().then(() => (err ? Promise.reject(err) : Promise.resolve()));
+		await delay();
+		if (err) {
+			return Promise.reject(err);
+		}
 	};
 }

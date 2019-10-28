@@ -4,10 +4,11 @@ import multer from 'multer';
 import request from 'supertest';
 import express from 'express';
 import {MongoClient} from 'mongodb';
+import delay from 'delay';
 import {spy, stub, restore} from 'sinon';
 
 import {storageOpts} from './utils/settings';
-import {files, cleanStorage, delay, fakeConnectCb} from './utils/testutils';
+import {files, cleanStorage, fakeConnectCb} from './utils/testutils';
 import GridFsStorage from '..';
 
 test.serial('connection function fails to connect', async t => {

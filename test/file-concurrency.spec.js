@@ -3,17 +3,17 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import {MongoClient} from 'mongodb';
+import delay from 'delay';
 
+import {storageOpts} from './utils/settings';
+import {fileMatchMd5Hash} from './utils/macros';
 import {
 	files,
 	cleanStorage,
 	getDb,
 	getClient,
-	delay,
 	dropDatabase
 } from './utils/testutils';
-import {storageOpts} from './utils/settings';
-import {fileMatchMd5Hash} from './utils/macros';
 import GridFsStorage from '..';
 
 function prepareTest(t, error) {
@@ -21,9 +21,12 @@ function prepareTest(t, error) {
 	t.context.url = url;
 	const app = express();
 	const promised = error
-		? delay(1000).then(() => Promise.reject(error))
-		: delay(1000)
+		? /* eslint-disable-next-line promise/prefer-await-to-then */
+		  delay(500).then(() => Promise.reject(error))
+		: delay(500)
+				/* eslint-disable-next-line promise/prefer-await-to-then */
 				.then(() => MongoClient.connect(url, options))
+				/* eslint-disable-next-line promise/prefer-await-to-then */
 				.then(db => {
 					t.context.db = getDb(db, url);
 					t.context.client = getClient(db);

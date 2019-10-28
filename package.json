@@ -47,6 +47,7 @@
     "ava": "^2.4.0",
     "coveralls": "^3.0.7",
     "crypto-random-string": "^3.0.1",
+    "delay": "^4.3.0",
     "eslint": "^6.5.1",
     "express": "^4.17.1",
     "jsdoc": "^3.6.3",
@@ -54,11 +55,12 @@
     "mongoose": "^5.6.3",
     "nyc": "^14.1.1",
     "pify": "^4.0.1",
+    "promisepipe": "^3.0.0",
     "sinon": "^7.3.2",
     "supertest": "^4.0.2"
   },
   "engines": {
-    "node": ">=4"
+    "node": ">=8"
   },
   "bugs": {
     "url": "https://github.com/devconcept/multer-gridfs-storage/issues"
