@@ -10,8 +10,8 @@ env:
 before_script:
   - sleep 15
 install:
-	- npm install
-	- npm install multer
+  - npm install
+  - npm install multer
 after_script:
   - npm run coveralls
 jobs:
