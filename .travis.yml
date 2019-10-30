@@ -9,6 +9,9 @@ env:
   - NODE_ENV=test
 before_script:
   - sleep 15
+install:
+	- npm install
+	- npm install multer
 after_script:
   - npm run coveralls
 jobs:
