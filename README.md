@@ -402,7 +402,12 @@ This event is emitted when the MongoDb connection is ready to use.
 
 *Event arguments*
 
- - db: The MongoDb database object that holds the connection
+ - result: Result is an object with the following properties:
+ 
+    `db`: The MongoDb database pointing to the database
+    
+    `client`: The MongoClient instance that holds the connection
+
 
 This event is triggered at most once.
 
@@ -475,8 +480,9 @@ const storage = new GridFsStorage({
 
 storage
   .ready()
-  .then((db) => {
-    // Db is the database instance
+  .then(({db, client}) => {
+    // db is the database instance
+    // client is the MongoClient instance
   })
   .catch((err) => {
     // err is the error received from MongoDb
