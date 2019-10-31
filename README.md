@@ -1,6 +1,6 @@
 # Multer's GridFS storage engine
 
-[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] ![Npm version][version-image] [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/xojs/xo) ![Downloads][downloads-image] [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage?ref=badge_shield)
+[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] ![Npm version][version-image] [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/xojs/xo) ![Downloads][downloads-image] [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage?ref=badge_shield) [![Gitter](https://badges.gitter.im/multer-gridfs-storage/community.svg)](https://gitter.im/multer-gridfs-storage/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb.
 
