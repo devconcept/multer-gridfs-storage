@@ -7,7 +7,7 @@ Please include all requested information to save time and help you get a quick s
 -->
 
 #### I'm submitting a...
-<!-- Select one of the following by adding a "x" -->
+<!-- Select only one of the following by adding a "x" -->
 
 - [ ] Bug report
 - [ ] Feature request
@@ -15,12 +15,14 @@ Please include all requested information to save time and help you get a quick s
 - [ ] Support request
 - [ ] Regression
 
+<!-- Please select the one that fits more closely the help you want to receive. If you select more than one it is very likely that you issue is closed -->
+
 #### Environment
 
 <!-- 
 If your issue request is a bug, regression or support include the environment where you run your code so we can reproduce it. 
 
-Replace *(major.minor.patch)* with your installed version number of each module, eg: 3.1.4
+Replace *(major.minor.patch)* with your installed version number of each module, eg: "I'm using `multer-gridfs-storage` version 3.1.4"
 
 For documentation and new features remove the environment block because it doesn't apply to your case and focus on the behavior part below.
 -->
