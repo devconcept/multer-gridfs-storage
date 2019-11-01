@@ -1,38 +1,39 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Help fix a problem you found with this project 
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
 
+<!-- Thank you for taking the time to improve this library. -->
+
+<!-- Please include all requested information to save time and help you get a quick solution for your problem. -->
+
 **Describe the bug**
-A clear and concise description of what the bug is.
+<!-- A clear and concise description of what the bug is. -->
+
+**Environment**
+
+<!-- Replace *(major.minor.patch)* with your installed version number of each module, eg: "I'm using `multer-gridfs-storage` version 3.1.4" -->
+
+- I'm using `multer-gridfs-storage` version *(major.minor.patch)*
+
+- My installed MongoDb version is *(major.minor.patch)*
+
+- I have Multer *(major.minor.patch)* installed to upload files
+
+- The Node version used to run the code is *(major.minor.patch)*
+
+<!-- In case it is relevant, also include the following information otherwise remove the next line -->
+
+- I'm *(using/not using)* Mongoose connection objects to create storage instances. The Mongoose version installed is *(major.minor.patch)*
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+<!-- Steps to reproduce the behavior -->
+<!-- Include if possible an example in a Github repo or similar or using [RunKit](https://runkit.com) -->
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+<!-- A clear and concise description of what you expected to happen. -->
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
