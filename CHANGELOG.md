@@ -1,3 +1,9 @@
+# 4.0.1
+
+  * Fix: Moved multer from dependencies to peerDependencies
+  * Fix: Removed xo from dependencies
+  * Update: Updated `pump` dependency
+
 # 4.0.0
 
   * Feature: Added the `client` option to the constructor
