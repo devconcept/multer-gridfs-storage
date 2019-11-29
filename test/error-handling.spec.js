@@ -2,7 +2,7 @@ import test from 'ava';
 import multer from 'multer';
 import request from 'supertest';
 import express from 'express';
-import {MongoClient} from 'mongodb';
+import {MongoClient, GridFSBucket} from 'mongodb';
 import {spy, restore} from 'sinon';
 
 import {storageOpts} from './utils/settings';
@@ -187,4 +187,44 @@ test('event is emitted when there is an error in the database', async t => {
 	t.is(errorSpy.callCount, 2);
 	t.is(errorSpy.getCall(0).args[0], error);
 	t.true(errorSpy.getCall(1).args[0] instanceof Error);
+});
+
+test('proove faulty implementation of GridFSBucketWriteStream.destroy()', async t => {
+	// This test passes for node 13 (=destroy not inherited correctly) but fails for node 12
+	const {url, options} = storageOpts();
+	t.context.url = url;
+	const _db = await MongoClient.connect(url, options);
+	const db = getDb(_db, url);
+
+	const gfs = new GridFSBucket(db, {bucketName: 'fs'});
+	const upload = gfs.openUploadStream('test');
+	// destroy is not inherited correctly from stream.Writable
+	t.throws(() => { upload.destroy() }, TypeError, 'Cannot read property \'destroyed\' of undefined');
+});
+
+test('properly emit streamError', async t => {
+	let error = {};
+	const app = express();
+	const storage = new GridFsStorage(storageOpts());
+	t.context.storage = storage;
+	const upload = multer({storage});
+	app.post('/url', upload.single('photo'), (err, req, res, next) => {
+		error = err;
+		next();
+	});
+
+	await storage.ready();
+	// create unique index for md5 on files to be able to make the GridFSBucketWriteStream throw
+	storage.db.collection('fs.files').createIndex({ 'md5': 1 }, { unique: true })
+	// upload file for the first time - should succeed
+	await request(app)
+		.post('/url')
+		.attach('photo', files[0]);
+	// uploading the same file twice should fail
+	await request(app)
+		.post('/url')
+		.attach('photo', files[0]);
+	t.true(error instanceof Error);
+	t.is(error.name, 'MongoError');
+	t.is(error.code, 11000); // duplicate key
 });
