@@ -25,14 +25,14 @@ test('invalid configurations', t => {
 	const errFn = () => new GridFsStorage({});
 	const errFn2 = () => new GridFsStorage();
 
-	t.throws(
-		errFn,
-		'Error creating storage engine. At least one of url or db option must be provided.'
-	);
-	t.throws(
-		errFn2,
-		'Error creating storage engine. At least one of url or db option must be provided.'
-	);
+	t.throws(errFn, {
+		message:
+			'Error creating storage engine. At least one of url or db option must be provided.'
+	});
+	t.throws(errFn2, {
+		message:
+			'Error creating storage engine. At least one of url or db option must be provided.'
+	});
 });
 
 test('invalid types as file configurations', async t => {

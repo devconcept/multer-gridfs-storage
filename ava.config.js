@@ -1,7 +1,6 @@
-module.exports.default = {
-	sources: ['lib/*.js'],
+export default {
+	require: ['esm'],
 	files: ['test/**/*.spec.js'],
-	helpers: ['test/utils/*'],
 	cache: true,
 	concurrency: 10,
 	verbose: true,
