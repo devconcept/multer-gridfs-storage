@@ -42,7 +42,7 @@
 		"multer": ">=1 <2"
 	},
 	"devDependencies": {
-		"ava": "^2.4.0",
+		"ava": "^3.1.0",
 		"coveralls": "^3.0.7",
 		"crypto-random-string": "^3.0.1",
 		"delay": "^4.3.0",
