@@ -1,3 +1,7 @@
+# 4.0.2
+
+  * Update: Updated dependencies
+
 # 4.0.1
 
   * Fix: Moved multer from dependencies to peerDependencies
