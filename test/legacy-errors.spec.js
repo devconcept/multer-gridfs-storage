@@ -5,7 +5,7 @@ import multer from 'multer';
 import mongo, {MongoClient, Db, Server} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
-import {connection, storageOpts} from './utils/settings';
+import {connection, storageOptions} from './utils/settings';
 import {cleanStorage, files, mongoVersion} from './utils/testutils';
 import GridFsStorage from '..';
 
@@ -30,7 +30,7 @@ test.serial('handle GridStore open error', async t => {
 			}
 		})
 	});
-	const storage = new GridFsStorage(storageOpts());
+	const storage = new GridFsStorage(storageOptions());
 	t.context.storage = storage;
 	storage._legacy = true;
 	storage.on('streamError', errorSpy);
@@ -39,8 +39,8 @@ test.serial('handle GridStore open error', async t => {
 	const upload = multer({storage});
 
 	/* eslint-disable-next-line no-unused-vars, handle-callback-err */
-	app.post('/url', upload.single('photo'), (err, req, res, next) => {
-		res.end();
+	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
+		response.end();
 	});
 
 	await request(app)
@@ -73,7 +73,7 @@ test.serial('handle GridStore close error', async t => {
 			}
 		})
 	});
-	const storage = new GridFsStorage(storageOpts());
+	const storage = new GridFsStorage(storageOptions());
 	storage._legacy = true;
 	t.context.storage = storage;
 	storage.on('streamError', errorSpy);
@@ -82,8 +82,8 @@ test.serial('handle GridStore close error', async t => {
 	const upload = multer({storage});
 
 	/* eslint-disable-next-line no-unused-vars, handle-callback-err */
-	app.post('/url', upload.single('photo'), (err, req, res, next) => {
-		res.end();
+	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
+		response.end();
 	});
 
 	await request(app)
@@ -108,7 +108,7 @@ test.serial('handles MongoClient and Db objects', async t => {
 
 		return Promise.resolve(db);
 	});
-	const storage = new GridFsStorage(storageOpts());
+	const storage = new GridFsStorage(storageOptions());
 
 	await storage.ready();
 	t.is(mongoSpy.callCount, 1);
@@ -130,7 +130,7 @@ if (mongoVersion[0] !== 2) {
 
 			return Promise.resolve(client);
 		});
-		const storage = new GridFsStorage(storageOpts());
+		const storage = new GridFsStorage(storageOptions());
 		await storage.ready();
 		t.is(mongoSpy.callCount, 1);
 		t.true(db instanceof Db);

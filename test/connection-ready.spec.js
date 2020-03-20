@@ -3,7 +3,7 @@ import {MongoClient} from 'mongodb';
 import {spy, restore, stub} from 'sinon';
 
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
 test.afterEach.always('cleanup', t => {
@@ -13,7 +13,7 @@ test.afterEach.always('cleanup', t => {
 });
 
 function createStorage(t) {
-	t.context.storage = new GridFsStorage(storageOpts());
+	t.context.storage = new GridFsStorage(storageOptions());
 }
 
 function forceFailure(t) {

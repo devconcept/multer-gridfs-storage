@@ -39,13 +39,13 @@ test('compare considers equal objects by reference', t => {
 });
 
 test('compare considers equal objects with same property values', t => {
-	function Obj() {
+	function Object_() {
 		this.a = 1;
 	}
 
-	Obj.prototype.b = 2;
+	Object_.prototype.b = 2;
 	t.true(compare({a: 1}, {a: 1}));
-	t.true(compare({a: 1, b: 2}, new Obj()));
+	t.true(compare({a: 1, b: 2}, new Object_()));
 });
 
 test('compare considers different objects with different keys values', t => {

@@ -4,11 +4,11 @@ import delay from 'delay';
 import {spy, stub, restore} from 'sinon';
 
 import Cache from '../lib/cache';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import {cleanStorage} from './utils/testutils';
 import GridFsStorage from '..';
 
-const {url, options} = storageOpts();
+const {url, options} = storageOptions();
 
 test.serial.beforeEach(t => {
 	t.context.oldCache = GridFsStorage.cache;

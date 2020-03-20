@@ -9,7 +9,7 @@
 		"coverage": "nyc --reporter=lcov ava",
 		"docs": "jsdoc -c ./conf.json --readme ./README.md",
 		"coveralls": "npm run coverage | coveralls",
-		"preversion": "eslint ."
+		"preversion": "npm run lint"
 	},
 	"xo": {
 		"prettier": true
@@ -53,13 +53,13 @@
 		"md5-file": "^4.0.0",
 		"mongoose": "^5.8.9",
 		"nyc": "^15.0.0",
-		"pify": "^4.0.1",
+		"pify": "^5.0.0",
 		"sinon": "^9.0.1",
 		"supertest": "^4.0.2",
 		"xo": "^0.28.0"
 	},
 	"engines": {
-		"node": ">=8"
+		"node": ">=8.3.0"
 	},
 	"bugs": {
 		"url": "https://github.com/devconcept/multer-gridfs-storage/issues"

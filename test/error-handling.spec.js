@@ -5,7 +5,7 @@ import express from 'express';
 import {MongoClient} from 'mongodb';
 import {spy, restore} from 'sinon';
 
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import {
 	files,
 	cleanStorage,
@@ -39,12 +39,12 @@ test('invalid types as file configurations', async t => {
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		file: () => true
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
-	app.post('/url', upload.single('photo'), (err, req, res, next) => {
+	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
 		error = err;
 		next();
 	});
@@ -62,7 +62,7 @@ test('fails gracefully if an error is thrown inside the configuration function',
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		file: () => {
 			throw new Error('Error thrown');
 		}
@@ -70,7 +70,7 @@ test('fails gracefully if an error is thrown inside the configuration function',
 
 	const upload = multer({storage});
 
-	app.post('/url', upload.single('photo'), (err, req, res, next) => {
+	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
 		error = err;
 		next();
 	});
@@ -88,7 +88,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		/* eslint-disable-next-line require-yield */
 		*file() {
 			throw new Error('File error');
@@ -97,7 +97,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 
 	const upload = multer({storage});
 
-	app.post('/url', upload.single('photo'), (err, req, res, next) => {
+	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
 		error = err;
 		next();
 	});
@@ -125,8 +125,8 @@ test('connection promise fails to connect', async t => {
 	const upload = multer({storage});
 
 	/* eslint-disable-next-line no-unused-vars, handle-callback-err */
-	app.post('/url', upload.single('photo'), (err, req, res, next) => {
-		res.end();
+	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
+		response.end();
 	});
 
 	storage.on('connectionFailed', errorSpy);
@@ -141,7 +141,7 @@ test('connection promise fails to connect', async t => {
 });
 
 test('connection is not opened', async t => {
-	const {url} = storageOpts();
+	const {url} = storageOptions();
 	t.context.url = url;
 	let error = {};
 	const app = express();
@@ -157,10 +157,14 @@ test('connection is not opened', async t => {
 	const storage = new GridFsStorage({db, client});
 	const upload = multer({storage});
 
-	app.post('/url', upload.array('photos', 2), (err, req, res, next) => {
-		error = err;
-		next();
-	});
+	app.post(
+		'/url',
+		upload.array('photos', 2),
+		(err, request_, response, next) => {
+			error = err;
+			next();
+		}
+	);
 
 	await request(app)
 		.post('/url')
@@ -172,7 +176,7 @@ test('connection is not opened', async t => {
 });
 
 test('event is emitted when there is an error in the database', async t => {
-	const {url, options} = storageOpts();
+	const {url, options} = storageOptions();
 	t.context.url = url;
 	const error = new Error('Database error');
 	const errorSpy = spy();

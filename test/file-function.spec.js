@@ -5,7 +5,7 @@ import multer from 'multer';
 import {ObjectID} from 'mongodb';
 
 import {files, cleanStorage} from './utils/testutils';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
 test.before(async t => {
@@ -18,7 +18,7 @@ test.before(async t => {
 	t.context.bucketNames = ['plants', 'animals'];
 	t.context.contentTypes = ['text/plain', 'image/jpeg'];
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		file: () => {
 			counter++;
 			return {
@@ -35,9 +35,13 @@ test.before(async t => {
 	t.context.storage = storage;
 	const upload = multer({storage});
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		t.context.result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		t.context.result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();

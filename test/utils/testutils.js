@@ -5,7 +5,7 @@ import hasOwn from 'has-own-prop';
 import delay from 'delay';
 
 import {version} from 'mongodb/package.json';
-import {connection, storageOpts} from './settings';
+import {connection, storageOptions} from './settings';
 
 export const mongoVersion = version.split('.').map(Number);
 
@@ -44,7 +44,7 @@ export function closeConnections({db, client}) {
 
 export async function dropDatabase(url) {
 	if (url) {
-		const {options} = storageOpts();
+		const {options} = storageOptions();
 		const _db = await MongoClient.connect(url, options);
 		const db = getDb(_db, url);
 		const client = getClient(_db);

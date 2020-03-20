@@ -5,7 +5,7 @@ import multer from 'multer';
 import {MongoClient} from 'mongodb';
 import delay from 'delay';
 
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
 import {
 	files,
@@ -17,7 +17,7 @@ import {
 import GridFsStorage from '..';
 
 function prepareTest(t, error) {
-	const {url, options} = storageOpts();
+	const {url, options} = storageOptions();
 	t.context.url = url;
 	const app = express();
 	const promised = error
@@ -51,9 +51,13 @@ test('buffers incoming files while the connection is opening', async t => {
 	prepareTest(t);
 	const {storage, app, upload} = t.context;
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await request(app)
@@ -70,11 +74,16 @@ test('rejects incoming files if the connection does not open', async t => {
 	const error = new Error('Failed error');
 	prepareTest(t, error);
 	const {storage, app, upload} = t.context;
-	/* eslint-disable-next-line no-unused-vars */
-	app.post('/url', upload.array('photos', 2), (err, req, res, next) => {
-		result = err;
-		res.end();
-	});
+
+	app.post(
+		'/url',
+		upload.array('photos', 2),
+		// eslint-disable-next-line no-unused-vars
+		(err, request_, response, next) => {
+			result = err;
+			response.end();
+		}
+	);
 	await request(app)
 		.post('/url')
 		.attach('photos', files[0])

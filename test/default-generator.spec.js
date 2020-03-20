@@ -6,7 +6,7 @@ import {ObjectID} from 'mongodb';
 import hasOwn from 'has-own-prop';
 
 import {files, cleanStorage} from './utils/testutils';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
 test.before(async t => {
@@ -18,12 +18,12 @@ test.before(async t => {
 	t.context.collections = ['plants', 'animals'];
 	t.context.contentTypes = ['text/plain', 'image/jpeg'];
 	const storage = new GridFsStorage({
-		...storageOpts(),
-		*file(req, file) {
+		...storageOptions(),
+		*file(request_, file) {
 			let counter = 0;
-			t.context.params = [{req, file}];
+			t.context.params = [{req: request_, file}];
 			for (;;) {
-				const res = yield {
+				const response = yield {
 					filename: t.context.filePrefix + (counter + 1),
 					metadata: t.context.metadatas[counter],
 					id: t.context.ids[counter],
@@ -31,7 +31,7 @@ test.before(async t => {
 					bucketName: t.context.collections[counter],
 					contentType: t.context.contentTypes[counter]
 				};
-				t.context.params.push({req: res[0], file: res[1]});
+				t.context.params.push({req: response[0], file: response[1]});
 				counter++;
 			}
 		}
@@ -40,10 +40,14 @@ test.before(async t => {
 
 	const upload = multer({storage});
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		t.context.req = req;
-		t.context.result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		t.context.req = request_;
+		t.context.result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();
@@ -102,10 +106,10 @@ test('files are stored with the yielded content-type value', t => {
 });
 
 test('should the parameters be a request and a file objects', t => {
-	const {req: appReq, params} = t.context;
+	const {req: appRequest, params} = t.context;
 	params.forEach(p => {
 		const {req, file} = p;
-		t.is(req, appReq);
+		t.is(req, appRequest);
 		['body', 'query', 'params', 'files'].every(k => t.true(hasOwn(req, k)));
 		['fieldname', 'originalname', 'encoding', 'mimetype'].every(k =>
 			t.true(hasOwn(file, k))

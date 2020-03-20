@@ -4,14 +4,14 @@ import request from 'supertest';
 import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
 async function successfulPromiseSetup(t) {
 	const app = express();
 	t.context.filePrefix = 'file';
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		*file() {
 			let counter = 0;
 			for (;;) {
@@ -24,9 +24,13 @@ async function successfulPromiseSetup(t) {
 
 	const upload = multer({storage});
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		t.context.result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		t.context.result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();
@@ -54,7 +58,7 @@ async function failedPromiseSetup(t) {
 	const app = express();
 	t.context.rejectedError = new Error('reason');
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		*file() {
 			yield Promise.reject(t.context.rejectedError);
 		}
@@ -62,10 +66,14 @@ async function failedPromiseSetup(t) {
 	t.context.storage = storage;
 	const upload = multer({storage});
 
-	app.post('/url', upload.array('photos', 2), (err, req, res, next) => {
-		t.context.error = err;
-		next();
-	});
+	app.post(
+		'/url',
+		upload.array('photos', 2),
+		(err, request_, response, next) => {
+			t.context.error = err;
+			next();
+		}
+	);
 
 	await storage.ready();
 	await request(app)

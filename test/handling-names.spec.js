@@ -4,7 +4,7 @@ import request from 'supertest';
 import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
 test.afterEach.always('cleanup', t => {
@@ -18,7 +18,7 @@ test('handling empty name values', async t => {
 	let result = {};
 
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		file: () => {
 			counter++;
 			return values[counter];
@@ -27,9 +27,13 @@ test('handling empty name values', async t => {
 	t.context.storage = storage;
 	const upload = multer({storage});
 
-	app.post('/url', upload.array('photo', 3), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photo', 3), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();
@@ -39,7 +43,7 @@ test('handling empty name values', async t => {
 		.attach('photo', files[0])
 		.attach('photo', files[0]);
 
-	result.files.forEach(file => t.regex(file.filename, /^[0-9a-f]{32}$/));
+	result.files.forEach(file => t.regex(file.filename, /^[\da-f]{32}$/));
 	result.files.forEach(file => t.is(file.metadata, null));
 	result.files.forEach(file => t.is(file.bucketName, 'fs'));
 	result.files.forEach(file => t.is(file.chunkSize, 261120));
@@ -52,7 +56,7 @@ test('handling primitive values as names', async t => {
 	let result = {};
 
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		file: () => {
 			counter++;
 			return values[counter];
@@ -61,9 +65,13 @@ test('handling primitive values as names', async t => {
 	t.context.storage = storage;
 	const upload = multer({storage});
 
-	app.post('/url', upload.array('photo', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photo', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();

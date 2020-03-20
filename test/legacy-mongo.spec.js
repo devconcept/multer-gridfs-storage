@@ -7,16 +7,16 @@ import {ObjectID, GridStore} from 'mongodb';
 import md5FileCb from 'md5-file';
 import pify from 'pify';
 
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import {cleanStorage, files} from './utils/testutils';
 import GridFsStorage from '..';
 
 const readFile = pify(readFileCb);
 const md5File = pify(md5FileCb);
 
-function createStorageAndUpload(t, opts = {}) {
-	const {url} = storageOpts();
-	const storage = new GridFsStorage({url, ...opts});
+function createStorageAndUpload(t, options = {}) {
+	const {url} = storageOptions();
+	const storage = new GridFsStorage({url, ...options});
 	t.context.storage = storage;
 	storage._legacy = true;
 	t.context.upload = multer({storage});
@@ -37,9 +37,13 @@ test('legacy GridStore streams are supported', async t => {
 	const f = await readFile(files[0]);
 	const size = f.length;
 
-	app.post('/url', upload.single('photos'), (req, res) => {
-		result = {headers: req.headers, file: req.file, body: req.body};
-		res.end();
+	app.post('/url', upload.single('photos'), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			file: request_.file,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();
@@ -49,9 +53,9 @@ test('legacy GridStore streams are supported', async t => {
 
 	t.is(typeof result.file, 'object');
 	t.is(result.file.md5, await md5File(files[0]));
-	t.regex(result.file.filename, /^[0-9a-f]{32}$/);
+	t.regex(result.file.filename, /^[\da-f]{32}$/);
 	t.is(result.file.metadata, null);
-	t.regex(result.file.id.toString(), /^[0-9a-f]{24}$/);
+	t.regex(result.file.id.toString(), /^[\da-f]{24}$/);
 	t.is(result.file.size, size);
 	t.is(result.file.bucketName, 'fs');
 	t.true(result.file.uploadDate instanceof Date);
@@ -81,9 +85,13 @@ test('legacy streams support changing file configuration', async t => {
 	});
 	const {app, storage, upload} = t.context;
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();
@@ -112,11 +120,19 @@ test('legacy streams delete files correctly', async t => {
 	createStorageAndUpload(t);
 	const {app, upload, storage} = t.context;
 
-	app.post('/url', upload.array('photos', 1), (err, req, res, next) => {
-		result = {headers: req.headers, body: req.body, files: req.files};
-		error = err;
-		next();
-	});
+	app.post(
+		'/url',
+		upload.array('photos', 1),
+		(err, request_, response, next) => {
+			result = {
+				headers: request_.headers,
+				body: request_.body,
+				files: request_.files
+			};
+			error = err;
+			next();
+		}
+	);
 
 	await storage.ready();
 	const {db} = storage;

@@ -4,13 +4,13 @@ import request from 'supertest';
 import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
 test.before(async t => {
 	const app = express();
 	const storage = new GridFsStorage({
-		...storageOpts(),
+		...storageOptions(),
 		*file() {
 			yield {filename: 'name'};
 		}
@@ -18,11 +18,15 @@ test.before(async t => {
 	t.context.storage = storage;
 	const upload = multer({storage});
 
-	/* eslint-disable-next-line no-unused-vars */
-	app.post('/url', upload.array('photos', 2), (err, req, res, next) => {
-		t.context.error = err;
-		res.end();
-	});
+	app.post(
+		'/url',
+		upload.array('photos', 2),
+		/* eslint-disable-next-line no-unused-vars */
+		(err, request_, response, next) => {
+			t.context.error = err;
+			response.end();
+		}
+	);
 
 	await storage.ready();
 	await request(app)

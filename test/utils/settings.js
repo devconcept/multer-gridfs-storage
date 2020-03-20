@@ -11,7 +11,7 @@ export const connection = {
 	database
 };
 
-export const storageOpts = function() {
+export const storageOptions = function() {
 	return {
 		url: url.format({
 			protocol: 'mongodb',

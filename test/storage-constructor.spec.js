@@ -13,15 +13,15 @@ import {
 	dropDatabase,
 	mongoVersion
 } from './utils/testutils';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
 import GridFsStorage from '..';
 
 const [major] = mongoVersion;
 
-function prepareTest(t, opts) {
+function prepareTest(t, options) {
 	const app = express();
-	const storage = new GridFsStorage(opts);
+	const storage = new GridFsStorage(options);
 	const upload = multer({storage});
 	t.context.storage = storage;
 	t.context.upload = upload;
@@ -36,12 +36,16 @@ test.afterEach.always('cleanup', async t => {
 
 test('create storage from url parameter', async t => {
 	let result = {};
-	prepareTest(t, storageOpts());
+	prepareTest(t, storageOptions());
 	const {app, storage, upload} = t.context;
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();
@@ -54,7 +58,7 @@ test('create storage from url parameter', async t => {
 });
 
 test('create storage from db parameter', async t => {
-	const {url, options} = storageOpts();
+	const {url, options} = storageOptions();
 	t.context.url = url;
 	let result = {};
 	const _db = await MongoClient.connect(url, options);
@@ -63,9 +67,13 @@ test('create storage from db parameter', async t => {
 	const {app, storage, upload} = t.context;
 	storage.client = getClient(_db);
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();
@@ -78,16 +86,20 @@ test('create storage from db parameter', async t => {
 });
 
 test('connects to a mongoose instance', async t => {
-	const {url, options} = storageOpts();
+	const {url, options} = storageOptions();
 	t.context.url = url;
 	let result = {};
 	const promise = mongoose.connect(url, options);
 	prepareTest(t, {db: promise});
 	const {app, storage, upload} = t.context;
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	const {db} = await storage.ready();
@@ -106,13 +118,17 @@ test('creates an instance without the new keyword', async t => {
 	let result = {};
 	const app = express();
 	/* eslint-disable-next-line new-cap */
-	const storage = GridFsStorage(storageOpts());
+	const storage = GridFsStorage(storageOptions());
 	const upload = multer({storage});
 	t.context.storage = storage;
 
-	app.post('/url', upload.array('photos', 2), (req, res) => {
-		result = {headers: req.headers, files: req.files, body: req.body};
-		res.end();
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body
+		};
+		response.end();
 	});
 
 	await storage.ready();
@@ -125,7 +141,7 @@ test('creates an instance without the new keyword', async t => {
 });
 if (major >= 3) {
 	test('accept the client as one of the parameters', async t => {
-		const {url, options} = storageOpts();
+		const {url, options} = storageOptions();
 		t.context.url = url;
 		let result = {};
 		const _db = await MongoClient.connect(url, options);
@@ -135,9 +151,13 @@ if (major >= 3) {
 		const {app, storage, upload} = t.context;
 		t.is(storage.client, client);
 
-		app.post('/url', upload.array('photos', 2), (req, res) => {
-			result = {headers: req.headers, files: req.files, body: req.body};
-			res.end();
+		app.post('/url', upload.array('photos', 2), (request_, response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body
+			};
+			response.end();
 		});
 
 		await storage.ready();
@@ -150,7 +170,7 @@ if (major >= 3) {
 	});
 
 	test('waits for the client if is a promise', async t => {
-		const {url, options} = storageOpts();
+		const {url, options} = storageOptions();
 		t.context.url = url;
 		let result = {};
 		const _db = await MongoClient.connect(url, options);
@@ -161,9 +181,13 @@ if (major >= 3) {
 		const {app, storage, upload} = t.context;
 		t.is(storage.client, null);
 
-		app.post('/url', upload.array('photos', 2), (req, res) => {
-			result = {headers: req.headers, files: req.files, body: req.body};
-			res.end();
+		app.post('/url', upload.array('photos', 2), (request_, response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body
+			};
+			response.end();
 		});
 
 		await storage.ready();

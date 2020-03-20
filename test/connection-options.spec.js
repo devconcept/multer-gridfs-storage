@@ -1,7 +1,7 @@
 import test from 'ava';
 
 import {cleanStorage, mongoVersion} from './utils/testutils';
-import {storageOpts} from './utils/settings';
+import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
 test.afterEach.always('cleanup', t => {
@@ -10,7 +10,7 @@ test.afterEach.always('cleanup', t => {
 
 test('is compatible with an options object on url based connections', async t => {
 	const [major] = mongoVersion;
-	const {url, options} = storageOpts();
+	const {url, options} = storageOptions();
 	const storage = new GridFsStorage({
 		url,
 		options: {...options, poolSize: 10}
