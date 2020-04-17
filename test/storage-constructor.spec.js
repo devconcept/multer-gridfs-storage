@@ -28,13 +28,13 @@ function prepareTest(t, options) {
 	t.context.app = app;
 }
 
-test.afterEach.always('cleanup', async t => {
+test.afterEach.always('cleanup', async (t) => {
 	const {storage, url} = t.context;
 	await cleanStorage(storage);
 	return dropDatabase(url);
 });
 
-test('create storage from url parameter', async t => {
+test('create storage from url parameter', async (t) => {
 	let result = {};
 	prepareTest(t, storageOptions());
 	const {app, storage, upload} = t.context;
@@ -57,7 +57,7 @@ test('create storage from url parameter', async t => {
 	return fileMatchMd5Hash(t, result.files);
 });
 
-test('create storage from db parameter', async t => {
+test('create storage from db parameter', async (t) => {
 	const {url, options} = storageOptions();
 	t.context.url = url;
 	let result = {};
@@ -85,7 +85,7 @@ test('create storage from db parameter', async t => {
 	return fileMatchMd5Hash(t, result.files);
 });
 
-test('connects to a mongoose instance', async t => {
+test('connects to a mongoose instance', async (t) => {
 	const {url, options} = storageOptions();
 	t.context.url = url;
 	let result = {};
@@ -114,7 +114,7 @@ test('connects to a mongoose instance', async t => {
 	storage.client = mongoose.connection;
 });
 
-test('creates an instance without the new keyword', async t => {
+test('creates an instance without the new keyword', async (t) => {
 	let result = {};
 	const app = express();
 	/* eslint-disable-next-line new-cap */
@@ -140,7 +140,7 @@ test('creates an instance without the new keyword', async t => {
 	return fileMatchMd5Hash(t, result.files);
 });
 if (major >= 3) {
-	test('accept the client as one of the parameters', async t => {
+	test('accept the client as one of the parameters', async (t) => {
 		const {url, options} = storageOptions();
 		t.context.url = url;
 		let result = {};
@@ -169,7 +169,7 @@ if (major >= 3) {
 		return fileMatchMd5Hash(t, result.files);
 	});
 
-	test('waits for the client if is a promise', async t => {
+	test('waits for the client if is a promise', async (t) => {
 		const {url, options} = storageOptions();
 		t.context.url = url;
 		let result = {};

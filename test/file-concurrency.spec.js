@@ -27,7 +27,7 @@ function prepareTest(t, error) {
 				/* eslint-disable-next-line promise/prefer-await-to-then */
 				.then(() => MongoClient.connect(url, options))
 				/* eslint-disable-next-line promise/prefer-await-to-then */
-				.then(db => {
+				.then((db) => {
 					t.context.db = getDb(db, url);
 					t.context.client = getClient(db);
 					return t.context.db;
@@ -40,13 +40,13 @@ function prepareTest(t, error) {
 	t.context.app = app;
 }
 
-test.afterEach.always('cleanup', async t => {
+test.afterEach.always('cleanup', async (t) => {
 	const {db, client, storage, url} = t.context;
 	await cleanStorage(storage, {db, client});
 	return dropDatabase(url);
 });
 
-test('buffers incoming files while the connection is opening', async t => {
+test('buffers incoming files while the connection is opening', async (t) => {
 	let result = {};
 	prepareTest(t);
 	const {storage, app, upload} = t.context;
@@ -69,7 +69,7 @@ test('buffers incoming files while the connection is opening', async t => {
 	return fileMatchMd5Hash(t, result.files);
 });
 
-test('rejects incoming files if the connection does not open', async t => {
+test('rejects incoming files if the connection does not open', async (t) => {
 	let result = {};
 	const error = new Error('Failed error');
 	prepareTest(t, error);

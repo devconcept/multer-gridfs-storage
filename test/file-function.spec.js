@@ -8,7 +8,7 @@ import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
-test.before(async t => {
+test.before(async (t) => {
 	const app = express();
 	let counter = 0;
 	t.context.filenamePrefix = 'file';
@@ -51,40 +51,40 @@ test.before(async t => {
 		.attach('photos', files[1]);
 });
 
-test.after.always('cleanup', t => {
+test.after.always('cleanup', (t) => {
 	return cleanStorage(t.context.storage);
 });
 
-test('request contains the two uploaded files', t => {
+test('request contains the two uploaded files', (t) => {
 	const {result} = t.context;
 	t.truthy(result.files);
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
 });
 
-test('files are named with the provided value', t => {
+test('files are named with the provided value', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) =>
 		t.is(f.filename, t.context.filenamePrefix + (idx + 1))
 	);
 });
 
-test('files contain a metadata object with the provided object', t => {
+test('files contain a metadata object with the provided object', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) => t.is(f.metadata, t.context.metadatas[idx]));
 });
 
-test('files are stored with the provided chunkSize value', t => {
+test('files are stored with the provided chunkSize value', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) => t.is(f.chunkSize, t.context.sizes[idx]));
 });
 
-test('files have the provided id value', t => {
+test('files have the provided id value', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) => t.is(f.id, t.context.ids[idx]));
 });
 
-test('files are stored under a collection with the provided name', async t => {
+test('files are stored under a collection with the provided name', async (t) => {
 	const {storage} = t.context;
 	const {db} = storage;
 	const collections = await db
@@ -93,7 +93,7 @@ test('files are stored under a collection with the provided name', async t => {
 	t.is(collections.length, 2);
 });
 
-test('files are stored with the provided content-type value', t => {
+test('files are stored with the provided content-type value', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) =>
 		t.is(f.contentType, t.context.contentTypes[idx])

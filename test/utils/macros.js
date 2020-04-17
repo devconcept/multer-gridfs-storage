@@ -14,5 +14,5 @@ export async function fileMatchMd5Hash(t, files, count = 2) {
 			return {md5: f.md5, computed};
 		})
 	);
-	t.true(md5.every(f => f.md5 === f.computed));
+	t.true(md5.every((f) => f.md5 === f.computed));
 }

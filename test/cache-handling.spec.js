@@ -10,7 +10,7 @@ import GridFsStorage from '..';
 
 const {url, options} = storageOptions();
 
-test.serial.beforeEach(t => {
+test.serial.beforeEach((t) => {
 	t.context.oldCache = GridFsStorage.cache;
 	const cache = new Cache();
 	GridFsStorage.cache = cache;
@@ -18,7 +18,7 @@ test.serial.beforeEach(t => {
 	t.context.mongoSpy = stub(MongoClient, 'connect').callThrough();
 });
 
-test.serial.afterEach.always(t => {
+test.serial.afterEach.always((t) => {
 	const {storage1, storage2, oldCache} = t.context;
 	GridFsStorage.cache = oldCache;
 	restore();
@@ -36,7 +36,7 @@ function createStorage(settings, {t, key} = {}) {
 
 test.serial(
 	'creates one connection when several cached modules are invoked',
-	async t => {
+	async (t) => {
 		const storage1 = createStorage({cache: true}, {t, key: 'storage1'});
 		const storage2 = createStorage({cache: true});
 		const {mongoSpy, cache} = t.context;
@@ -57,7 +57,7 @@ test.serial(
 
 test.serial(
 	'creates only one connection when several named cached modules are invoked',
-	async t => {
+	async (t) => {
 		const storage1 = createStorage({cache: '1'}, {t, key: 'storage1'});
 		const storage2 = createStorage({cache: '1'});
 		const {mongoSpy, cache} = t.context;
@@ -78,7 +78,7 @@ test.serial(
 
 test.serial(
 	'reuses the connection when a cache with the same name is already created',
-	async t => {
+	async (t) => {
 		const eventSpy = spy();
 		const storage1 = createStorage({cache: true}, {t, key: 'storage1'});
 		const {mongoSpy, cache} = t.context;
@@ -97,7 +97,7 @@ test.serial(
 	}
 );
 
-test.serial('creates different connections for different caches', async t => {
+test.serial('creates different connections for different caches', async (t) => {
 	const {mongoSpy, cache} = t.context;
 	const eventSpy = spy();
 	const eventSpy2 = spy();

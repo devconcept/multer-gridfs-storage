@@ -40,11 +40,11 @@ async function successfulPromiseSetup(t) {
 		.attach('photos', files[1]);
 }
 
-test.afterEach.always('cleanup', t => {
+test.afterEach.always('cleanup', (t) => {
 	return cleanStorage(t.context.storage);
 });
 
-test('yielding a promise is resolved as file configuration', async t => {
+test('yielding a promise is resolved as file configuration', async (t) => {
 	await successfulPromiseSetup(t);
 	const {result} = t.context;
 	t.true(Array.isArray(result.files));
@@ -76,12 +76,10 @@ async function failedPromiseSetup(t) {
 	);
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photos', files[0]);
+	await request(app).post('/url').attach('photos', files[0]);
 }
 
-test('yielding a promise rejection is handled properly', async t => {
+test('yielding a promise rejection is handled properly', async (t) => {
 	await failedPromiseSetup(t);
 	const {error, storage} = t.context;
 	const {db} = storage;

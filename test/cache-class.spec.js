@@ -7,7 +7,7 @@ import {storageOptions} from './utils/settings';
 const {url} = storageOptions();
 const url2 = 'mongodb://mongoserver.com:27017/testdatabase';
 
-test.beforeEach(t => {
+test.beforeEach((t) => {
 	t.context.cache = new Cache();
 });
 
@@ -15,7 +15,7 @@ test.afterEach.always(() => {
 	restore();
 });
 
-test('cache initializes with a url and a cache name and no connection options', t => {
+test('cache initializes with a url and a cache name and no connection options', (t) => {
 	const {cache} = t.context;
 	cache.initialize({url, cacheName: 'b'});
 	t.not(cache._connections.b, undefined);
@@ -30,7 +30,7 @@ test('cache initializes with a url and a cache name and no connection options', 
 	t.is(cache.connections(), 1);
 });
 
-test('cache is reused if the same url and option is used in the same cache', t => {
+test('cache is reused if the same url and option is used in the same cache', (t) => {
 	const {cache} = t.context;
 	cache.initialize({url, cacheName: 'b', init: {}});
 	cache.initialize({url, cacheName: 'b', init: null});
@@ -46,7 +46,7 @@ test('cache is reused if the same url and option is used in the same cache', t =
 	t.is(cache.connections(), 1);
 });
 
-test('new cache is created if the same url and different options are used', t => {
+test('new cache is created if the same url and different options are used', (t) => {
 	const {cache} = t.context;
 	cache.initialize({url, cacheName: 'b', init: {}});
 	cache.initialize({url, cacheName: 'b', init: {db: 1}});
@@ -69,15 +69,15 @@ test('new cache is created if the same url and different options are used', t =>
 	t.is(cache.connections(), 2);
 });
 
-test('cache is reused if the same url is used in the same cache', t => {
+test('cache is reused if the same url is used in the same cache', (t) => {
 	cachesShouldBeEqual(t, url, url);
 });
 
-test('new cache is created if a different url is used', t => {
+test('new cache is created if a different url is used', (t) => {
 	cachesShouldBeDifferent(t, url, url2);
 });
 
-test('cache is reused if a similar url is used', t => {
+test('cache is reused if a similar url is used', (t) => {
 	cachesShouldBeEqual(
 		t,
 		'mongodb://host1:1234,host2:5678/database',
@@ -85,7 +85,7 @@ test('cache is reused if a similar url is used', t => {
 	);
 });
 
-test('new cache is created if an url with more hosts is used', t => {
+test('new cache is created if an url with more hosts is used', (t) => {
 	cachesShouldBeDifferent(
 		t,
 		'mongodb://host1:1234/database',
@@ -93,7 +93,7 @@ test('new cache is created if an url with more hosts is used', t => {
 	);
 });
 
-test('new cache is created if urls with different hosts are used', t => {
+test('new cache is created if urls with different hosts are used', (t) => {
 	cachesShouldBeDifferent(
 		t,
 		'mongodb://host1:1234/database',
@@ -101,7 +101,7 @@ test('new cache is created if urls with different hosts are used', t => {
 	);
 });
 
-test('cache is reused if similar options are used in the url', t => {
+test('cache is reused if similar options are used in the url', (t) => {
 	const firstUrl =
 		'mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000';
 	const secondUrl =
@@ -109,7 +109,7 @@ test('cache is reused if similar options are used in the url', t => {
 	cachesShouldBeEqual(t, firstUrl, secondUrl);
 });
 
-test('new cache is created if urls with different options are used', t => {
+test('new cache is created if urls with different options are used', (t) => {
 	const firstUrl = 'mongodb://host1:1234/database?authSource=admin';
 	const secondUrl =
 		'mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin';
@@ -162,7 +162,7 @@ function cachesShouldBeEqual(t, firstUrl, secondUrl) {
 	t.is(cache.connections(), 1);
 }
 
-test('returns an existing cache', t => {
+test('returns an existing cache', (t) => {
 	const {cache} = t.context;
 	const index = cache.initialize({url, cacheName: 'b'});
 	t.true(cache.has(index));
@@ -170,7 +170,7 @@ test('returns an existing cache', t => {
 	t.is(cache.connections(), 1);
 });
 
-test('returns a cache by its index', t => {
+test('returns a cache by its index', (t) => {
 	const {cache} = t.context;
 	const index = cache.initialize({url, cacheName: 'a'});
 	t.deepEqual(cache.get(index), {
@@ -186,7 +186,7 @@ test('returns a cache by its index', t => {
 	t.is(cache.connections(), 1);
 });
 
-test('sets a cache by its index', t => {
+test('sets a cache by its index', (t) => {
 	const {cache} = t.context;
 	const index = cache.initialize({url, cacheName: 'b'});
 	const data = {};
@@ -196,7 +196,7 @@ test('sets a cache by its index', t => {
 	t.is(cache.connections(), 1);
 });
 
-test('removes a cache by its index', t => {
+test('removes a cache by its index', (t) => {
 	const {cache} = t.context;
 	const spy = stub(cache._emitter, 'emit').callThrough();
 	const index = cache.initialize({url, cacheName: 'b'});
@@ -211,7 +211,7 @@ test('removes a cache by its index', t => {
 	t.is(cache.connections(), 0);
 });
 
-test('does not reject the cache if is not pending', t => {
+test('does not reject the cache if is not pending', (t) => {
 	const {cache} = t.context;
 	const spy = stub(cache._emitter, 'emit').callThrough();
 	const index = cache.initialize({url, cacheName: 'b'});
@@ -224,7 +224,7 @@ test('does not reject the cache if is not pending', t => {
 	t.is(cache.connections(), 0);
 });
 
-test('does not remove other caches than the specified', t => {
+test('does not remove other caches than the specified', (t) => {
 	const {cache} = t.context;
 	const index = cache.initialize({url, cacheName: 'a'});
 	cache.initialize({url: url2, cacheName: 'a'});
@@ -235,7 +235,7 @@ test('does not remove other caches than the specified', t => {
 	t.is(cache.connections(), 1);
 });
 
-test('does not remove all caches when there are different options', t => {
+test('does not remove all caches when there are different options', (t) => {
 	const {cache} = t.context;
 	const index = cache.initialize({url, cacheName: 'a'});
 	cache.initialize({url: url2, cacheName: 'a', init: {db: 1}});
@@ -246,7 +246,7 @@ test('does not remove all caches when there are different options', t => {
 	t.is(cache.connections(), 1);
 });
 
-test('should not remove any caches when there are no matches', t => {
+test('should not remove any caches when there are no matches', (t) => {
 	const {cache} = t.context;
 	const index = {url, name: 'c'};
 	cache.initialize({url, cacheName: 'a'});
@@ -257,7 +257,7 @@ test('should not remove any caches when there are no matches', t => {
 	t.is(cache.connections(), 2);
 });
 
-test('should remove all entries from the cache', t => {
+test('should remove all entries from the cache', (t) => {
 	const {cache} = t.context;
 	cache.initialize({url, cacheName: 'a'});
 	t.is(cache.connections(), 1);

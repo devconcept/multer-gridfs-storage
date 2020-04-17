@@ -7,7 +7,7 @@ import {files, cleanStorage, mongoVersion} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
-test.before(async t => {
+test.before(async (t) => {
 	const app = express();
 	const storage = new GridFsStorage({
 		...storageOptions(),
@@ -32,11 +32,11 @@ test.before(async t => {
 		.attach('photo', files[0]);
 });
 
-test.after.always('cleanup', t => {
+test.after.always('cleanup', (t) => {
 	return cleanStorage(t.context.storage);
 });
 
-test('files don’t have a computed MD5 hash', t => {
+test('files don’t have a computed MD5 hash', (t) => {
 	const [major, minor] = mongoVersion;
 	if (major < 3 || (major === 3 && minor < 1)) {
 		return t.pass('Md5 hash is not supported in this mongo version');

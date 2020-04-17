@@ -18,7 +18,7 @@ function createStorage(settings, {t, key} = {}) {
 	return storage;
 }
 
-test.serial.before(t => {
+test.serial.before((t) => {
 	t.context.oldCache = GridFsStorage.cache;
 	const cache = new Cache();
 	GridFsStorage.cache = cache;
@@ -36,7 +36,7 @@ test.serial.before(t => {
 
 test.serial(
 	' rejects only connections associated to the same cache',
-	async t => {
+	async (t) => {
 		const {storage1, storage2, storage3, storage4, mongoSpy, cache} = t.context;
 		const conSpy = spy();
 		const rejectSpy = spy();
@@ -56,7 +56,7 @@ test.serial(
 	}
 );
 
-test.serial.afterEach.always(t => {
+test.serial.afterEach.always((t) => {
 	const {storage1, storage2, oldCache} = t.context;
 	GridFsStorage.cache = oldCache;
 	restore();

@@ -22,15 +22,15 @@ function createStorageAndUpload(t, options = {}) {
 	t.context.upload = multer({storage});
 }
 
-test.beforeEach(t => {
+test.beforeEach((t) => {
 	t.context.app = express();
 });
 
-test.afterEach.always(t => {
+test.afterEach.always((t) => {
 	return cleanStorage(t.context.storage);
 });
 
-test('legacy GridStore streams are supported', async t => {
+test('legacy GridStore streams are supported', async (t) => {
 	let result = {};
 	createStorageAndUpload(t);
 	const {app, upload, storage} = t.context;
@@ -47,9 +47,7 @@ test('legacy GridStore streams are supported', async t => {
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photos', files[0]);
+	await request(app).post('/url').attach('photos', files[0]);
 
 	t.is(typeof result.file, 'object');
 	t.is(result.file.md5, await md5File(files[0]));
@@ -61,7 +59,7 @@ test('legacy GridStore streams are supported', async t => {
 	t.true(result.file.uploadDate instanceof Date);
 });
 
-test('legacy streams support changing file configuration', async t => {
+test('legacy streams support changing file configuration', async (t) => {
 	let result = {};
 	let counter = 0;
 	const filePrefix = 'file';
@@ -114,7 +112,7 @@ test('legacy streams support changing file configuration', async t => {
 	t.is(collections.length, 2);
 });
 
-test('legacy streams delete files correctly', async t => {
+test('legacy streams delete files correctly', async (t) => {
 	let result = null;
 	let error = {};
 	createStorageAndUpload(t);

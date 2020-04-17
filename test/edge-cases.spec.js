@@ -11,7 +11,7 @@ import {storageOptions} from './utils/settings';
 import {files, cleanStorage, fakeConnectCb} from './utils/testutils';
 import GridFsStorage from '..';
 
-test.serial('connection function fails to connect', async t => {
+test.serial('connection function fails to connect', async (t) => {
 	const err = new Error();
 	const mongoSpy = stub(MongoClient, 'connect').callsFake(fakeConnectCb(err));
 
@@ -25,7 +25,7 @@ test.serial('connection function fails to connect', async t => {
 	t.is(mongoSpy.callCount, 1);
 });
 
-test.serial('errors generating random bytes', async t => {
+test.serial('errors generating random bytes', async (t) => {
 	const app = express();
 	const generatedError = new Error('Random bytes error');
 	let error = {};
@@ -47,16 +47,14 @@ test.serial('errors generating random bytes', async t => {
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]);
 
 	t.is(error, generatedError);
 	t.is(error.message, 'Random bytes error');
 	t.is(randomBytesSpy.callCount, 1);
 });
 
-test.serial.afterEach.always(t => {
+test.serial.afterEach.always((t) => {
 	restore();
 	return cleanStorage(t.context.storage);
 });

@@ -7,11 +7,11 @@ import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
-test.afterEach.always('cleanup', t => {
+test.afterEach.always('cleanup', (t) => {
 	return cleanStorage(t.context.storage);
 });
 
-test('handling empty name values', async t => {
+test('handling empty name values', async (t) => {
 	const app = express();
 	const values = [null, undefined, {}];
 	let counter = -1;
@@ -43,13 +43,13 @@ test('handling empty name values', async t => {
 		.attach('photo', files[0])
 		.attach('photo', files[0]);
 
-	result.files.forEach(file => t.regex(file.filename, /^[\da-f]{32}$/));
-	result.files.forEach(file => t.is(file.metadata, null));
-	result.files.forEach(file => t.is(file.bucketName, 'fs'));
-	result.files.forEach(file => t.is(file.chunkSize, 261120));
+	result.files.forEach((file) => t.regex(file.filename, /^[\da-f]{32}$/));
+	result.files.forEach((file) => t.is(file.metadata, null));
+	result.files.forEach((file) => t.is(file.bucketName, 'fs'));
+	result.files.forEach((file) => t.is(file.chunkSize, 261120));
 });
 
-test('handling primitive values as names', async t => {
+test('handling primitive values as names', async (t) => {
 	const app = express();
 	const values = ['name', 10];
 	let counter = -1;
@@ -81,7 +81,7 @@ test('handling primitive values as names', async t => {
 		.attach('photo', files[0]);
 
 	result.files.forEach((f, idx) => t.is(f.filename, values[idx].toString()));
-	result.files.forEach(file => t.is(file.metadata, null));
-	result.files.forEach(file => t.is(file.bucketName, 'fs'));
-	result.files.forEach(file => t.is(file.chunkSize, 261120));
+	result.files.forEach((file) => t.is(file.metadata, null));
+	result.files.forEach((file) => t.is(file.bucketName, 'fs'));
+	result.files.forEach((file) => t.is(file.chunkSize, 261120));
 });

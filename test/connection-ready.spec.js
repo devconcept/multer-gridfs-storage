@@ -6,7 +6,7 @@ import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
-test.afterEach.always('cleanup', t => {
+test.afterEach.always('cleanup', (t) => {
 	const {storage} = t.context;
 	restore();
 	return cleanStorage(storage);
@@ -24,7 +24,7 @@ function forceFailure(t) {
 
 test.serial(
 	'returns a promise that rejects when the connection fails',
-	async t => {
+	async (t) => {
 		forceFailure(t);
 		const {storage} = t.context;
 		const resolveSpy = spy();
@@ -47,14 +47,14 @@ test.serial(
 
 test.serial.cb(
 	'returns a promise that rejects if the module already failed connecting',
-	t => {
+	(t) => {
 		forceFailure(t);
 		const {storage} = t.context;
-		storage.once('connectionFailed', evtErr => {
+		storage.once('connectionFailed', (evtErr) => {
 			const result = storage.ready();
 			/* eslint-disable-next-line promise/prefer-await-to-then */
 			t.is(typeof result.then, 'function');
-			result.catch(error => {
+			result.catch((error) => {
 				t.is(error, evtErr);
 				t.is(error, t.context.error);
 				t.end();
@@ -63,7 +63,7 @@ test.serial.cb(
 	}
 );
 
-test('returns a promise that resolves when the connection is created', async t => {
+test('returns a promise that resolves when the connection is created', async (t) => {
 	createStorage(t);
 	const {storage} = t.context;
 	const resolveSpy = spy();
@@ -83,7 +83,7 @@ test('returns a promise that resolves when the connection is created', async t =
 
 test.cb(
 	'returns a promise that resolves if the connection is already created',
-	t => {
+	(t) => {
 		createStorage(t);
 		const {storage} = t.context;
 		storage.once('connection', () => {
@@ -93,7 +93,7 @@ test.cb(
 
 			result
 				/* eslint-disable-next-line promise/prefer-await-to-then */
-				.then(result => {
+				.then((result) => {
 					t.truthy(result);
 					t.is(result.db, storage.db);
 					t.is(result.client, storage.client);

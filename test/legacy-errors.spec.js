@@ -11,12 +11,12 @@ import GridFsStorage from '..';
 
 const {host, port, database} = connection;
 
-test.serial.afterEach.always(t => {
+test.serial.afterEach.always((t) => {
 	restore();
 	return cleanStorage(t.context.storage);
 });
 
-test.serial('handle GridStore open error', async t => {
+test.serial('handle GridStore open error', async (t) => {
 	const app = express();
 	const errorSpy = spy();
 	const fileSpy = spy();
@@ -26,7 +26,7 @@ test.serial('handle GridStore open error', async t => {
 		stream: stub().returns({
 			on: stub(),
 			gs: {
-				open: stub().callsFake(cb => cb(err))
+				open: stub().callsFake((cb) => cb(err))
 			}
 		})
 	});
@@ -43,9 +43,7 @@ test.serial('handle GridStore open error', async t => {
 		response.end();
 	});
 
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]);
 
 	t.is(errorSpy.callCount, 1);
 	t.is(fileSpy.callCount, 0);
@@ -53,7 +51,7 @@ test.serial('handle GridStore open error', async t => {
 	t.is(call.args[0], err);
 });
 
-test.serial('handle GridStore close error', async t => {
+test.serial('handle GridStore close error', async (t) => {
 	const app = express();
 	const errorSpy = spy();
 	const fileSpy = spy();
@@ -68,8 +66,8 @@ test.serial('handle GridStore close error', async t => {
 		stream: stub().returns({
 			on: emitterStub,
 			gs: {
-				open: stub().callsFake(cb => cb()),
-				close: stub().callsFake(cb => cb(err))
+				open: stub().callsFake((cb) => cb()),
+				close: stub().callsFake((cb) => cb(err))
 			}
 		})
 	});
@@ -86,9 +84,7 @@ test.serial('handle GridStore close error', async t => {
 		response.end();
 	});
 
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]);
 
 	t.is(errorSpy.callCount, 1);
 	t.is(fileSpy.callCount, 0);
@@ -96,7 +92,7 @@ test.serial('handle GridStore close error', async t => {
 	t.is(call.args[0], err);
 });
 
-test.serial('handles MongoClient and Db objects', async t => {
+test.serial('handles MongoClient and Db objects', async (t) => {
 	const server = new Server(host, port);
 	const db = new Db(database, server);
 
@@ -117,7 +113,7 @@ test.serial('handles MongoClient and Db objects', async t => {
 });
 
 if (mongoVersion[0] !== 2) {
-	test.serial('handles the client instance returned in mongo 3', async t => {
+	test.serial('handles the client instance returned in mongo 3', async (t) => {
 		const server = new Server(host, port);
 		const db = new Db(database, server);
 		const client = new MongoClient(server);

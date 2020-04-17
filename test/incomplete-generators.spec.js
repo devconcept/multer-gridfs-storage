@@ -7,7 +7,7 @@ import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
-test.before(async t => {
+test.before(async (t) => {
 	const app = express();
 	const storage = new GridFsStorage({
 		...storageOptions(),
@@ -35,17 +35,17 @@ test.before(async t => {
 		.attach('photos', files[1]);
 });
 
-test.after.always('cleanup', t => {
+test.after.always('cleanup', (t) => {
 	return cleanStorage(t.context.storage);
 });
 
-test('is a failed request', t => {
+test('is a failed request', (t) => {
 	const {error} = t.context;
 	t.true(error instanceof Error);
 	t.is(error.storageErrors.length, 0);
 });
 
-test('does not upload any file', async t => {
+test('does not upload any file', async (t) => {
 	const {storage} = t.context;
 	const {db} = storage;
 	const collection = await db.collection('fs.files');
@@ -55,7 +55,7 @@ test('does not upload any file', async t => {
 	t.is(count, 0);
 });
 
-test('throws an error about the ended generator', t => {
+test('throws an error about the ended generator', (t) => {
 	const {error} = t.context;
 	t.regex(error.message, /Generator ended unexpectedly/);
 });

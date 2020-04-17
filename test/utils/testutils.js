@@ -9,7 +9,7 @@ import {connection, storageOptions} from './settings';
 
 export const mongoVersion = version.split('.').map(Number);
 
-export const files = ['sample1.jpg', 'sample2.jpg'].map(file =>
+export const files = ['sample1.jpg', 'sample2.jpg'].map((file) =>
 	path.join(__dirname, '/../attachments/', file)
 );
 

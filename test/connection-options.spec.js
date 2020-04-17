@@ -4,11 +4,11 @@ import {cleanStorage, mongoVersion} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
-test.afterEach.always('cleanup', t => {
+test.afterEach.always('cleanup', (t) => {
 	return cleanStorage(t.context.storage);
 });
 
-test('is compatible with an options object on url based connections', async t => {
+test('is compatible with an options object on url based connections', async (t) => {
 	const [major] = mongoVersion;
 	const {url, options} = storageOptions();
 	const storage = new GridFsStorage({

@@ -9,7 +9,7 @@ import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import GridFsStorage from '..';
 
-test.before(async t => {
+test.before(async (t) => {
 	const app = express();
 	t.context.filePrefix = 'file';
 	t.context.metadatas = ['foo', 'bar'];
@@ -57,39 +57,39 @@ test.before(async t => {
 		.attach('photos', files[1]);
 });
 
-test.after.always('cleanup', t => {
+test.after.always('cleanup', (t) => {
 	return cleanStorage(t.context.storage);
 });
 
-test('the request contains the two uploaded files', t => {
+test('the request contains the two uploaded files', (t) => {
 	const {result} = t.context;
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
 });
 
-test('files are named with the yielded value', t => {
+test('files are named with the yielded value', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) =>
 		t.is(f.filename, t.context.filePrefix + (idx + 1))
 	);
 });
 
-test('files contain a metadata object with the yielded object', t => {
+test('files contain a metadata object with the yielded object', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) => t.is(f.metadata, t.context.metadatas[idx]));
 });
 
-test('should be stored with the yielded chunkSize value', t => {
+test('should be stored with the yielded chunkSize value', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) => t.is(f.chunkSize, t.context.sizes[idx]));
 });
 
-test('should change the id with the yielded value', t => {
+test('should change the id with the yielded value', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) => t.is(f.id, t.context.ids[idx]));
 });
 
-test('files are stored under a collection with the yielded name', async t => {
+test('files are stored under a collection with the yielded name', async (t) => {
 	const {storage} = t.context;
 	const {db} = storage;
 	const collections = await db
@@ -98,20 +98,20 @@ test('files are stored under a collection with the yielded name', async t => {
 	t.is(collections.length, 2);
 });
 
-test('files are stored with the yielded content-type value', t => {
+test('files are stored with the yielded content-type value', (t) => {
 	const {result} = t.context;
 	result.files.forEach((f, idx) =>
 		t.is(f.contentType, t.context.contentTypes[idx])
 	);
 });
 
-test('should the parameters be a request and a file objects', t => {
+test('should the parameters be a request and a file objects', (t) => {
 	const {req: appRequest, params} = t.context;
-	params.forEach(p => {
+	params.forEach((p) => {
 		const {req, file} = p;
 		t.is(req, appRequest);
-		['body', 'query', 'params', 'files'].every(k => t.true(hasOwn(req, k)));
-		['fieldname', 'originalname', 'encoding', 'mimetype'].every(k =>
+		['body', 'query', 'params', 'files'].every((k) => t.true(hasOwn(req, k)));
+		['fieldname', 'originalname', 'encoding', 'mimetype'].every((k) =>
 			t.true(hasOwn(file, k))
 		);
 	});

@@ -15,13 +15,13 @@ import {
 } from './utils/testutils';
 import GridFsStorage from '..';
 
-test.afterEach.always(async t => {
+test.afterEach.always(async (t) => {
 	restore();
 	await cleanStorage(t.context.storage);
 	return dropDatabase(t.context.url);
 });
 
-test('invalid configurations', t => {
+test('invalid configurations', (t) => {
 	const errFn = () => new GridFsStorage({});
 	const errFn2 = () => new GridFsStorage();
 
@@ -35,7 +35,7 @@ test('invalid configurations', t => {
 	});
 });
 
-test('invalid types as file configurations', async t => {
+test('invalid types as file configurations', async (t) => {
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
@@ -50,15 +50,13 @@ test('invalid types as file configurations', async t => {
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]);
 
 	t.true(error instanceof Error);
 	t.is(error.message, 'Invalid type for file settings, got boolean');
 });
 
-test('fails gracefully if an error is thrown inside the configuration function', async t => {
+test('fails gracefully if an error is thrown inside the configuration function', async (t) => {
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
@@ -76,15 +74,13 @@ test('fails gracefully if an error is thrown inside the configuration function',
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]);
 
 	t.true(error instanceof Error);
 	t.is(error.message, 'Error thrown');
 });
 
-test('fails gracefully if an error is thrown inside a generator function', async t => {
+test('fails gracefully if an error is thrown inside a generator function', async (t) => {
 	let error = {};
 	const app = express();
 	const storage = new GridFsStorage({
@@ -103,15 +99,13 @@ test('fails gracefully if an error is thrown inside a generator function', async
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]);
 
 	t.true(error instanceof Error);
 	t.is(error.message, 'File error');
 });
 
-test('connection promise fails to connect', async t => {
+test('connection promise fails to connect', async (t) => {
 	const error = new Error('Failed promise');
 	const app = express();
 	const errorSpy = spy();
@@ -131,16 +125,14 @@ test('connection promise fails to connect', async t => {
 
 	storage.on('connectionFailed', errorSpy);
 
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]);
 
 	t.is(errorSpy.callCount, 1);
 	t.true(errorSpy.calledWith(error));
 	t.is(storage.db, null);
 });
 
-test('connection is not opened', async t => {
+test('connection is not opened', async (t) => {
 	const {url} = storageOptions();
 	t.context.url = url;
 	let error = {};
@@ -175,7 +167,7 @@ test('connection is not opened', async t => {
 	t.is(error.message, 'The database connection must be open to store files');
 });
 
-test('event is emitted when there is an error in the database', async t => {
+test('event is emitted when there is an error in the database', async (t) => {
 	const {url, options} = storageOptions();
 	t.context.url = url;
 	const error = new Error('Database error');
