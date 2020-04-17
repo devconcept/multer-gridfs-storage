@@ -133,11 +133,11 @@ test('connection promise fails to connect', async (t) => {
 });
 
 test('connection is not opened', async (t) => {
-	const {url} = storageOptions();
+	const {url, options} = storageOptions();
 	t.context.url = url;
 	let error = {};
 	const app = express();
-	const _db = await MongoClient.connect(url, {useNewUrlParser: true});
+	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 	const client = getClient(_db);
 	if (client) {

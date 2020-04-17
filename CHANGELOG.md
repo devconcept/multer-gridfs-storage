@@ -1,3 +1,8 @@
+# 4.1.0
+
+  * Breaking change: Removed Node 8 support
+  * Update: Updated dependencies
+
 # 4.0.3
 
   * Update: Updated dependencies
