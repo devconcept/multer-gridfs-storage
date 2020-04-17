@@ -1,8 +1,8 @@
 import pify from 'pify';
-import md5FileCb from 'md5-file';
+import md5 from 'md5-file';
 import {files as testFiles} from './testutils';
 
-const md5File = pify(md5FileCb);
+const md5File = md5.sync ? md5 : pify(md5);
 
 export async function fileMatchMd5Hash(t, files, count = 2) {
 	t.truthy(files);

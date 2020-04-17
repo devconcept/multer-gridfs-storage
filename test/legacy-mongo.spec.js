@@ -4,7 +4,7 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import {ObjectID, GridStore} from 'mongodb';
-import md5FileCb from 'md5-file';
+import md5 from 'md5-file';
 import pify from 'pify';
 
 import {storageOptions} from './utils/settings';
@@ -12,7 +12,7 @@ import {cleanStorage, files} from './utils/testutils';
 import GridFsStorage from '..';
 
 const readFile = pify(readFileCb);
-const md5File = pify(md5FileCb);
+const md5File = md5.sync ? md5 : pify(md5);
 
 function createStorageAndUpload(t, options = {}) {
 	const {url} = storageOptions();
