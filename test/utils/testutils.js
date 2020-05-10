@@ -7,7 +7,7 @@ import delay from 'delay';
 import {version} from 'mongodb/package.json';
 import {connection, storageOptions} from './settings';
 
-export const mongoVersion = version.split('.').map(Number);
+export const mongoVersion = version.split('.').map((v) => Number(v));
 
 export const files = ['sample1.jpg', 'sample2.jpg'].map((file) =>
 	path.join(__dirname, '/../attachments/', file)
