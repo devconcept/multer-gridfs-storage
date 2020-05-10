@@ -32,7 +32,7 @@
 	"dependencies": {
 		"has-own-prop": "^2.0.0",
 		"is-generator": "^1.0.3",
-		"is-promise": "^2.1.0",
+		"is-promise": "^4.0.0",
 		"lodash.isplainobject": ">=0.8.0",
 		"mongodb": ">=2",
 		"mongodb-uri": "^0.9.7",
