@@ -59,7 +59,7 @@ app.post('/cool-profile', upload.fields([{ name: 'avatar', maxCount: 1 }, { name
 
 ### module(configuration): function
 
-The module returns a function that can be invoked to create a Multer storage engine. It also works as a class so you can choose the best way to invoke it.
+The module returns a function that can be invoked to create a Multer storage engine. It also works as a class. It is up to you to decide the best way to invoke it.
 
 Check the [wiki][wiki] for an in depth guide on how to use this module.
 
@@ -121,7 +121,7 @@ Type: [`DB`][mongo-db] or `Promise`
 
 Required if [`url`][url-option] option is not present
 
-The database connection to use or a promise that resolves with the connection object. Mongoose `Connection` objects are supported too.
+The database connection to use, or a promise that resolves with the connection object. Mongoose `Connection` objects are supported too.
 
 This is useful to reuse an existing connection to create more storage objects.
 
@@ -193,9 +193,9 @@ A function to control the file storage in the database. Is invoked **per file** 
 
 This module uses [`GridFSBucket`](http://mongodb.github.io/node-mongodb-native/3.1/api/GridFSBucket.html) to store files in the database falling back to [`GridStore`](http://mongodb.github.io/node-mongodb-native/3.1/api/GridStore.html) in case the previous class is not found like, for example, in earlier versions of MongoDb. 
 
-By default naming behaves exactly like the default Multer disk storage. A 16 bytes long name in hexadecimal format is generated with no extension for the file to guarantee that there are very low probabilities of collisions. You can override this by passing your own function.
+By default, naming behaves exactly like the default Multer disk storage. A 16 bytes long name in a hexadecimal format with no extension is generated for each file to guarantee that there are very low probabilities of collisions. You can override this by passing your own function.
 
-The return value of this function is an object or a promise that resolves to an object (this also applies to generators) with the following properties. 
+The return value of this function is an object, or a promise that resolves to an object (this also applies to generators) with the following properties. 
 
 Property name | Description
 ------------- | -----------
@@ -208,7 +208,7 @@ Property name | Description
 `aliases` | Optional array of strings to store in the file document's aliases field (default: `null`)
 `disableMD5` | If true, disables adding an md5 field to file data (default: `false`, available only on MongoDb >= 3.1)
 
-Any missing properties will use the defaults. Also note that each property must be supported by your installed version of MongoDb.
+Any missing properties will use the defaults. Also, note that each property must be supported by your installed version of MongoDb.
 
 If you return `null` or `undefined` from the file function, the values for the current file will also be the defaults. This is useful when you want to conditionally change some files while leaving others untouched.
 
@@ -263,7 +263,7 @@ const storage = new GridFsStorage({
 const upload = multer({ storage });
 ```
 
-Internally the function `crypto.randomBytes` is used to generate names. In this example, files are named using the same format plus the extension as received from the client, also changing the collection where to store files to `uploads`
+Internally the function `crypto.randomBytes` is used to generate names. In this example, files are named using the same format plus the extension as received from the client, also changing the collection where to store files to `uploads`.
 
 ```javascript
 const crypto = require('crypto');
@@ -313,11 +313,11 @@ To see all the other properties of the file object, check the Multer's [document
 
 ### 📀 Caching
 
-You can enable caching by either using a boolean or a non-empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
+You can enable caching by either using a boolean, or a non-empty string in the [cache][cache-option] option, then, when the module is invoked again with the same [url][url-option] it will use the stored db instance instead of creating a new one.
 
 The cache is not a simple object hash. It supports handling asynchronous connections. You could, for example, synchronously create two storage instances for the same cache one after the other and only one of them will try to open a connection. 
 
-This greatly simplifies managing instances in different files of your app. All you have to do now is to store a url string in a configuration file to share the same connection. Scaling your application with a load-balancer, for example, can lead to spawn a great number of database connection for each child process. With this feature no additional code is required to keep opened connections to the exact number you want without any effort.
+This greatly simplifies managing instances in different files of your app. All you have to do now is to store a url string in a configuration file to share the same connection. Scaling your application with a load-balancer, for example, can lead to spawn a great number of database connections for each child process. With this feature no additional code is required to keep opened connections to the exact number you want without any effort.
 
 You can also create named caches by using a string instead of a boolean value. In those cases, the module will uniquely identify the cache allowing for an arbitrary number of cached connections per url and giving you the ability to decide which connection to use and how many of them should be created. 
 
@@ -368,7 +368,7 @@ const storage = new GridFsStorage({
 });
 ```
 
-The files 1 and 2 will use the connection cached under the key `'1'` and the files 3 and 4 will use the cache named `'2'`. You don't have to worry for managing connections anymore. By setting a simple string value the module manages them for you automatically.
+The files 1 and 2 will use the connection cached under the key `'1'` and the files 3 and 4 will use the cache named `'2'`. You don't have to worry about managing connections anymore. By setting a simple string value the module manages them for you automatically.
 
 Connection strings are parsed and tested for similarities. In this example the urls are equivalent and only one connection will be created.
 
@@ -506,7 +506,7 @@ const storage = new GridFsStorage({
  
 In this case the internal client always report that the connection is open even when is not. This is a known bug that you can track [here](https://jira.mongodb.org/browse/NODE-2234). 
 
-Is recommended that you only use this option when the bug is resolved and you have an updated version of the MongoDb library otherwise the storage instance cannot track the connection status and features like buffering could not work properly in some scenarios. 
+Is recommended that you only use this option when the bug is resolved, and you have an updated version of the MongoDb library otherwise the storage instance cannot track the connection status and features like buffering could not work properly in some scenarios. 
 
 ## 🧪 Test
 

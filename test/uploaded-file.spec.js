@@ -27,9 +27,8 @@ test.before(async (t) => {
 		response.end();
 	});
 
-	await storage
-		.ready()
-		.then(() => request(app).post('/url').attach('photo', files[0]));
+	await storage.ready();
+	await request(app).post('/url').attach('photo', files[0]);
 
 	const f = await readFile(files[0]);
 	t.context.size = f.length;
