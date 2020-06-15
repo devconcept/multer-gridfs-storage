@@ -1,4 +1,4 @@
-export default {
+const config = {
 	require: ['esm'],
 	files: ['test/**/*.spec.js'],
 	cache: true,
@@ -7,3 +7,5 @@ export default {
 	tap: false,
 	failFast: true
 };
+
+export default config;

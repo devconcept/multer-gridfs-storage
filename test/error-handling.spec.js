@@ -118,7 +118,7 @@ test('connection promise fails to connect', async (t) => {
 
 	const upload = multer({storage});
 
-	/* eslint-disable-next-line no-unused-vars, handle-callback-err */
+	/* eslint-disable-next-line no-unused-vars */
 	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
 		response.end();
 	});
