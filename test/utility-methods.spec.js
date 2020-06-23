@@ -21,10 +21,11 @@ test.beforeEach((t) => {
 });
 
 test.afterEach.always('cleanup', async (t) => {
-	const testFile = path.join(__dirname, 'attachments', 'test_disk.jpg')
+	const testFile = path.join(__dirname, 'attachments', 'test_disk.jpg');
 	if (fs.existsSync(testFile)) {
 		await unlink(testFile);
 	}
+
 	return cleanStorage(t.context.storage);
 });
 
@@ -61,24 +62,24 @@ test('upload a file using the fromStream method after another upload', async (t)
 	const {storage} = t.context;
 	const diskStorage = multer.diskStorage({
 		destination: path.join(__dirname, 'attachments'),
-		filename: (req, file, cb) => cb(null, 'test_disk.jpg'),
-	})
+		filename: (request_, file, cb) => cb(null, 'test_disk.jpg')
+	});
 	const upload = multer({storage: diskStorage});
 	const app = express();
 	const route = defer();
-	app.post('/url', upload.single('photos'), (req) => {
-		const {file} = req;
+	app.post('/url', upload.single('photos'), (request, response) => {
+		const {file} = request;
 		const stream = fs.createReadStream(file.path);
-		storage.fromStream(stream, req, file)
-			.then(file => route.resolve(file))
-			.catch(err => route.reject(err));
-		res.end();
+		storage
+			.fromStream(stream, request, file)
+			/* eslint-disable-next-line promise/prefer-await-to-then */
+			.then((file) => route.resolve(file))
+			.catch((error) => route.reject(error));
+		response.end();
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photos', files[0]);
+	await request(app).post('/url').attach('photos', files[0]);
 	const result = await route.promise;
 	t.true(hasOwn(result, 'filename'));
 	t.is(result.filename, 'test.jpg');

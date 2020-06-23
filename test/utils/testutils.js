@@ -91,7 +91,7 @@ export function defer() {
 	const d = {
 		promise: null,
 		resolve: null,
-		reject: null,
+		reject: null
 	};
 	d.promise = new Promise((resolve, reject) => {
 		d.resolve = resolve;
