@@ -1,3 +1,9 @@
+# 4.2.0
+
+  * Feature: Added the `fromFile` and `fromStream` public methods
+  * Update: Documented the `generateBytes` method
+  * Update: Updated dependencies
+
 # 4.1.0
 
   * Breaking change: Removed Node 8 support

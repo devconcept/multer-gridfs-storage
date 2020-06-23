@@ -420,9 +420,48 @@ app.post('/profile', upload.single('avatar'), function (req, res, next) {
   const stream = fs.createReadStream(file.path);
   storage.fromStream(stream, req, file)
     .then(() => res.send('File uploaded'))
-   	.catch(() => res.status(500).send('error'));
+    .catch(() => res.status(500).send('error'));
 });
 ```
+
+#### Storage ready
+
+Each storage has a `ready` method that returns a promise. This allows you to watch for the MongoDb connection instead of using events. These two examples are equivalent.
+
+```javascript
+// Using event emitters
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database'
+})
+
+storage.on('connection', (db) => {
+  // Db is the database instance
+});
+
+storage.on('connectionFailed', (err) => {
+  // err is the error received from MongoDb
+});
+```
+
+```javascript
+// Using the ready method
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database'
+})
+try {
+  const {db, client} = await storage.ready();
+  // db is the database instance
+  // client is the MongoClient instance
+} catch (err) {
+ // err is the error received from MongoDb
+}
+```
+
+Remember that you don't need to wait for the connection to be ready to start uploading files. The module buffers every incoming file until the connection is ready and saves all of them as soon as possible.
+
+The `ready` method is just a convenience function over code written using the `connection` events also with a  couple of advantages. If you setup a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method it will. The module keeps track of this events and resolves or rejects the promises accordingly. Promises in this case are more readable than events and more reliable.
 
 ### ⚡ Events
 
@@ -483,48 +522,6 @@ This event is emitted when the underlying connection emits an error.
 
  - error: The error emitted by the database connection
 
-### Storage ready
-
-Each storage has a `ready` method that returns a promise. This allows you to watch for the MongoDb connection instead of using events. These two examples are equivalent.
-
-```javascript
-// Using event emitters
-
-const storage = new GridFsStorage({
-  url: 'mongodb://yourhost:27017/database'
-})
-
-storage.on('connection', (db) => {
-  // Db is the database instance
-});
-
-storage.on('connectionFailed', (err) => {
-  // err is the error received from MongoDb
-});
-```
-
-```javascript
-// Using the ready method
-
-const storage = new GridFsStorage({
-  url: 'mongodb://yourhost:27017/database'
-})
-
-storage
-  .ready()
-  .then(({db, client}) => {
-    // db is the database instance
-    // client is the MongoClient instance
-  })
-  .catch((err) => {
-    // err is the error received from MongoDb
-  });
-```
-
-Remember that you don't need to wait for the connection to be ready to start uploading files. The module buffers every incoming file until the connection is ready and saves all of them as soon as possible.
-
-The `ready` method is just a convenience function over code written using the `connection` events also with a  couple of advantages. If you setup a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method it will. The module keeps track of this events and resolves or rejects the promises accordingly. Promises in this case are more readable than events and more reliable.
-
 ## 📣 Notes
 
 When using the [`url`][url-option] feature with the option `{useUnifiedTopology:true}` to create a MongoDb connection like this:
@@ -538,7 +535,7 @@ const storage = new GridFsStorage({
  
 In this case the internal client always report that the connection is open even when is not. This is a known bug that you can track [here](https://jira.mongodb.org/browse/NODE-2234). 
 
-Is recommended that you only use this option when the bug is resolved, and you have an updated version of the MongoDb library otherwise the storage instance cannot track the connection status and features like buffering could not work properly in some scenarios. 
+Is recommended that you only use this option with a MongoDb version that has the bug resolved, otherwise the storage instance cannot track the connection status and features like buffering could not work properly in some scenarios. 
 
 ## 🧪 Test
 
