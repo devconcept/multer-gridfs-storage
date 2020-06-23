@@ -86,3 +86,16 @@ export function fakeConnectCb(err = null) {
 		}
 	};
 }
+
+export function defer() {
+	const d = {
+		promise: null,
+		resolve: null,
+		reject: null,
+	};
+	d.promise = new Promise((resolve, reject) => {
+		d.resolve = resolve;
+		d.reject = reject;
+	});
+	return d;
+}

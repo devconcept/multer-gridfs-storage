@@ -4,8 +4,6 @@
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb.
 
-This module is intended to be used with the v1.x branch of Multer.
-
 ## 🔥 Features
 
 - Compatibility with MongoDb versions 2 and 3.
@@ -16,6 +14,7 @@ This module is intended to be used with the v1.x branch of Multer.
 - Promise and generator function support.
 - Support for existing and promise based database connections.
 - Storage operation buffering for incoming files while the connection is opening.
+- Use it as a multer plugin or inside an express middleware function.
 
 ## 🚀 Installation
 
@@ -391,6 +390,39 @@ const storage2 = new GridFsStorage({
 Of course if you want to create more connections this is still possible. Caching is disabled by default so setting a `cache: false` or not setting any cache configuration at all will cause the module to ignore caching and create a new connection each time.
 
 Using [options][options-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
+
+### 🧰 Utility methods
+
+#### `generateBytes`
+
+A shortcut for `crypto.randomBytes` which uses promises instead of callbacks to generate names and return the value in a property called `filename`.
+
+```javascript
+const GridFsStorage = require('multer-gridfs-storage');
+const {generateBytes} = GridFsStorage;
+const result = await generateBytes();
+// result will be something like {filename: '37492f9fe13c350667350bcacf0e5b19'}
+```
+
+#### `fromStream`
+
+A function that pipe a readable stream to gridfs using the current storage configuration. Useful if you want to upload the received file in multiple storage devices.
+
+```javascript
+const GridFsStorage = require('multer-gridfs-storage');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+const app = express();
+const storage = new GridFsStorage({url: 'mongodb://yourhost:27017/database'});
+
+app.post('/profile', upload.single('avatar'), function (req, res, next) {
+  const {file} = req;
+  const stream = fs.createReadStream(file.path);
+  storage.fromStream(stream, req, file)
+    .then(() => res.send('File uploaded'))
+   	.catch(() => res.status(500).send('error'));
+});
+```
 
 ### ⚡ Events
 
