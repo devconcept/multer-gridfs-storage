@@ -11,7 +11,8 @@
 - Compatible with any Node.js version equal or greater than 10.
 - Caching of url based connections.
 - Compatible with Mongoose connection objects.
-- Promise and generator function support.
+- Promise support.
+- Generator function support. 
 - Support for existing and promise based database connections.
 - Storage operation buffering for incoming files while the connection is opening.
 - Use it as a multer plugin or inside an express middleware function.
@@ -131,14 +132,14 @@ Example:
 // using a database instance
 const client = await MongoClient.connect('mongodb://yourhost:27017');
 const database = client.db('database')
-const storage = new GridFSStorage({ db: database });
+const storage = new GridFsStorage({ db: database });
 
 // using a promise
 const promise = MongoClient
   .connect('mongodb://yourhost:27017')
   .then(client => client.db('database'));
   
-const storage = new GridFSStorage({ db: promise });
+const storage = new GridFsStorage({ db: promise });
 ```
 
 ```javascript
@@ -146,7 +147,7 @@ const storage = new GridFSStorage({ db: promise });
 
 const connection = mongoose.connect('mongodb://yourhost:27017/database');
 
-const storage = new GridFSStorage({ db: connection });
+const storage = new GridFsStorage({ db: connection });
 ```
 
 ```javascript
@@ -155,11 +156,11 @@ const GridFsStorage = require('multer-gridfs-storage');
  
 // using a database instance
 const database = await MongoClient.connect('mongodb://yourhost:27017/database');
-const storage = new GridFSStorage({ db: database });
+const storage = new GridFsStorage({ db: database });
 
 // using a promise
 const promise = MongoClient.connect('mongodb://yourhost:27017/database');
-const storage = new GridFSStorage({ db: promise });
+const storage = new GridFsStorage({ db: promise });
 ```
 
 #### client
@@ -172,12 +173,12 @@ Using promises is also supported
 // including the client in the storage
 const client = await MongoClient.connect('mongodb://yourhost:27017');
 const db = client.db('database')
-const storage = new GridFSStorage({ db, client});
+const storage = new GridFsStorage({ db, client});
 
 // using a promise
 const client = MongoClient.connect('mongodb://yourhost:27017');
 const db = client.then(cl => cl.db('database'));
-const storage = new GridFSStorage({ db, client});
+const storage = new GridFsStorage({ db, client});
 ```
 
 Using this feature is highly recommended to keep the storage in sync with the underlying connection status and to make your code more resilient to future changes in the mongodb library.

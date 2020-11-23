@@ -1,0 +1,9 @@
+{
+	"name": "multer-gridfs-storage",
+	"eslintConfig": {
+		"extends": [
+			"xo",
+			"xo-typescript"
+		]
+	}
+}

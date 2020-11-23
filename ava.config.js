@@ -1,11 +1,16 @@
 const config = {
-	require: ['esm'],
-	files: ['test/**/*.spec.js'],
+	require: ['ts-node/register/transpile-only'],
+	files: ['test/**/*.spec.ts'],
 	cache: true,
 	concurrency: 10,
 	verbose: true,
 	tap: false,
-	failFast: true
+	failFast: true,
+	typescript: {
+		rewritePaths: {
+			'src/': 'lib/'
+		}
+	}
 };
 
 export default config;

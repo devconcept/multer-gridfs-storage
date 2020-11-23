@@ -28,7 +28,7 @@ File and request information can be obtained too but this happens differently th
 This is an example of using the `req` and file objects
 
 ```javascript
-const storage = new GridFSStorage({
+const storage = new GridFsStorage({
   url: 'mongodb://yourhost:27017/database',
   file: function* (req, file) {
     let counter = 1;

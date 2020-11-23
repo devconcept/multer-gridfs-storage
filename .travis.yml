@@ -22,5 +22,5 @@ jobs:
         - NODE_ENV=test
       install:
         - npm install
-        - npm install mongodb@2
+        - npm install mongodb@2.2
         - npm install multer
