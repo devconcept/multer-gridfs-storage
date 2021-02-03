@@ -30,7 +30,7 @@ Basic usage example:
 ```javascript
 const express = require('express');
 const multer  = require('multer');
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 const url = 'mongodb://yourhost:27017/database';
 
 // Create a storage object with a given configuration
@@ -82,7 +82,7 @@ If the [`db`][db-option] option is specified this setting is ignored.
 Example:
 
 ```javascript
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
     url: 'mongodb://yourhost:27017/database'
@@ -152,7 +152,7 @@ const storage = new GridFsStorage({ db: connection });
 
 ```javascript
 // mongodb v2
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
  
 // using a database instance
 const database = await MongoClient.connect('mongodb://yourhost:27017/database');
@@ -215,7 +215,7 @@ If you return `null` or `undefined` from the file function, the values for the c
 This example will use the collection `'photos'` only for incoming files whose reported mime-type is `image/jpeg`, the others will be stored using default values.
 
 ```javascript
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
   url: 'mongodb://host:27017/database',
@@ -235,7 +235,7 @@ const upload = multer({ storage });
 This other example names every file something like `'file_1504287812377'`, using the date to change the number and to generate unique values
 
 ```javascript
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
   url: 'mongodb://host:27017/database',
@@ -251,7 +251,7 @@ const upload = multer({ storage });
 Is also possible to return values other than objects, like strings or numbers, in which case they will be used as the filename and the remaining properties will use the defaults. This is a simplified version of a previous example
 
 ```javascript
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
   url: 'mongodb://host:27017/database',
@@ -268,7 +268,7 @@ Internally the function `crypto.randomBytes` is used to generate names. In this 
 ```javascript
 const crypto = require('crypto');
 const path = require('path');
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 var storage = new GridFsStorage({
   url: 'mongodb://host:27017/database',
@@ -324,7 +324,7 @@ You can also create named caches by using a string instead of a boolean value. I
 The following code will create a new connection and store it under a cache named `'default'`.
 
 ```javascript
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
     url: 'mongodb://yourhost:27017/database',
@@ -336,7 +336,7 @@ Other, more complex example, could be creating several files and only two connec
 
 ```javascript
  // file 1
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
    url: 'mongodb://yourhost:27017/database',
@@ -344,7 +344,7 @@ const storage = new GridFsStorage({
 });
 
 // file 2
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
     url: 'mongodb://yourhost:27017/database',
@@ -352,7 +352,7 @@ const storage = new GridFsStorage({
 });
 
  // file 3
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
    url: 'mongodb://yourhost:27017/database',
@@ -360,7 +360,7 @@ const storage = new GridFsStorage({
 });
 
 // file 4
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 const storage = new GridFsStorage({
     url: 'mongodb://yourhost:27017/database',
@@ -373,7 +373,7 @@ The files 1 and 2 will use the connection cached under the key `'1'` and the fil
 Connection strings are parsed and tested for similarities. In this example the urls are equivalent and only one connection will be created.
 
 ```javascript
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 
 // Both configurations are equivalent
 
@@ -399,7 +399,7 @@ Using [options][options-option] has a particular side effect. The cache will spa
 A shortcut for `crypto.randomBytes` which uses promises instead of callbacks to generate names and return the value in a property called `filename`.
 
 ```javascript
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 const {generateBytes} = GridFsStorage;
 const result = await generateBytes();
 // result will be something like {filename: '37492f9fe13c350667350bcacf0e5b19'}
@@ -410,7 +410,7 @@ const result = await generateBytes();
 A function that pipe a readable stream to gridfs using the current storage configuration. Useful if you want to upload the received file in multiple storage devices.
 
 ```javascript
-const GridFsStorage = require('multer-gridfs-storage');
+const {GridFsStorage} = require('multer-gridfs-storage');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const app = express();
