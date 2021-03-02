@@ -16,6 +16,7 @@
 - Support for existing and promise based database connections.
 - Storage operation buffering for incoming files while the connection is opening.
 - Use it as a multer plugin or inside an express middleware function.
+- Typescript support.
 
 ## 🚀 Installation
 
@@ -39,20 +40,20 @@ const storage = new GridFsStorage({ url });
 // Set multer storage engine to the newly created object
 const upload = multer({ storage });
 
-const app = express()
+const app = express();
 
 // Upload your files as usual
 app.post('/profile', upload.single('avatar'), (req, res, next) => { 
     /*....*/ 
-})
+});
 
 app.post('/photos/upload', upload.array('photos', 12), (req, res, next) => {
     /*....*/ 
-})
+});
 
 app.post('/cool-profile', upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'gallery', maxCount: 8 }]), (req, res, next) => {
     /*....*/ 
-})
+});
 ```
 
 ## 📄 API
@@ -131,7 +132,7 @@ Example:
 
 // using a database instance
 const client = await MongoClient.connect('mongodb://yourhost:27017');
-const database = client.db('database')
+const database = client.db('database');
 const storage = new GridFsStorage({ db: database });
 
 // using a promise
@@ -172,7 +173,7 @@ Using promises is also supported
 ```javascript
 // including the client in the storage
 const client = await MongoClient.connect('mongodb://yourhost:27017');
-const db = client.db('database')
+const db = client.db('database');
 const storage = new GridFsStorage({ db, client});
 
 // using a promise
@@ -434,7 +435,7 @@ Each storage has a `ready` method that returns a promise. This allows you to wat
 
 const storage = new GridFsStorage({
   url: 'mongodb://yourhost:27017/database'
-})
+});
 
 storage.on('connection', (db) => {
   // Db is the database instance
@@ -450,7 +451,8 @@ storage.on('connectionFailed', (err) => {
 
 const storage = new GridFsStorage({
   url: 'mongodb://yourhost:27017/database'
-})
+});
+
 try {
   const {db, client} = await storage.ready();
   // db is the database instance
@@ -531,7 +533,7 @@ When using the [`url`][url-option] feature with the option `{useUnifiedTopology:
 const storage = new GridFsStorage({
   url: 'mongodb://yourhost:27017/database',
   options: {useUnifiedTopology: true},
-})
+});
 ``` 
  
 In this case the internal client always report that the connection is open even when is not. This is a known bug that you can track [here](https://jira.mongodb.org/browse/NODE-2234). 
