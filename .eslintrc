@@ -5,5 +5,10 @@
 			"xo",
 			"xo-typescript"
 		]
+	},
+	"rules": {
+		"max-len": ["error", {
+			"code": 180
+		}]
 	}
 }

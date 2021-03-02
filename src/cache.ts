@@ -190,10 +190,10 @@ export class Cache {
 	 * @param cacheIndex The index to look for
 	 * @param err The error thrown by the driver
 	 */
-	reject(cacheIndex: CacheIndex, err: any): void {
+	reject(cacheIndex: CacheIndex, error: any): void {
 		const cached = this.get(cacheIndex);
 		cached.pending = false;
-		this.emitter.emit('reject', cacheIndex, err);
+		this.emitter.emit('reject', cacheIndex, error);
 		this.remove(cacheIndex);
 	}
 
@@ -216,11 +216,11 @@ export class Cache {
 				}
 			};
 
-			const _reject = (index, err) => {
+			const _reject = (index, error) => {
 				if (compare(cacheIndex, index)) {
 					this.emitter.removeListener('resolve', _resolve);
 					this.emitter.removeListener('reject', _reject);
-					reject(err);
+					reject(error);
 				}
 			};
 

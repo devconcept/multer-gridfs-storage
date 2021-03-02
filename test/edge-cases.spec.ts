@@ -9,13 +9,13 @@ import {spy, stub, restore} from 'sinon';
 
 import {storageOptions} from './utils/settings';
 import {files, cleanStorage, fakeConnectCb} from './utils/testutils';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 
 test.serial('connection function fails to connect', async (t) => {
-	const err = new Error();
-	const mongoSpy = stub(MongoClient, 'connect').callsFake(fakeConnectCb(err));
+	const error = new Error('Failed connection');
+	const mongoSpy = stub(MongoClient, 'connect').callsFake(fakeConnectCb(error));
 
 	const connectionSpy = spy();
 	const storage = new GridFsStorage(storageOptions());
@@ -43,10 +43,14 @@ test.serial('errors generating random bytes', async (t) => {
 	t.context.storage = storage;
 	const upload = multer({storage});
 
-	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
-		error = err;
-		next();
-	});
+	app.post(
+		'/url',
+		upload.single('photo'),
+		(error_, request_, response, next) => {
+			error = error_;
+			next();
+		}
+	);
 
 	await storage.ready();
 	await request(app).post('/url').attach('photo', files[0]);

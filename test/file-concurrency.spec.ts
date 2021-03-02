@@ -14,7 +14,7 @@ import {
 	getClient,
 	dropDatabase
 } from './utils/testutils';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 
@@ -79,8 +79,8 @@ test('rejects incoming files if the connection does not open', async (t) => {
 	app.post(
 		'/url',
 		upload.array('photos', 2),
-		(err, request_, response, _next) => {
-			result = err;
+		(error_, request_, response, _next) => {
+			result = error_;
 			response.end();
 		}
 	);

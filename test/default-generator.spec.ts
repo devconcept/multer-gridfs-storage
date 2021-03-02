@@ -7,7 +7,7 @@ import hasOwn from 'has-own-prop';
 
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<{
 	filePrefix: string;
@@ -82,24 +82,25 @@ test('the request contains the two uploaded files', (t) => {
 
 test('files are named with the yielded value', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) =>
-		t.is(f.filename, t.context.filePrefix + (idx + 1).toString())
-	);
+	for (const [idx, f] of result.files.entries())
+		t.is(f.filename, t.context.filePrefix + (idx + 1).toString());
 });
 
 test('files contain a metadata object with the yielded object', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.metadata, t.context.metadatas[idx]));
+	for (const [idx, f] of result.files.entries())
+		t.is(f.metadata, t.context.metadatas[idx]);
 });
 
 test('should be stored with the yielded chunkSize value', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.chunkSize, t.context.sizes[idx]));
+	for (const [idx, f] of result.files.entries())
+		t.is(f.chunkSize, t.context.sizes[idx]);
 });
 
 test('should change the id with the yielded value', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.id, t.context.ids[idx]));
+	for (const [idx, f] of result.files.entries()) t.is(f.id, t.context.ids[idx]);
 });
 
 test('files are stored under a collection with the yielded name', async (t) => {
@@ -113,19 +114,21 @@ test('files are stored under a collection with the yielded name', async (t) => {
 
 test('files are stored with the yielded content-type value', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) =>
-		t.is(f.contentType, t.context.contentTypes[idx])
-	);
+	for (const [idx, f] of result.files.entries())
+		t.is(f.contentType, t.context.contentTypes[idx]);
 });
 
 test('should the parameters be a request and a file objects', (t) => {
 	const {req: appRequest, params} = t.context;
-	params.forEach((p) => {
+	for (const p of params) {
 		const {req, file} = p;
 		t.is(req, appRequest);
-		['body', 'query', 'params', 'files'].every((k) => t.true(hasOwn(req, k)));
-		['fieldname', 'originalname', 'encoding', 'mimetype'].every((k) =>
-			t.true(hasOwn(file, k))
-		);
-	});
+		for (const k of ['body', 'query', 'params', 'files']) {
+			t.true(hasOwn(req, k));
+		}
+
+		for (const k of ['fieldname', 'originalname', 'encoding', 'mimetype']) {
+			t.true(hasOwn(file, k));
+		}
+	}
 });

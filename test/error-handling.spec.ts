@@ -13,7 +13,7 @@ import {
 	getClient,
 	dropDatabase
 } from './utils/testutils';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 
@@ -24,14 +24,16 @@ test.afterEach.always(async (t) => {
 });
 
 test('invalid configurations', (t) => {
-	const errFn = () => new GridFsStorage({});
-	const errFn2 = () => new GridFsStorage();
+	// @ts-expect-error
+	const errorFn = () => new GridFsStorage({});
+	// @ts-expect-error
+	const errorFn2 = () => new GridFsStorage();
 
-	t.throws(errFn, {
+	t.throws(errorFn, {
 		message:
 			'Error creating storage engine. At least one of url or db option must be provided.'
 	});
-	t.throws(errFn2, {
+	t.throws(errorFn2, {
 		message:
 			'Error creating storage engine. At least one of url or db option must be provided.'
 	});
@@ -46,10 +48,14 @@ test('invalid types as file configurations', async (t) => {
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
-	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
-		error = err;
-		next();
-	});
+	app.post(
+		'/url',
+		upload.single('photo'),
+		(error_, request_, response, next) => {
+			error = error_;
+			next();
+		}
+	);
 
 	await storage.ready();
 	await request(app).post('/url').attach('photo', files[0]);
@@ -70,10 +76,14 @@ test('fails gracefully if an error is thrown inside the configuration function',
 
 	const upload = multer({storage});
 
-	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
-		error = err;
-		next();
-	});
+	app.post(
+		'/url',
+		upload.single('photo'),
+		(error_, request_, response, next) => {
+			error = error_;
+			next();
+		}
+	);
 
 	await storage.ready();
 	await request(app).post('/url').attach('photo', files[0]);
@@ -95,10 +105,14 @@ test('fails gracefully if an error is thrown inside a generator function', async
 
 	const upload = multer({storage});
 
-	app.post('/url', upload.single('photo'), (err, request_, response, next) => {
-		error = err;
-		next();
-	});
+	app.post(
+		'/url',
+		upload.single('photo'),
+		(error_, request_, response, next) => {
+			error = error_;
+			next();
+		}
+	);
 
 	await storage.ready();
 	await request(app).post('/url').attach('photo', files[0]);
@@ -112,17 +126,23 @@ test('connection promise fails to connect', async (t) => {
 	const app = express();
 	const errorSpy = spy();
 
-	const promise = new Promise((resolve, reject) => {
-		setTimeout(() => reject(error), 200);
+	const promise: Promise<any> = new Promise((resolve, reject) => {
+		setTimeout(() => {
+			reject(error);
+		}, 200);
 	});
 
 	const storage = new GridFsStorage({db: promise});
 
 	const upload = multer({storage});
 
-	app.post('/url', upload.single('photo'), (err, request_, response, _next) => {
-		response.end();
-	});
+	app.post(
+		'/url',
+		upload.single('photo'),
+		(error_, request_, response, _next) => {
+			response.end();
+		}
+	);
 
 	storage.on('connectionFailed', errorSpy);
 
@@ -141,11 +161,7 @@ test('connection is not opened', async (t) => {
 	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 	const client = getClient(_db);
-	if (client) {
-		await client.close(true);
-	} else {
-		await db.close();
-	}
+	await (client ? client.close(true) : db.close());
 
 	const storage = new GridFsStorage({db, client});
 	const upload = multer({storage});
@@ -153,8 +169,8 @@ test('connection is not opened', async (t) => {
 	app.post(
 		'/url',
 		upload.array('photos', 2),
-		(err, request_, response, next) => {
-			error = err;
+		(error_, request_, response, next) => {
+			error = error_;
 			next();
 		}
 	);

@@ -4,7 +4,7 @@ import {spy, restore, stub} from 'sinon';
 
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 
@@ -37,13 +37,13 @@ test.serial(
 		const result = storage.ready();
 		/* eslint-disable-next-line promise/prefer-await-to-then */
 		t.is(typeof result.then, 'function');
-		const err = await t.throwsAsync(async () => {
+		const error = await t.throwsAsync(async () => {
 			await result;
 			t.is(resolveSpy.callCount, 0);
 			t.is(rejectSpy, 1);
 		});
-		t.is(err, rejectSpy.getCall(0).args[0]);
-		t.is(err, t.context.error);
+		t.is(error, rejectSpy.getCall(0).args[0]);
+		t.is(error, t.context.error);
 	}
 );
 
@@ -52,12 +52,12 @@ test.serial.cb(
 	(t) => {
 		forceFailure(t);
 		const {storage} = t.context;
-		storage.once('connectionFailed', (evtErr) => {
+		storage.once('connectionFailed', (evtError) => {
 			const result = storage.ready();
 			/* eslint-disable-next-line promise/prefer-await-to-then */
 			t.is(typeof result.then, 'function');
 			result.catch((error) => {
-				t.is(error, evtErr);
+				t.is(error, evtError);
 				t.is(error, t.context.error);
 				t.end();
 			});

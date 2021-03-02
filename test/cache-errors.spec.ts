@@ -2,10 +2,10 @@ import anyTest, {TestInterface} from 'ava';
 import {MongoClient, Db} from 'mongodb';
 import {spy, stub, restore} from 'sinon';
 
-import {Cache} from '../lib/cache';
+import {Cache} from '../src';
 import {storageOptions} from './utils/settings';
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const {url, options} = storageOptions();
 const test = anyTest as TestInterface<any>;

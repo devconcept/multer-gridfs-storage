@@ -152,8 +152,8 @@ export function compareBy(object1: any, object2: any): ComparatorResult {
  * @param object The object to inspect
  * @return If the object has any properties or not
  */
-export function hasKeys(object): boolean {
-	/* eslint-disable-next-line guard-for-in */
+export function hasKeys(object: any): boolean {
+	/* eslint-disable-next-line guard-for-in, no-unreachable-loop */
 	for (const prop in object) {
 		// Stop testing if the object has at least one property
 		return true;
@@ -191,7 +191,7 @@ export function compareUris(uri1, uri2): boolean {
 	// Check if every host in one array is present on the other array no matter where is positioned
 	for (const hostObject of hosts1) {
 		if (
-			!hosts2.find(
+			!hosts2.some(
 				(h) => h.host === hostObject.host && h.port === hostObject.port
 			)
 		) {

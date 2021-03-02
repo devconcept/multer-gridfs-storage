@@ -5,7 +5,7 @@ import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 
@@ -45,10 +45,10 @@ test('handling empty name values', async (t) => {
 		.attach('photo', files[0])
 		.attach('photo', files[0]);
 
-	result.files.forEach((file) => t.regex(file.filename, /^[\da-f]{32}$/));
-	result.files.forEach((file) => t.is(file.metadata, null));
-	result.files.forEach((file) => t.is(file.bucketName, 'fs'));
-	result.files.forEach((file) => t.is(file.chunkSize, 261120));
+	for (const file of result.files) t.regex(file.filename, /^[\da-f]{32}$/);
+	for (const file of result.files) t.is(file.metadata, null);
+	for (const file of result.files) t.is(file.bucketName, 'fs');
+	for (const file of result.files) t.is(file.chunkSize, 261120);
 });
 
 test('handling primitive values as names', async (t) => {
@@ -82,8 +82,9 @@ test('handling primitive values as names', async (t) => {
 		.attach('photo', files[0])
 		.attach('photo', files[0]);
 
-	result.files.forEach((f, idx) => t.is(f.filename, values[idx].toString()));
-	result.files.forEach((file) => t.is(file.metadata, null));
-	result.files.forEach((file) => t.is(file.bucketName, 'fs'));
-	result.files.forEach((file) => t.is(file.chunkSize, 261120));
+	for (const [idx, f] of result.files.entries())
+		t.is(f.filename, values[idx].toString());
+	for (const file of result.files) t.is(file.metadata, null);
+	for (const file of result.files) t.is(file.bucketName, 'fs');
+	for (const file of result.files) t.is(file.chunkSize, 261120);
 });

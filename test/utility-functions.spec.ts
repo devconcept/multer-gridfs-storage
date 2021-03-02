@@ -7,7 +7,7 @@ import {
 	compareUris,
 	getDatabase,
 	hasKeys
-} from '../lib/utils';
+} from '../src/utils';
 
 const test = anyTest as TestInterface<any>;
 

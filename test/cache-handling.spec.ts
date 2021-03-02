@@ -3,10 +3,10 @@ import {MongoClient} from 'mongodb';
 import delay from 'delay';
 import {spy, stub, restore} from 'sinon';
 
-import {Cache} from '../lib/cache';
+import {Cache} from '../src/cache';
 import {storageOptions} from './utils/settings';
 import {cleanStorage} from './utils/testutils';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 const {url, options} = storageOptions();

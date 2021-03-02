@@ -5,7 +5,7 @@ import multer from 'multer';
 
 import {files, cleanStorage, mongoVersion} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 
@@ -41,7 +41,8 @@ test.after.always('cleanup', async (t) => {
 test('files don’t have a computed MD5 hash', (t) => {
 	const [major, minor] = mongoVersion;
 	if (major < 3 || (major === 3 && minor < 1)) {
-		return t.pass('Md5 hash is not supported in this mongo version');
+		t.pass('Md5 hash is not supported in this mongo version');
+		return;
 	}
 
 	const {result} = t.context;

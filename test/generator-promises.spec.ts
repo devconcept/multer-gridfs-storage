@@ -5,7 +5,7 @@ import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 
@@ -53,9 +53,8 @@ test('yielding a promise is resolved as file configuration', async (t) => {
 	const {result} = t.context;
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
-	result.files.forEach((f, idx) =>
-		t.is(f.filename, t.context.filePrefix + (idx + 1))
-	);
+	for (const [idx, f] of result.files.entries())
+		t.is(f.filename, t.context.filePrefix + (idx + 1));
 });
 
 async function failedPromiseSetup(t) {
@@ -73,8 +72,8 @@ async function failedPromiseSetup(t) {
 	app.post(
 		'/url',
 		upload.array('photos', 2),
-		(err, request_, response, next) => {
-			t.context.error = err;
+		(error, request_, response, next) => {
+			t.context.error = error;
 			next();
 		}
 	);

@@ -1,7 +1,7 @@
 import anyTest, {TestInterface} from 'ava';
 import {restore, stub} from 'sinon';
 
-import {Cache} from '../lib/cache';
+import {Cache} from '../src';
 import {storageOptions} from './utils/settings';
 
 const test = anyTest as TestInterface<any>;

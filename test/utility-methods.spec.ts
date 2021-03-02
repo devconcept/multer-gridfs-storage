@@ -9,7 +9,7 @@ import util from 'util';
 
 import {cleanStorage, defer, files} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 const unlink = util.promisify(fs.unlink);
@@ -63,7 +63,9 @@ test('upload a file using the fromStream method', async (t) => {
 test('upload a file using the fromStream method after another upload', async (t) => {
 	const diskStorage = multer.diskStorage({
 		destination: path.join(__dirname, 'attachments'),
-		filename: (request_, file, cb) => cb(null, 'test_disk.jpg')
+		filename: (request_, file, cb) => {
+			cb(null, 'test_disk.jpg');
+		}
 	});
 	const upload = multer({storage: diskStorage});
 	const app = express();

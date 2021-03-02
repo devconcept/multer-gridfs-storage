@@ -117,9 +117,10 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 */
 	static async generateBytes(): Promise<{filename: string}> {
 		return new Promise((resolve, reject) => {
-			crypto.randomBytes(16, (err, buffer) => {
-				if (err) {
-					return reject(err);
+			crypto.randomBytes(16, (error, buffer) => {
+				if (error) {
+					reject(error);
+					return;
 				}
 
 				resolve({filename: buffer.toString('hex')});
@@ -182,7 +183,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 				/* eslint-disable-next-line promise/prefer-await-to-then */
 				.then(async () => this.fromFile(request, file))
 				/* eslint-disable-next-line promise/prefer-await-to-then */
-				.then((file) => cb(null, file))
+				.then((file) => {
+					cb(null, file);
+				})
 				.catch(cb);
 			return;
 		}
@@ -191,7 +194,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		if (this.connected) {
 			this.fromFile(request, file)
 				/* eslint-disable-next-line promise/prefer-await-to-then */
-				.then((file) => cb(null, file))
+				.then((file) => {
+					cb(null, file);
+				})
 				.catch(cb);
 			return;
 		}
@@ -229,9 +234,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 				resolve(result);
 			};
 
-			const fail = (err) => {
+			const fail = (error) => {
 				this.removeListener('connection', done);
-				reject(err);
+				reject(error);
 			};
 
 			this.once('connection', done);
@@ -333,8 +338,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 		this._resolveConnection()
 			/* eslint-disable-next-line promise/prefer-await-to-then */
-			.then(({db, client}) => this._setDb(db, client))
-			.catch((error) => this._fail(error));
+			.then(({db, client}) => {
+				this._setDb(db, client);
+			})
+			.catch((error) => {
+				this._fail(error);
+			});
 	}
 
 	/**
@@ -390,7 +399,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			}
 
 			return {db, client};
-		} catch (error) {
+		} catch (error: unknown) {
 			if (this.cacheIndex) {
 				cache.reject(this.cacheIndex, error);
 			}
@@ -432,20 +441,20 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			this.client = client;
 		}
 
-		const errEvent = (err) => {
+		const errorEvent = (error_) => {
 			// Needs verification. Sometimes the event fires without an error object
 			// although the docs specify each of the events has a MongoError argument
 			this._updateConnectionStatus();
-			const error = err || new Error();
+			const error = error_ || new Error('Unknown database error');
 			this.emit('dbError', error);
 		};
 
 		// This are all the events that emit errors
 		this.db
-			.on('error', errEvent)
-			.on('parseError', errEvent)
-			.on('timeout', errEvent)
-			.on('close', errEvent);
+			.on('error', errorEvent)
+			.on('parseError', errorEvent)
+			.on('timeout', errorEvent)
+			.on('close', errorEvent);
 		this._updateConnectionStatus();
 
 		// Emit on next tick so user code can set listeners in case the db object is already available
@@ -458,14 +467,14 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * Removes the database reference and emit the connectionFailed event
 	 * @param err - The error received while trying to connect
 	 **/
-	private _fail(err: any): void {
+	private _fail(error: any): void {
 		this.connecting = false;
 		this.db = null;
 		this.client = null;
-		this.error = err;
+		this.error = error;
 		this._updateConnectionStatus();
 		// Fail event is only emitted after either a then promise handler or an I/O phase so is guaranteed to be asynchronous
-		this.emit('connectionFailed', err);
+		this.emit('connectionFailed', error);
 	}
 
 	/**

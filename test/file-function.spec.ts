@@ -6,7 +6,7 @@ import {ObjectID} from 'mongodb';
 
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<{
 	filenamePrefix: string;
@@ -75,24 +75,25 @@ test('request contains the two uploaded files', (t) => {
 
 test('files are named with the provided value', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) =>
-		t.is(f.filename, t.context.filenamePrefix + (idx + 1))
-	);
+	for (const [idx, f] of result.files.entries())
+		t.is(f.filename, t.context.filenamePrefix + (idx + 1));
 });
 
 test('files contain a metadata object with the provided object', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.metadata, t.context.metadatas[idx]));
+	for (const [idx, f] of result.files.entries())
+		t.is(f.metadata, t.context.metadatas[idx]);
 });
 
 test('files are stored with the provided chunkSize value', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.chunkSize, t.context.sizes[idx]));
+	for (const [idx, f] of result.files.entries())
+		t.is(f.chunkSize, t.context.sizes[idx]);
 });
 
 test('files have the provided id value', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) => t.is(f.id, t.context.ids[idx]));
+	for (const [idx, f] of result.files.entries()) t.is(f.id, t.context.ids[idx]);
 });
 
 test('files are stored under a collection with the provided name', async (t) => {
@@ -106,7 +107,6 @@ test('files are stored under a collection with the provided name', async (t) => 
 
 test('files are stored with the provided content-type value', (t) => {
 	const {result} = t.context;
-	result.files.forEach((f, idx) =>
-		t.is(f.contentType, t.context.contentTypes[idx])
-	);
+	for (const [idx, f] of result.files.entries())
+		t.is(f.contentType, t.context.contentTypes[idx]);
 });

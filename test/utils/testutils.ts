@@ -73,19 +73,19 @@ export function getClient(client) {
 	return client instanceof MongoClient ? client : null;
 }
 
-export function fakeConnectCb(err = null) {
+export function fakeConnectCb(error = null) {
 	return async (...args) => {
 		if (args.length === 3) {
 			const cb = args[2];
 			setTimeout(() => {
-				cb(err);
+				cb(error);
 			});
 			return;
 		}
 
 		await delay(1);
-		if (err) {
-			return Promise.reject(err);
+		if (error) {
+			return Promise.reject(error);
 		}
 	};
 }

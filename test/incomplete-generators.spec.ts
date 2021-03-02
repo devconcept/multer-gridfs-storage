@@ -5,7 +5,7 @@ import multer from 'multer';
 
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 
@@ -23,8 +23,8 @@ test.before(async (t) => {
 	app.post(
 		'/url',
 		upload.array('photos', 2),
-		(err, request_, response, _next) => {
-			t.context.error = err;
+		(error, request_, response, _next) => {
+			t.context.error = error;
 			response.end();
 		}
 	);

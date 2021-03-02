@@ -15,7 +15,7 @@ import {
 } from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
-import {GridFsStorage} from '../lib';
+import {GridFsStorage} from '../src/gridfs';
 
 const test = anyTest as TestInterface<any>;
 const [major] = mongoVersion;
@@ -118,8 +118,10 @@ test('connects to a mongoose instance', async (t) => {
 test('creates an instance without the new keyword', async (t) => {
 	let result: any = {};
 	const app = express();
-	/* eslint-disable-next-line new-cap */
+	/* eslint-disable new-cap */
+	// @ts-expect-error
 	const storage = GridFsStorage(storageOptions());
+	/* eslint-enable new-cap */
 	const upload = multer({storage});
 	t.context.storage = storage;
 
