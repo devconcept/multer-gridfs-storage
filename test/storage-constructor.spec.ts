@@ -15,7 +15,7 @@ import {
 } from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
-import {GridFsStorage} from '../src/gridfs';
+import {GridFsStorage} from '../src';
 
 const test = anyTest as TestInterface<any>;
 const [major] = mongoVersion;

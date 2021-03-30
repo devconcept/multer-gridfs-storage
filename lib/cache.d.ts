@@ -68,7 +68,7 @@ export declare class Cache {
      * @param cacheIndex The index to look for
      * @param err The error thrown by the driver
      */
-    reject(cacheIndex: CacheIndex, err: any): void;
+    reject(cacheIndex: CacheIndex, error: any): void;
     /**
      * Allows waiting for a connection associated to a given cache
      * @param cacheIndex The index to look for

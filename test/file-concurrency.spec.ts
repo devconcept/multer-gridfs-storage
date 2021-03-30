@@ -14,7 +14,7 @@ import {
 	getClient,
 	dropDatabase
 } from './utils/testutils';
-import {GridFsStorage} from '../src/gridfs';
+import {GridFsStorage} from '../src';
 
 const test = anyTest as TestInterface<any>;
 

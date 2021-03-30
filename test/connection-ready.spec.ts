@@ -4,7 +4,7 @@ import {spy, restore, stub} from 'sinon';
 
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src/gridfs';
+import {GridFsStorage} from '../src';
 
 const test = anyTest as TestInterface<any>;
 

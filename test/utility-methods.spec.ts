@@ -9,7 +9,7 @@ import util from 'util';
 
 import {cleanStorage, defer, files} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src/gridfs';
+import {GridFsStorage} from '../src';
 
 const test = anyTest as TestInterface<any>;
 const unlink = util.promisify(fs.unlink);

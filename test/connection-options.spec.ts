@@ -1,7 +1,7 @@
 import anyTest, {TestInterface} from 'ava';
 import {cleanStorage, mongoVersion} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src/gridfs';
+import {GridFsStorage} from '../src';
 
 const test = anyTest as TestInterface<any>;
 
