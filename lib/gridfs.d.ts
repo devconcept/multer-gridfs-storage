@@ -87,6 +87,7 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @return Resolves with the uploaded file
      */
     fromStream(readStream: NodeJS.ReadableStream, request: Request, file: any): Promise<GridFile>;
+    private fromMulterStream;
     /**
      * Determines if a new connection should be created, a explicit connection is provided or a cached instance is required.
      */

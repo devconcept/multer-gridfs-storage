@@ -264,7 +264,27 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	async fromStream(
 		readStream: NodeJS.ReadableStream,
 		request: Request,
-		file
+		file: any
+	): Promise<GridFile> {
+		return new Promise<GridFile>((resolve, reject) => {
+			readStream.on('error', (error) => {
+				reject(error);
+			});
+			this.fromMulterStream(readStream, request, file)
+				/* eslint-disable-next-line promise/prefer-await-to-then */
+				.then((file) => {
+					resolve(file);
+				})
+				.catch((error) => {
+					reject(error);
+				});
+		});
+	}
+
+	private async fromMulterStream(
+		readStream: NodeJS.ReadableStream,
+		request: Request,
+		file: any
 	): Promise<GridFile> {
 		if (this.connecting) {
 			await this.ready();

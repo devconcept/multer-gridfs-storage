@@ -11,7 +11,7 @@ import {
 	cleanStorage,
 	getDb,
 	getClient,
-	dropDatabase
+	dropDatabase, ErrorStream
 } from './utils/testutils';
 import {GridFsStorage} from '../src';
 
@@ -200,4 +200,17 @@ test('event is emitted when there is an error in the database', async (t) => {
 	t.is(errorSpy.callCount, 2);
 	t.is(errorSpy.getCall(0).args[0], error);
 	t.true(errorSpy.getCall(1).args[0] instanceof Error);
+});
+
+test('error event is emitted when there is an error in the readable stream using fromStream', async (t) => {
+	const {url, options} = storageOptions();
+	t.context.url = url;
+	const _db = await MongoClient.connect(url, options);
+	const db = getDb(_db, url);
+
+	const stream = new ErrorStream();
+
+	const storage = new GridFsStorage({db});
+
+	await t.throwsAsync(async () => storage.fromStream(stream, {} as any, {}));
 });
