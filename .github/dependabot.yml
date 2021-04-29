@@ -1,0 +1,41 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  target-branch: develop
+  ignore:
+  - dependency-name: eslint
+    versions:
+    - 7.19.0
+    - 7.20.0
+    - 7.22.0
+    - 7.24.0
+  - dependency-name: "@types/mongodb"
+    versions:
+    - 3.6.11
+    - 3.6.6
+    - 3.6.7
+    - 3.6.9
+  - dependency-name: mongoose
+    versions:
+    - 5.11.13
+    - 5.11.19
+    - 5.12.0
+    - 5.12.1
+    - 5.12.2
+    - 5.12.3
+  - dependency-name: typescript
+    versions:
+    - 4.1.3
+    - 4.1.5
+    - 4.2.3
+  - dependency-name: xo
+    versions:
+    - 0.37.1
+    - 0.38.1
+  - dependency-name: supertest
+    versions:
+    - 6.1.2
