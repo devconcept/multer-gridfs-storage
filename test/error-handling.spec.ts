@@ -11,7 +11,8 @@ import {
 	cleanStorage,
 	getDb,
 	getClient,
-	dropDatabase, ErrorStream
+	dropDatabase,
+	ErrorStream
 } from './utils/testutils';
 import {GridFsStorage} from '../src';
 

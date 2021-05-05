@@ -107,10 +107,6 @@ export function defer() {
 export class ErrorStream extends Readable {
 	err: Error;
 
-	constructor(opts?: ReadableOptions) {
-		super(opts);
-	}
-
 	_read(size: number) {
 		this.err = new Error('Stream error');
 		this.emit('error', this.err);

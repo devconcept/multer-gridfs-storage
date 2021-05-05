@@ -1,4 +1,11 @@
-import {Connection, Mongoose} from 'mongoose';
 import {Db} from 'mongodb';
 
-export type DbTypes = Mongoose | Connection | Db;
+export interface MongooseConnectionInstance {
+	db: Db;
+}
+
+export interface MongooseInstance {
+	connection: MongooseConnectionInstance;
+}
+
+export type DbTypes = MongooseInstance | MongooseConnectionInstance | Db;
