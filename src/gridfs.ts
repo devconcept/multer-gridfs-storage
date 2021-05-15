@@ -17,7 +17,6 @@ import {
 import isPromise from 'is-promise';
 import isGenerator from 'is-generator';
 import pump from 'pump';
-import mongoUri from 'mongodb-uri';
 import {Request} from 'express';
 import {StorageEngine} from 'multer';
 
@@ -31,6 +30,7 @@ import {
 	UrlStorageOptions,
 	DbStorageOptions
 } from './types';
+import {openConnection} from './mongo-adapter';
 
 const isGeneratorFn = isGenerator.fn;
 
@@ -400,20 +400,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 		const {cache} = GridFsStorage;
 		try {
-			let db;
-			let client = null;
-			const _db = await MongoClient.connect(url, options);
-			let parsedUri;
-
-			// Mongo 3 returns a client instead of a Db object
-			if (_db instanceof MongoClient) {
-				client = _db;
-				parsedUri = mongoUri.parse(url);
-				db = client.db(parsedUri.database);
-			} else {
-				db = _db;
-			}
-
+			const {db, client} = await openConnection(url, options);
 			if (this.caching) {
 				cache.resolve(this.cacheIndex, db, client);
 			}
