@@ -71,7 +71,7 @@
 		"xo": "^0.38.2"
 	},
 	"engines": {
-		"node": ">=10"
+		"node": ">=12"
 	},
 	"bugs": {
 		"url": "https://github.com/devconcept/multer-gridfs-storage/issues"
