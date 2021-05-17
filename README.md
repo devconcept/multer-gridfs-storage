@@ -8,7 +8,7 @@
 
 - Compatibility with MongoDb versions 2 and 3.
 - Really simple api.
-- Compatible with any Node.js version equal or greater than 10.
+- Compatible with any current Node.js version.
 - Caching of url based connections.
 - Compatible with Mongoose connection objects.
 - Promise support.
@@ -182,7 +182,7 @@ const db = client.then(cl => cl.db('database'));
 const storage = new GridFsStorage({ db, client});
 ```
 
-Using this feature is highly recommended to keep the storage in sync with the underlying connection status and to make your code more resilient to future changes in the mongodb library.
+Using this feature is highly recommended in order to keep the storage in sync with the underlying connection status and to make your code more resilient to future changes in the mongodb library.
 
 #### file
 
@@ -194,7 +194,7 @@ A function to control the file storage in the database. Is invoked **per file** 
 
 This module uses [`GridFSBucket`](http://mongodb.github.io/node-mongodb-native/3.1/api/GridFSBucket.html) to store files in the database falling back to [`GridStore`](http://mongodb.github.io/node-mongodb-native/3.1/api/GridStore.html) in case the previous class is not found like, for example, in earlier versions of MongoDb. 
 
-By default, naming behaves exactly like the default Multer disk storage. A 16 bytes long name in a hexadecimal format with no extension is generated for each file to guarantee that there are very low probabilities of collisions. You can override this by passing your own function.
+By default, naming behaves exactly like the default Multer disk storage, a 16 bytes long name in a hexadecimal format with no extension is generated for each file to guarantee that there are very low probabilities of collisions. You can override this by passing your own function.
 
 The return value of this function is an object, or a promise that resolves to an object (this also applies to generators) with the following properties. 
 
@@ -464,7 +464,7 @@ try {
 
 Remember that you don't need to wait for the connection to be ready to start uploading files. The module buffers every incoming file until the connection is ready and saves all of them as soon as possible.
 
-The `ready` method is just a convenience function over code written using the `connection` events also with a  couple of advantages. If you setup a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method it will. The module keeps track of this events and resolves or rejects the promises accordingly. Promises in this case are more readable than events and more reliable.
+The `ready` method is just a convenience function over code written using the `connection` events also with a  couple of advantages. If you set up a listener after the `connection` or  `connectionFailed` events are dispatched your code will not execute while using the `ready` method it will. The module keeps track of these events and resolves or rejects the promises accordingly. Promises in this case are more readable than events and more reliable.
 
 ### ⚡ Events
 
@@ -561,8 +561,8 @@ $ npm run coverage
 
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
 
-[travis-url]: https://travis-ci.com/devconcept/multer-gridfs-storage
-[travis-image]: https://travis-ci.com/devconcept/multer-gridfs-storage.svg?branch=master "Build status"
+[travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
+[travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master "Build status"
 [coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
 [version-image]:https://img.shields.io/npm/v/multer-gridfs-storage.svg "Npm version"
