@@ -7,17 +7,9 @@ import {ObjectID} from 'mongodb';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {FileFunctionContext} from './types/file-function-context';
 
-const test = anyTest as TestInterface<{
-	filenamePrefix: string;
-	storage: any;
-	result: any;
-	ids: any[];
-	metadatas: string[];
-	sizes: number[];
-	bucketNames: string[];
-	contentTypes: string[];
-}>;
+const test = anyTest as TestInterface<FileFunctionContext>;
 
 test.before(async (t) => {
 	const app = express();

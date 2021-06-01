@@ -6,7 +6,7 @@ import delay from 'delay';
 
 import {version} from 'mongodb/package.json';
 import {connection, storageOptions} from './settings';
-import {Readable, ReadableOptions} from 'stream';
+import {Readable} from 'stream';
 
 export const mongoVersion = version.split('.').map((v) => Number(v));
 

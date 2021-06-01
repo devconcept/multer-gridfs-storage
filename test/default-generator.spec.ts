@@ -8,19 +8,9 @@ import hasOwn from 'has-own-prop';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {DefaultGeneratorContext} from './types/default-generator-context';
 
-const test = anyTest as TestInterface<{
-	filePrefix: string;
-	storage: any;
-	result: any;
-	ids: any[];
-	metadatas: string[];
-	sizes: number[];
-	collections: string[];
-	contentTypes: string[];
-	params: any[];
-	req: any;
-}>;
+const test = anyTest as TestInterface<DefaultGeneratorContext>;
 
 test.before(async (t) => {
 	const app = express();

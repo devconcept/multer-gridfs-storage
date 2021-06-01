@@ -6,8 +6,9 @@ import multer from 'multer';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {IncompleteGeneratorsContext} from './types/incomplete-generators-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<IncompleteGeneratorsContext>;
 
 test.before(async (t) => {
 	const app = express();

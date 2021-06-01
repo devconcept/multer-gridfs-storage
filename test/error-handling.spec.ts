@@ -15,8 +15,9 @@ import {
 	ErrorStream
 } from './utils/testutils';
 import {GridFsStorage} from '../src';
+import {ErrorHandlingContext} from './types/error-handling-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<ErrorHandlingContext>;
 
 test.afterEach.always(async (t) => {
 	restore();

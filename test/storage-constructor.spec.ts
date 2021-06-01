@@ -16,8 +16,9 @@ import {
 import {storageOptions} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
 import {GridFsStorage} from '../src';
+import {StorageConstructorContext} from './types/storage-constructor-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<StorageConstructorContext>;
 const [major] = mongoVersion;
 
 function prepareTest(t, options) {

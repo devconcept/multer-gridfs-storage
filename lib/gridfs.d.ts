@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
+import { MongoClientOptions } from 'mongodb';
 import { Request } from 'express';
 import { StorageEngine } from 'multer';
 import { Cache } from './cache';
@@ -87,6 +88,7 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @return Resolves with the uploaded file
      */
     fromStream(readStream: NodeJS.ReadableStream, request: Request, file: any): Promise<GridFile>;
+    _openConnection(url: string, options: MongoClientOptions): Promise<ConnectionResult>;
     private fromMulterStream;
     /**
      * Determines if a new connection should be created, a explicit connection is provided or a cached instance is required.

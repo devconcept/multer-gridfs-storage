@@ -6,8 +6,9 @@ import multer from 'multer';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {GeneratorPromisesContext} from './types/generator-promises-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<GeneratorPromisesContext>;
 
 async function successfulPromiseSetup(t) {
 	const app = express();

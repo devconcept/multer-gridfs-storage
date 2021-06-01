@@ -9,8 +9,9 @@ import hasOwn from 'has-own-prop';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {UploadedFileContext} from './types/uploaded-file-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<UploadedFileContext>;
 const readFile = pify(readFileCb);
 
 test.before(async (t) => {

@@ -3,8 +3,9 @@ import {restore, stub} from 'sinon';
 
 import {Cache} from '../src';
 import {storageOptions} from './utils/settings';
+import {CacheClassContext} from './types/cache-class-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<CacheClassContext>;
 const {url} = storageOptions();
 const url2 = 'mongodb://mongoserver.com:27017/testdatabase';
 

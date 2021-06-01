@@ -10,8 +10,9 @@ import {spy, stub, restore} from 'sinon';
 import {storageOptions} from './utils/settings';
 import {files, cleanStorage, fakeConnectCb} from './utils/testutils';
 import {GridFsStorage} from '../src';
+import {EdgeCasesContext} from './types/edge-cases-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<EdgeCasesContext>;
 
 test.serial('connection function fails to connect', async (t) => {
 	const error = new Error('Failed connection');

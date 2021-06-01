@@ -8,8 +8,9 @@ import {
 	getDatabase,
 	hasKeys
 } from '../src/utils';
+import {UtilityFunctionsContext} from './types/utility-functions-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<UtilityFunctionsContext>;
 
 /* Compare */
 test('compare considers equal any falsey values', (t) => {

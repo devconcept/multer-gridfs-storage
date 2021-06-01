@@ -6,8 +6,9 @@ import {spy, stub, restore} from 'sinon';
 import {Cache, GridFsStorage} from '../src';
 import {storageOptions} from './utils/settings';
 import {cleanStorage} from './utils/testutils';
+import {CacheHandlingContext} from './types/cache-handling-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<CacheHandlingContext>;
 const {url, options} = storageOptions();
 
 test.serial.beforeEach((t) => {

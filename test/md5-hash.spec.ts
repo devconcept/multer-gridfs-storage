@@ -6,8 +6,9 @@ import multer from 'multer';
 import {files, cleanStorage, mongoVersion} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {Md5HashContext} from './types/md5-hash-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<Md5HashContext>;
 
 test.before(async (t) => {
 	const app = express();

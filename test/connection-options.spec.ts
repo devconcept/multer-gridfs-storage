@@ -2,8 +2,9 @@ import anyTest, {TestInterface} from 'ava';
 import {cleanStorage, mongoVersion} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {ConnectionOptionsContext} from './types/connection-options-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<ConnectionOptionsContext>;
 
 test.afterEach.always('cleanup', async (t) => {
 	await cleanStorage(t.context.storage);

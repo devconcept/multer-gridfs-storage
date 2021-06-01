@@ -10,8 +10,9 @@ import util from 'util';
 import {cleanStorage, defer, files} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {UtilityMethodsContext} from './types/utility-methods-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<UtilityMethodsContext>;
 const unlink = util.promisify(fs.unlink);
 
 test.afterEach.always('cleanup', async (t) => {

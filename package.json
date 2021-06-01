@@ -8,7 +8,7 @@
 		"watch": "del-cli ./lib/** && tsc --declaration -w",
 		"test": "npm run compile && ava",
 		"lint": "xo --fix",
-		"coverage": "nyc --reporter=lcov ava",
+		"coverage": "npm run compile && nyc --reporter=lcov ava --timeout=30s",
 		"docs": "jsdoc -c ./conf.json --readme ./README.md",
 		"coveralls": "npm run coverage | coveralls",
 		"preversion": "npm run lint"

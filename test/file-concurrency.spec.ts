@@ -15,8 +15,9 @@ import {
 	dropDatabase
 } from './utils/testutils';
 import {GridFsStorage} from '../src';
+import {FileConcurrencyContext} from './types/file-concurrency-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<FileConcurrencyContext>;
 
 function prepareTest(t, error?) {
 	const {url, options} = storageOptions();

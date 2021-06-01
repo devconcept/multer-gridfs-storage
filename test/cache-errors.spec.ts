@@ -5,9 +5,10 @@ import {spy, stub, restore} from 'sinon';
 import {Cache, GridFsStorage} from '../src';
 import {storageOptions} from './utils/settings';
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
+import {CacheErrorsContext} from './types/cache-errors-context';
 
 const {url, options} = storageOptions();
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<CacheErrorsContext>;
 
 function createStorage(settings, {t = null, key = ''} = {}) {
 	const storage = new GridFsStorage({url, options, ...settings});

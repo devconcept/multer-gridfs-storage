@@ -19,6 +19,7 @@ import isGenerator from 'is-generator';
 import pump from 'pump';
 import {Request} from 'express';
 import {StorageEngine} from 'multer';
+import mongoUri from 'mongodb-uri';
 
 import {getDatabase} from './utils';
 import {Cache} from './cache';
@@ -30,7 +31,6 @@ import {
 	UrlStorageOptions,
 	DbStorageOptions
 } from './types';
-import {openConnection} from './mongo-adapter';
 
 const isGeneratorFn = isGenerator.fn;
 
@@ -281,6 +281,24 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		});
 	}
 
+	async _openConnection(
+		url: string,
+		options: MongoClientOptions
+	): Promise<ConnectionResult> {
+		let client = null;
+		let db;
+		const connection = await MongoClient.connect(url, options);
+		if (connection instanceof MongoClient) {
+			client = connection;
+			const parsedUri = mongoUri.parse(url);
+			db = client.db(parsedUri.database);
+		} else {
+			db = connection;
+		}
+
+		return {client, db};
+	}
+
 	private async fromMulterStream(
 		readStream: NodeJS.ReadableStream,
 		request: Request,
@@ -400,7 +418,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 		const {cache} = GridFsStorage;
 		try {
-			const {db, client} = await openConnection(url, options);
+			const {db, client} = await this._openConnection(url, options);
 			if (this.caching) {
 				cache.resolve(this.cacheIndex, db, client);
 			}

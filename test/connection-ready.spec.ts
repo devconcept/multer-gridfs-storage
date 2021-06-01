@@ -5,8 +5,9 @@ import {spy, restore, stub} from 'sinon';
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {ConnectionReadyContext} from './types/connection-ready-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<ConnectionReadyContext>;
 
 test.afterEach.always('cleanup', async (t) => {
 	const {storage} = t.context;

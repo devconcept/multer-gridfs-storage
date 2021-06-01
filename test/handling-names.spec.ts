@@ -6,8 +6,9 @@ import multer from 'multer';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {GridFsStorage} from '../src';
+import {HandlingNamesContext} from './types/handling-names-context';
 
-const test = anyTest as TestInterface<any>;
+const test = anyTest as TestInterface<HandlingNamesContext>;
 
 test.afterEach.always('cleanup', async (t) => {
 	await cleanStorage(t.context.storage);
