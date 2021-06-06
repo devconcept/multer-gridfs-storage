@@ -21,7 +21,7 @@ import {Request} from 'express';
 import {StorageEngine} from 'multer';
 import mongoUri from 'mongodb-uri';
 
-import {getDatabase} from './utils';
+import {getDatabase, shouldListenOnDb} from './utils';
 import {Cache} from './cache';
 import {
 	CacheIndex,
@@ -267,17 +267,11 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		file: any
 	): Promise<GridFile> {
 		return new Promise<GridFile>((resolve, reject) => {
-			readStream.on('error', (error) => {
-				reject(error);
-			});
+			readStream.on('error', reject);
 			this.fromMulterStream(readStream, request, file)
 				/* eslint-disable-next-line promise/prefer-await-to-then */
-				.then((file) => {
-					resolve(file);
-				})
-				.catch((error) => {
-					reject(error);
-				});
+				.then(resolve)
+				.catch(reject);
 		});
 	}
 
@@ -475,11 +469,18 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		};
 
 		// This are all the events that emit errors
-		this.db
-			.on('error', errorEvent)
-			.on('parseError', errorEvent)
-			.on('timeout', errorEvent)
-			.on('close', errorEvent);
+		const errorEventNames = ['error', 'parseError', 'timeout', 'close'];
+		let eventSource;
+		if (shouldListenOnDb()) {
+			eventSource = this.db;
+		} else if (this.client) {
+			eventSource = this.client;
+		}
+
+		if (eventSource) {
+			for (const evt of errorEventNames) eventSource.on(evt, errorEvent);
+		}
+
 		this._updateConnectionStatus();
 
 		// Emit on next tick so user code can set listeners in case the db object is already available

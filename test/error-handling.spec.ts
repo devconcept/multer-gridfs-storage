@@ -16,6 +16,7 @@ import {
 } from './utils/testutils';
 import {GridFsStorage} from '../src';
 import {ErrorHandlingContext} from './types/error-handling-context';
+import {shouldListenOnDb} from '../src/utils';
 
 const test = anyTest as TestInterface<ErrorHandlingContext>;
 
@@ -191,13 +192,14 @@ test('event is emitted when there is an error in the database', async (t) => {
 	t.context.url = url;
 	const error = new Error('Database error');
 	const errorSpy = spy();
-	const _db = await MongoClient.connect(url, options);
-	const db = getDb(_db, url);
+	const client = await MongoClient.connect(url, options);
+	const db = getDb(client, url);
 
-	const storage = new GridFsStorage({db});
+	const storage = new GridFsStorage({db, client});
 	storage.on('dbError', errorSpy);
-	db.emit('error', error);
-	db.emit('error');
+	const evtSource = shouldListenOnDb() ? db : client;
+	evtSource.emit('error', error);
+	evtSource.emit('error');
 
 	t.is(errorSpy.callCount, 2);
 	t.is(errorSpy.getCall(0).args[0], error);
