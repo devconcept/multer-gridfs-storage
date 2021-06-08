@@ -9,6 +9,7 @@ import {
 	hasKeys
 } from '../src/utils';
 import {UtilityFunctionsContext} from './types/utility-functions-context';
+import {shouldListenOnDb} from '../src/utils';
 
 const test = anyTest as TestInterface<UtilityFunctionsContext>;
 
@@ -180,3 +181,14 @@ test('returns the database object directly if is not a mongoose object', (t) => 
 	const database = {};
 	t.is(getDatabase(database), database);
 });
+
+test('returns the true if the version number is lower that 3.6.4', (t) => {
+	t.false(shouldListenOnDb('4.0.0'));
+	t.false(shouldListenOnDb('3.7.0'));
+	t.false(shouldListenOnDb('3.6.4'));
+	t.true(shouldListenOnDb('3.6.3'));
+	t.true(shouldListenOnDb('3.5.1'));
+	t.true(shouldListenOnDb('2.7.8'));
+	t.true(shouldListenOnDb('2.0.0'));
+});
+

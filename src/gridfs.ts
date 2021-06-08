@@ -64,8 +64,8 @@ const defaults = {
  */
 export class GridFsStorage extends EventEmitter implements StorageEngine {
 	static cache: Cache = new Cache();
-	db: any = null;
-	client: any = null;
+	db: Db = null;
+	client: MongoClient = null;
 	configuration: DbStorageOptions | UrlStorageOptions;
 	connected = false;
 	connecting = false;
@@ -444,6 +444,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			return;
 		}
 
+		// @ts-ignore
 		this.connected = this.db.topology.isConnected();
 	}
 

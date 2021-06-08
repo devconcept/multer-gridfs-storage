@@ -4,7 +4,7 @@
  */
 import { Db } from 'mongodb';
 import { ComparatorResult } from './types';
-export declare function shouldListenOnDb(): boolean;
+export declare function shouldListenOnDb(v?: string): boolean;
 /**
  * Compare two objects by value.
  *

@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
-import { MongoClientOptions } from 'mongodb';
+import { Db, MongoClient, MongoClientOptions } from 'mongodb';
 import { Request } from 'express';
 import { StorageEngine } from 'multer';
 import { Cache } from './cache';
@@ -24,8 +24,8 @@ import { GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageO
  */
 export declare class GridFsStorage extends EventEmitter implements StorageEngine {
     static cache: Cache;
-    db: any;
-    client: any;
+    db: Db;
+    client: MongoClient;
     configuration: DbStorageOptions | UrlStorageOptions;
     connected: boolean;
     connecting: boolean;
