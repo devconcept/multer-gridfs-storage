@@ -275,7 +275,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		});
 	}
 
-	async _openConnection(
+	protected async _openConnection(
 		url: string,
 		options: MongoClientOptions
 	): Promise<ConnectionResult> {
@@ -291,6 +291,23 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		return {client, db};
+	}
+
+	/**
+	 * Create a writable stream with backwards compatibility with GridStore
+	 * @param {object} options - The stream options
+	 */
+	protected createStream(options): GridFSBucketWriteStream {
+		const settings = {
+			id: options.id,
+			chunkSizeBytes: options.chunkSize,
+			contentType: options.contentType,
+			metadata: options.metadata,
+			aliases: options.aliases,
+			disableMD5: options.disableMD5
+		};
+		const gfs = new GridFSBucket(this.db, {bucketName: options.bucketName});
+		return gfs.openUploadStream(options.filename, settings);
 	}
 
 	private async fromMulterStream(
@@ -444,7 +461,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			return;
 		}
 
-		// @ts-ignore
+		// @ts-expect-error
 		this.connected = this.db.topology.isConnected();
 	}
 
@@ -502,23 +519,6 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		this._updateConnectionStatus();
 		// Fail event is only emitted after either a then promise handler or an I/O phase so is guaranteed to be asynchronous
 		this.emit('connectionFailed', error);
-	}
-
-	/**
-	 * Create a writable stream with backwards compatibility with GridStore
-	 * @param {object} options - The stream options
-	 */
-	private createStream(options): GridFSBucketWriteStream {
-		const settings = {
-			id: options.id,
-			chunkSizeBytes: options.chunkSize,
-			contentType: options.contentType,
-			metadata: options.metadata,
-			aliases: options.aliases,
-			disableMD5: options.disableMD5
-		};
-		const gfs = new GridFSBucket(this.db, {bucketName: options.bucketName});
-		return gfs.openUploadStream(options.filename, settings);
 	}
 
 	/**

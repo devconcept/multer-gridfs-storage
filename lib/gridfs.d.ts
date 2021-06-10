@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
-import { Db, MongoClient, MongoClientOptions } from 'mongodb';
+import { Db, GridFSBucketWriteStream, MongoClient, MongoClientOptions } from 'mongodb';
 import { Request } from 'express';
 import { StorageEngine } from 'multer';
 import { Cache } from './cache';
@@ -88,7 +88,12 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @return Resolves with the uploaded file
      */
     fromStream(readStream: NodeJS.ReadableStream, request: Request, file: any): Promise<GridFile>;
-    _openConnection(url: string, options: MongoClientOptions): Promise<ConnectionResult>;
+    protected _openConnection(url: string, options: MongoClientOptions): Promise<ConnectionResult>;
+    /**
+     * Create a writable stream with backwards compatibility with GridStore
+     * @param {object} options - The stream options
+     */
+    protected createStream(options: any): GridFSBucketWriteStream;
     private fromMulterStream;
     /**
      * Determines if a new connection should be created, a explicit connection is provided or a cached instance is required.
@@ -117,11 +122,6 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @param err - The error received while trying to connect
      **/
     private _fail;
-    /**
-     * Create a writable stream with backwards compatibility with GridStore
-     * @param {object} options - The stream options
-     */
-    private createStream;
     /**
      * Tests for generator functions or plain functions and delegates to the appropriate method
      * @param request - The request that trigger the upload as received in _handleFile

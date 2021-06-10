@@ -6,7 +6,7 @@ import delay from 'delay';
 
 import {version} from 'mongodb/package.json';
 import {connection, storageOptions} from './settings';
-import {Readable} from 'stream';
+import {Readable, Writable} from 'stream';
 
 export const mongoVersion = version.split('.').map((v) => Number(v));
 
@@ -104,10 +104,18 @@ export function defer() {
 	return d;
 }
 
-export class ErrorStream extends Readable {
+export class ErrorReadableStream extends Readable {
 	err: Error;
 
 	_read(size: number) {
+		this.err = new Error('Stream error');
+		this.emit('error', this.err);
+	}
+}
+export class ErrorWritableStream extends Writable {
+	err: Error;
+
+	_write(size: number) {
 		this.err = new Error('Stream error');
 		this.emit('error', this.err);
 	}

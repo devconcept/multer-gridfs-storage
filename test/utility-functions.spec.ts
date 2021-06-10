@@ -6,10 +6,10 @@ import {
 	compareBy,
 	compareUris,
 	getDatabase,
-	hasKeys
+	hasKeys,
+	shouldListenOnDb
 } from '../src/utils';
 import {UtilityFunctionsContext} from './types/utility-functions-context';
-import {shouldListenOnDb} from '../src/utils';
 
 const test = anyTest as TestInterface<UtilityFunctionsContext>;
 
@@ -191,4 +191,3 @@ test('returns the true if the version number is lower that 3.6.4', (t) => {
 	t.true(shouldListenOnDb('2.7.8'));
 	t.true(shouldListenOnDb('2.0.0'));
 });
-

@@ -12,7 +12,8 @@ import {
 	getDb,
 	getClient,
 	dropDatabase,
-	ErrorStream
+	ErrorReadableStream,
+	ErrorWritableStream
 } from './utils/testutils';
 import {GridFsStorage} from '../src';
 import {ErrorHandlingContext} from './types/error-handling-context';
@@ -212,9 +213,41 @@ test('error event is emitted when there is an error in the readable stream using
 	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 
-	const stream = new ErrorStream();
+	const stream = new ErrorReadableStream();
 
 	const storage = new GridFsStorage({db});
 
 	await t.throwsAsync(async () => storage.fromStream(stream, {} as any, {}));
+});
+
+test('error event is emitted when there is an error in the writable stream', async (t) => {
+	class StorageStub extends GridFsStorage {
+		createStream(options): any {
+			return new ErrorWritableStream();
+		}
+	}
+
+	const {url, options} = storageOptions();
+	t.context.url = url;
+	const _db = await MongoClient.connect(url, options);
+	const db = getDb(_db, url);
+	let error;
+	const storage = new StorageStub({db});
+	const errorSpy = spy();
+	const upload = multer({storage});
+	const app = express();
+
+	storage.on('streamError', errorSpy);
+	app.post(
+		'/url',
+		upload.single('photo'),
+		(error_, request_, response, next) => {
+			error = error_;
+			next();
+		}
+	);
+
+	await request(app).post('/url').attach('photo', files[0]);
+
+	t.is(errorSpy.callCount, 1);
 });
