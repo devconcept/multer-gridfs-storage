@@ -1,3 +1,11 @@
+# 5.0.0
+
+  * Feature: Module rewritten in Typescript. Separate definition files are no longer required.
+  * Fixed: If using the `fromStream` method the readable source emits an error the promise is rejected. #205
+  * Fixed: Attached events to `MongoClient` or `Db` object depending on the installed mongo version.
+  * Fixed: Replaced mongoose reference with mongoose like object to avoid version conflicts.
+  * Update: Updated dependencies.
+
 # 4.2.0
 
   * Feature: Added the `fromFile` and `fromStream` public methods
