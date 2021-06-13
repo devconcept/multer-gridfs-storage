@@ -16,7 +16,7 @@
 - Support for existing and promise based database connections.
 - Storage operation buffering for incoming files while the connection is opening.
 - Use it as a multer plugin or inside an express middleware function.
-- Typescript support.
+- Builtin Typescript support.
 
 ## 🚀 Installation
 
@@ -561,8 +561,8 @@ $ npm run coverage
 
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
 
-[travis-url]: https://travis-ci.org/devconcept/multer-gridfs-storage
-[travis-image]: https://travis-ci.org/devconcept/multer-gridfs-storage.svg?branch=master "Build status"
+[travis-url]: https://travis-ci.com/devconcept/multer-gridfs-storage
+[travis-image]: https://travis-ci.com/devconcept/multer-gridfs-storage.svg?branch=master "Build status"
 [coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
 [version-image]:https://img.shields.io/npm/v/multer-gridfs-storage.svg "Npm version"
