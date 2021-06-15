@@ -1,6 +1,6 @@
 {
 	"name": "multer-gridfs-storage",
-	"version": "4.2.0",
+	"version": "5.0.0",
 	"description": "Multer storage engine for GridFS",
 	"main": "lib/index.js",
 	"scripts": {
