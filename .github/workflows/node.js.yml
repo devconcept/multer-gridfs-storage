@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         node-version: [ 12.x, 14.x, 16.x ]
+        mongodb-version: ['4.4']
 
     steps:
       - uses: actions/checkout@v2
@@ -20,6 +21,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.6.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
       - run: npm install multer
       - run: npm ci
       - run: npm run build --if-present
