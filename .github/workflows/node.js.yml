@@ -2,9 +2,9 @@ name: build
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ '**' ]
   pull_request:
-    branches: [ develop ]
+    branches: [ '**' ]
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         node-version: [ 12.x, 14.x, 16.x ]
-        mongodb-version: ['4.4']
+        mongodb-version: [ '4.4' ]
 
     steps:
       - uses: actions/checkout@v2
@@ -25,7 +25,7 @@ jobs:
         uses: supercharge/mongodb-github-action@1.6.0
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
-      - run: npm install multer --no-save
       - run: npm ci
+      - run: npm install multer --no-save
       - run: npm run build --if-present
       - run: npm test
