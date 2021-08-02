@@ -561,7 +561,7 @@ $ npm run coverage
 
 [MIT](https://github.com/devconcept/multer-gridfs-storage/blob/master/LICENSE)
 
-[github-url]: https://github.com/devconcept/multer-gridfs-storage
+[github-url]: https://github.com/devconcept/multer-gridfs-storage/actions
 [github-image]: https://github.com/devconcept/multer-gridfs-storage/actions/workflows/node.js.yml/badge.svg "Build status"
 [coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
 [coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
