@@ -12,7 +12,7 @@ import {
 	GridFSBucketWriteStream,
 	MongoClient,
 	MongoClientOptions,
-	ObjectID
+	ObjectId
 } from 'mongodb';
 import isPromise from 'is-promise';
 import isGenerator from 'is-generator';
