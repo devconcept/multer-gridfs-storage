@@ -31,6 +31,7 @@ import {
 	UrlStorageOptions,
 	DbStorageOptions
 } from './types';
+import hasOwn from "has-own-prop";
 
 const isGeneratorFn = isGenerator.fn;
 
@@ -455,7 +456,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		if (this.client) {
-			this.connected = this.client.isConnected
+			this.connected = hasOwn(this.client, 'isConnected')
+				// @ts-ignore
 				? this.client.isConnected()
 				: true;
 			return;
