@@ -2,7 +2,7 @@ import anyTest, {TestInterface} from 'ava';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
-import {ObjectID} from 'mongodb';
+import {ObjectId} from 'mongodb';
 
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
@@ -15,7 +15,7 @@ test.before(async (t) => {
 	const app = express();
 	let counter = 0;
 	t.context.filenamePrefix = 'file';
-	t.context.ids = [new ObjectID(), new ObjectID()];
+	t.context.ids = [new ObjectId(), new ObjectId()];
 	t.context.metadatas = ['foo', 'bar'];
 	t.context.sizes = [102400, 204800];
 	t.context.bucketNames = ['plants', 'animals'];
