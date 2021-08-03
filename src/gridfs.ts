@@ -143,7 +143,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		// If an error occurs the emitted file information will contain the id
 		const hasId = fileSettings.id;
 		if (!hasId) {
-			previous.id = new ObjectID();
+			previous.id = new ObjectId();
 		}
 
 		return {...previous, ...defaults, ...extra, ...fileSettings};
