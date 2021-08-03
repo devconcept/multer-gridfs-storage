@@ -370,7 +370,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			// Invoking the callback with an error will cause file removal and aborting routines to be called twice
 			writeStream.on('error', emitError);
 			writeStream.on('finish', emitFile);
-			pump(readStream, writeStream);
+			// @ts-ignore
+			pump([readStream, writeStream]);
 		});
 	}
 
