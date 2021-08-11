@@ -1,3 +1,7 @@
+# 5.0.1
+
+  * Fixed: Updated ObjectID reference to ObjectId to allow compatibility with mongodb4.
+
 # 5.0.0
 
   * Feature: Module rewritten in Typescript. Separate definition files are no longer required.
