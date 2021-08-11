@@ -10,8 +10,7 @@
 		"lint": "xo --fix",
 		"coverage": "npm run compile && nyc --reporter=lcov ava --timeout=30s",
 		"docs": "jsdoc -c ./conf.json --readme ./README.md",
-		"coveralls": "npm run coverage | coveralls",
-		"preversion": "npm run lint"
+		"coveralls": "npm run coverage | coveralls"
 	},
 	"xo": {
 		"prettier": true,
