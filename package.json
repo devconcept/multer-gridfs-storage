@@ -55,7 +55,7 @@
 		"ava": "^3.1.0",
 		"coveralls": "^3.0.9",
 		"crypto-random-string": "^3.1.0",
-		"del-cli": "^3.0.1",
+		"del-cli": "^4.0.1",
 		"delay": "^5.0.0",
 		"eslint": "^7.2.0",
 		"express": "^4.17.1",
