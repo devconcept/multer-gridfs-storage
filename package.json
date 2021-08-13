@@ -50,7 +50,7 @@
 		"multer": "^1.4.2"
 	},
 	"devDependencies": {
-		"@ava/typescript": "^1.1.1",
+		"@ava/typescript": "^2.0.0",
 		"@types/sinon": "^10.0.2",
 		"ava": "^3.1.0",
 		"coveralls": "^3.0.9",
