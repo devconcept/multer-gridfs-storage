@@ -9,7 +9,8 @@ const config = {
 	typescript: {
 		rewritePaths: {
 			'src/': 'lib/'
-		}
+		},
+		compile: false
 	}
 };
 
