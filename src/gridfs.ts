@@ -465,7 +465,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		// @ts-expect-error
-		this.connected = this.db.topology.isConnected();
+		this.connected = this.db?.topology?.isConnected() || true;
 	}
 
 	/**
