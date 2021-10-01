@@ -1,3 +1,8 @@
+# 5.0.2
+
+* Fixed: Solved bug when not using the client parameter and the topology is not present in the db object #377
+* Update: Updated dependencies
+
 # 5.0.1
 
   * Fixed: Updated ObjectID reference to ObjectId to allow compatibility with mongodb4.
