@@ -3,9 +3,9 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 
+import {GridFsStorage} from '../src';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {IncompleteGeneratorsContext} from './types/incomplete-generators-context';
 
 const test = anyTest as TestInterface<IncompleteGeneratorsContext>;
@@ -16,7 +16,7 @@ test.before(async (t) => {
 		...storageOptions(),
 		*file() {
 			yield {filename: 'name'};
-		}
+		},
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
@@ -27,7 +27,7 @@ test.before(async (t) => {
 		(error, request_, response, _next) => {
 			t.context.error = error;
 			response.end();
-		}
+		},
 	);
 
 	await storage.ready();

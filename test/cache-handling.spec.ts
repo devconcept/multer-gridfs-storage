@@ -53,7 +53,7 @@ test.serial(
 		t.is(call.args[0].db, storage1.db);
 		t.is(mongoSpy.callCount, 1);
 		t.is(cache.connections(), 1);
-	}
+	},
 );
 
 test.serial(
@@ -74,7 +74,7 @@ test.serial(
 		t.is(call.args[0].db, storage1.db);
 		t.is(mongoSpy.callCount, 1);
 		t.is(cache.connections(), 1);
-	}
+	},
 );
 
 test.serial(
@@ -95,7 +95,7 @@ test.serial(
 		t.is(call.args[0].db, storage1.db);
 		t.is(mongoSpy.callCount, 1);
 		t.is(cache.connections(), 1);
-	}
+	},
 );
 
 test.serial('creates different connections for different caches', async (t) => {

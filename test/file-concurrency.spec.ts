@@ -5,6 +5,7 @@ import multer from 'multer';
 import {MongoClient} from 'mongodb';
 import delay from 'delay';
 
+import {GridFsStorage} from '../src';
 import {storageOptions} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
 import {
@@ -12,9 +13,8 @@ import {
 	cleanStorage,
 	getDb,
 	getClient,
-	dropDatabase
+	dropDatabase,
 } from './utils/testutils';
-import {GridFsStorage} from '../src';
 import {FileConcurrencyContext} from './types/file-concurrency-context';
 
 const test = anyTest as TestInterface<FileConcurrencyContext>;
@@ -23,17 +23,18 @@ function prepareTest(t, error?) {
 	const {url, options} = storageOptions();
 	t.context.url = url;
 	const app = express();
-	const promised = error /* eslint-disable-next-line promise/prefer-await-to-then */
-		? delay(500).then(async () => Promise.reject(error))
-		: delay(500)
-				/* eslint-disable-next-line promise/prefer-await-to-then */
-				.then(async () => MongoClient.connect(url, options))
-				/* eslint-disable-next-line promise/prefer-await-to-then */
-				.then((db) => {
-					t.context.db = getDb(db, url);
-					t.context.client = getClient(db);
-					return t.context.db;
-				});
+	const promised =
+		error /* eslint-disable-next-line promise/prefer-await-to-then */
+			? delay(500).then(async () => Promise.reject(error))
+			: delay(500)
+					/* eslint-disable-next-line promise/prefer-await-to-then */
+					.then(async () => MongoClient.connect(url, options))
+					/* eslint-disable-next-line promise/prefer-await-to-then */
+					.then((db) => {
+						t.context.db = getDb(db, url);
+						t.context.client = getClient(db);
+						return t.context.db;
+					});
 
 	const storage = new GridFsStorage({db: promised});
 	const upload = multer({storage});
@@ -57,7 +58,7 @@ test('buffers incoming files while the connection is opening', async (t) => {
 		result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});
@@ -83,7 +84,7 @@ test('rejects incoming files if the connection does not open', async (t) => {
 		(error_, request_, response, _next) => {
 			result = error_;
 			response.end();
-		}
+		},
 	);
 	await request(app)
 		.post('/url')

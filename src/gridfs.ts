@@ -12,7 +12,7 @@ import {
 	GridFSBucketWriteStream,
 	MongoClient,
 	MongoClientOptions,
-	ObjectId
+	ObjectId,
 } from 'mongodb';
 import isPromise from 'is-promise';
 import isGenerator from 'is-generator';
@@ -29,7 +29,7 @@ import {
 	ConnectionResult,
 	NodeCallback,
 	UrlStorageOptions,
-	DbStorageOptions
+	DbStorageOptions,
 } from './types';
 
 const isGeneratorFn = isGenerator.fn;
@@ -40,9 +40,9 @@ const isGeneratorFn = isGenerator.fn;
  **/
 const defaults = {
 	metadata: null,
-	chunkSize: 261120,
+	chunkSize: 261_120,
 	bucketName: 'fs',
-	aliases: null
+	aliases: null,
 };
 
 /**
@@ -85,7 +85,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 				!(configuration as DbStorageOptions).db)
 		) {
 			throw new Error(
-				'Error creating storage engine. At least one of url or db option must be provided.'
+				'Error creating storage engine. At least one of url or db option must be provided.',
 			);
 		}
 
@@ -105,7 +105,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			this.cacheIndex = GridFsStorage.cache.initialize({
 				url,
 				cacheName,
-				init: this._options
+				init: this._options,
 			});
 		}
 
@@ -156,7 +156,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 **/
 	private static async _handleResult(
 		result: any,
-		isGen: boolean
+		isGen: boolean,
 	): Promise<any> {
 		let value = result;
 
@@ -264,7 +264,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	async fromStream(
 		readStream: NodeJS.ReadableStream,
 		request: Request,
-		file: any
+		file: any,
 	): Promise<GridFile> {
 		return new Promise<GridFile>((resolve, reject) => {
 			readStream.on('error', reject);
@@ -277,7 +277,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 	protected async _openConnection(
 		url: string,
-		options: MongoClientOptions
+		options: MongoClientOptions,
 	): Promise<ConnectionResult> {
 		let client = null;
 		let db;
@@ -304,7 +304,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			contentType: options.contentType,
 			metadata: options.metadata,
 			aliases: options.aliases,
-			disableMD5: options.disableMD5
+			disableMD5: options.disableMD5,
 		};
 		const gfs = new GridFSBucket(this.db, {bucketName: options.bucketName});
 		return gfs.openUploadStream(options.filename, settings);
@@ -313,7 +313,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	private async fromMulterStream(
 		readStream: NodeJS.ReadableStream,
 		request: Request,
-		file: any
+		file: any,
 	): Promise<GridFile> {
 		if (this.connecting) {
 			await this.ready();
@@ -331,7 +331,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			settings = {};
 		} else if (setType === 'string' || setType === 'number') {
 			settings = {
-				filename: fileSettings.toString()
+				filename: fileSettings.toString(),
 			};
 		} else {
 			settings = fileSettings;
@@ -340,7 +340,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		const contentType = file ? file.mimetype : undefined;
 		const streamOptions = await GridFsStorage._mergeProps(
 			{contentType},
-			settings
+			settings,
 		);
 		return new Promise((resolve, reject) => {
 			const emitError = (streamError) => {
@@ -358,7 +358,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 					size: f.length,
 					md5: f.md5,
 					uploadDate: f.uploadDate,
-					contentType: f.contentType
+					contentType: f.contentType,
 				};
 				this.emit('file', storedFile);
 				resolve(storedFile);
@@ -596,5 +596,5 @@ export const GridFsStorageCtr = new Proxy(GridFsStorage, {
 	apply(target, thisArg, argumentsList) {
 		// @ts-expect-error
 		return new target(...argumentsList); // eslint-disable-line new-cap
-	}
+	},
 });

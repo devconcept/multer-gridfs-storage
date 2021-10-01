@@ -1,5 +1,5 @@
-import { CacheIndex, CacheValue } from './types';
 import { Db, MongoClient } from 'mongodb';
+import { CacheIndex, CacheValue } from './types';
 /**
  * Plugin cached connection handling class.
  * @version 3.1.0

@@ -3,9 +3,9 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 
+import {GridFsStorage} from '../src';
 import {files, cleanStorage, mongoVersion} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {Md5HashContext} from './types/md5-hash-context';
 
 const test = anyTest as TestInterface<Md5HashContext>;
@@ -14,7 +14,7 @@ test.before(async (t) => {
 	const app = express();
 	const storage = new GridFsStorage({
 		...storageOptions(),
-		file: () => ({disableMD5: true})
+		file: () => ({disableMD5: true}),
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
@@ -23,7 +23,7 @@ test.before(async (t) => {
 		t.context.result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});

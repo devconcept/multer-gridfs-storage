@@ -1,3 +1,4 @@
+import {Readable, Writable} from 'stream';
 import path from 'path';
 import {parse} from 'mongodb-uri';
 import {MongoClient} from 'mongodb';
@@ -6,17 +7,16 @@ import delay from 'delay';
 
 import {version} from 'mongodb/package.json';
 import {connection, storageOptions} from './settings';
-import {Readable, Writable} from 'stream';
 
 export const mongoVersion = version.split('.').map((v) => Number(v));
 
 export const files = ['sample1.jpg', 'sample2.jpg'].map((file) =>
-	path.join(__dirname, '/../attachments/', file)
+	path.join(__dirname, '/../attachments/', file),
 );
 
 export async function cleanStorage(
 	storage: any,
-	{client = null, db = null} = {}
+	{client = null, db = null} = {},
 ) {
 	if (storage) {
 		storage.removeAllListeners();
@@ -95,7 +95,7 @@ export function defer() {
 	const d = {
 		promise: null,
 		resolve: null,
-		reject: null
+		reject: null,
 	};
 	d.promise = new Promise((resolve, reject) => {
 		d.resolve = resolve;

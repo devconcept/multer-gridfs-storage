@@ -54,7 +54,7 @@ test.serial(
 		t.is(conSpy.callCount, 1);
 		t.is(rejectSpy.callCount, 0);
 		t.is(cache.connections(), 1);
-	}
+	},
 );
 
 test.serial.afterEach.always(async (t) => {

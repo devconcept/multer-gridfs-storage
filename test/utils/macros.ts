@@ -12,7 +12,7 @@ export async function fileMatchMd5Hash(t, files, count = 2) {
 		files.map(async (f, idx) => {
 			const computed = await md5File(testFiles[idx]);
 			return {md5: f.md5, computed};
-		})
+		}),
 	);
 	t.true(md5.every((f: any) => f.md5 === f.computed));
 }

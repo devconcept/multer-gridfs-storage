@@ -4,9 +4,9 @@ import request from 'supertest';
 import multer from 'multer';
 import {ObjectId} from 'mongodb';
 
+import {GridFsStorage} from '../src';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {FileFunctionContext} from './types/file-function-context';
 
 const test = anyTest as TestInterface<FileFunctionContext>;
@@ -17,7 +17,7 @@ test.before(async (t) => {
 	t.context.filenamePrefix = 'file';
 	t.context.ids = [new ObjectId(), new ObjectId()];
 	t.context.metadatas = ['foo', 'bar'];
-	t.context.sizes = [102400, 204800];
+	t.context.sizes = [102_400, 204_800];
 	t.context.bucketNames = ['plants', 'animals'];
 	t.context.contentTypes = ['text/plain', 'image/jpeg'];
 	const storage = new GridFsStorage({
@@ -30,9 +30,9 @@ test.before(async (t) => {
 				id: t.context.ids[counter - 1],
 				chunkSize: t.context.sizes[counter - 1],
 				bucketName: t.context.bucketNames[counter - 1],
-				contentType: t.context.contentTypes[counter - 1]
+				contentType: t.context.contentTypes[counter - 1],
 			};
-		}
+		},
 	});
 
 	t.context.storage = storage;
@@ -42,7 +42,7 @@ test.before(async (t) => {
 		t.context.result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});

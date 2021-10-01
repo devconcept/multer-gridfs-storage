@@ -1,5 +1,5 @@
-import anyTest, {TestInterface} from 'ava';
 import crypto from 'crypto';
+import anyTest, {TestInterface} from 'ava';
 import multer from 'multer';
 import request from 'supertest';
 import express from 'express';
@@ -7,9 +7,9 @@ import {MongoClient} from 'mongodb';
 import delay from 'delay';
 import {spy, stub, restore} from 'sinon';
 
+import {GridFsStorage} from '../src';
 import {storageOptions} from './utils/settings';
 import {files, cleanStorage, fakeConnectCb} from './utils/testutils';
-import {GridFsStorage} from '../src';
 import {EdgeCasesContext} from './types/edge-cases-context';
 
 const test = anyTest as TestInterface<EdgeCasesContext>;
@@ -36,7 +36,8 @@ test.serial('errors generating random bytes', async (t) => {
 	const storage = new GridFsStorage(storageOptions());
 	const randomBytesSpy = stub(crypto, 'randomBytes').callsFake((size, cb) => {
 		if (cb) {
-			return cb(generatedError);
+			cb(generatedError, null);
+			return;
 		}
 
 		throw generatedError;
@@ -50,7 +51,7 @@ test.serial('errors generating random bytes', async (t) => {
 		(error_, request_, response, next) => {
 			error = error_;
 			next();
-		}
+		},
 	);
 
 	await storage.ready();

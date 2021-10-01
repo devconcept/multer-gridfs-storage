@@ -206,7 +206,7 @@ export function compareUris(uri1, uri2): boolean {
 	for (const hostObject of hosts1) {
 		if (
 			!hosts2.some(
-				(h) => h.host === hostObject.host && h.port === hostObject.port
+				(h) => h.host === hostObject.host && h.port === hostObject.port,
 			)
 		) {
 			return false;

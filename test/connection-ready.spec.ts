@@ -2,9 +2,9 @@ import anyTest, {TestInterface} from 'ava';
 import {MongoClient} from 'mongodb';
 import {spy, restore, stub} from 'sinon';
 
+import {GridFsStorage} from '../src';
 import {cleanStorage, fakeConnectCb} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {ConnectionReadyContext} from './types/connection-ready-context';
 
 const test = anyTest as TestInterface<ConnectionReadyContext>;
@@ -45,7 +45,7 @@ test.serial(
 		});
 		t.is(error, rejectSpy.getCall(0).args[0]);
 		t.is(error, t.context.error);
-	}
+	},
 );
 
 test.serial.cb(
@@ -63,7 +63,7 @@ test.serial.cb(
 				t.end();
 			});
 		});
-	}
+	},
 );
 
 test('returns a promise that resolves when the connection is created', async (t) => {
@@ -104,5 +104,5 @@ test.cb(
 				})
 				.catch(t.end);
 		});
-	}
+	},
 );

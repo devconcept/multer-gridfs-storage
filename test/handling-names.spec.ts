@@ -3,9 +3,9 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 
+import {GridFsStorage} from '../src';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {HandlingNamesContext} from './types/handling-names-context';
 
 const test = anyTest as TestInterface<HandlingNamesContext>;
@@ -25,7 +25,7 @@ test('handling empty name values', async (t) => {
 		file: () => {
 			counter++;
 			return values[counter];
-		}
+		},
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
@@ -34,7 +34,7 @@ test('handling empty name values', async (t) => {
 		result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});
@@ -49,7 +49,7 @@ test('handling empty name values', async (t) => {
 	for (const file of result.files) t.regex(file.filename, /^[\da-f]{32}$/);
 	for (const file of result.files) t.is(file.metadata, null);
 	for (const file of result.files) t.is(file.bucketName, 'fs');
-	for (const file of result.files) t.is(file.chunkSize, 261120);
+	for (const file of result.files) t.is(file.chunkSize, 261_120);
 });
 
 test('handling primitive values as names', async (t) => {
@@ -63,7 +63,7 @@ test('handling primitive values as names', async (t) => {
 		file: () => {
 			counter++;
 			return values[counter];
-		}
+		},
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
@@ -72,7 +72,7 @@ test('handling primitive values as names', async (t) => {
 		result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});
@@ -87,5 +87,5 @@ test('handling primitive values as names', async (t) => {
 		t.is(f.filename, values[idx].toString());
 	for (const file of result.files) t.is(file.metadata, null);
 	for (const file of result.files) t.is(file.bucketName, 'fs');
-	for (const file of result.files) t.is(file.chunkSize, 261120);
+	for (const file of result.files) t.is(file.chunkSize, 261_120);
 });

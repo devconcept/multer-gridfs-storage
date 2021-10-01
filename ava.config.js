@@ -8,10 +8,10 @@ const config = {
 	failFast: true,
 	typescript: {
 		rewritePaths: {
-			'src/': 'lib/'
+			'src/': 'lib/',
 		},
-		compile: false
-	}
+		compile: false,
+	},
 };
 
 export default config;

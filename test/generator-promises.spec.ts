@@ -3,9 +3,9 @@ import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 
+import {GridFsStorage} from '../src';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {GeneratorPromisesContext} from './types/generator-promises-context';
 
 const test = anyTest as TestInterface<GeneratorPromisesContext>;
@@ -19,11 +19,11 @@ async function successfulPromiseSetup(t) {
 			let counter = 0;
 			for (;;) {
 				yield Promise.resolve({
-					filename: t.context.filePrefix + (counter + 1).toString()
+					filename: t.context.filePrefix + (counter + 1).toString(),
 				});
 				counter++;
 			}
-		}
+		},
 	});
 	t.context.storage = storage;
 
@@ -33,7 +33,7 @@ async function successfulPromiseSetup(t) {
 		t.context.result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});
@@ -65,7 +65,7 @@ async function failedPromiseSetup(t) {
 		...storageOptions(),
 		*file() {
 			yield Promise.reject(t.context.rejectedError);
-		}
+		},
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
@@ -76,7 +76,7 @@ async function failedPromiseSetup(t) {
 		(error, request_, response, next) => {
 			t.context.error = error;
 			next();
-		}
+		},
 	);
 
 	await storage.ready();

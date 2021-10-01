@@ -1,15 +1,15 @@
+import fs from 'fs';
 import anyTest, {TestInterface} from 'ava';
 import hasOwn from 'has-own-prop';
-import fs from 'fs';
 import multer from 'multer';
 import express from 'express';
 import request from 'supertest';
 import path from 'path';
 import util from 'util';
 
+import {GridFsStorage} from '../src';
 import {cleanStorage, defer, files} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {UtilityMethodsContext} from './types/utility-methods-context';
 
 const test = anyTest as TestInterface<UtilityMethodsContext>;
@@ -34,7 +34,7 @@ test('generate 16 byte hex string', async (t) => {
 test('upload a file using the fromFile method', async (t) => {
 	t.context.storage = new GridFsStorage({
 		...storageOptions(),
-		file: () => 'test.jpg'
+		file: () => 'test.jpg',
 	});
 	const {storage} = t.context;
 	await storage.ready();
@@ -49,7 +49,7 @@ test('upload a file using the fromFile method', async (t) => {
 test('upload a file using the fromStream method', async (t) => {
 	t.context.storage = new GridFsStorage({
 		...storageOptions(),
-		file: () => 'test.jpg'
+		file: () => 'test.jpg',
 	});
 	const {storage} = t.context;
 	await storage.ready();
@@ -66,7 +66,7 @@ test('upload a file using the fromStream method after another upload', async (t)
 		destination: path.join(__dirname, 'attachments'),
 		filename: (request_, file, cb) => {
 			cb(null, 'test_disk.jpg');
-		}
+		},
 	});
 	const upload = multer({storage: diskStorage});
 	const app = express();
@@ -74,7 +74,7 @@ test('upload a file using the fromStream method after another upload', async (t)
 	app.post('/url', upload.single('photos'), (request, response) => {
 		const storage = new GridFsStorage({
 			...storageOptions(),
-			file: () => 'test.jpg'
+			file: () => 'test.jpg',
 		});
 		t.context.storage = storage;
 		const {file} = request;

@@ -7,7 +7,7 @@ import {
 	compareUris,
 	getDatabase,
 	hasKeys,
-	shouldListenOnDb
+	shouldListenOnDb,
 } from '../src/utils';
 import {UtilityFunctionsContext} from './types/utility-functions-context';
 
@@ -81,7 +81,7 @@ test('compare includes arrays when comparing', (t) => {
 test('compare includes buffers when comparing', (t) => {
 	t.true(compare({a: {b: Buffer.from([1, 2])}}, {a: {b: Buffer.from([1, 2])}}));
 	t.false(
-		compare({a: {b: Buffer.from([1, 2])}}, {a: {b: Buffer.from([2, 2])}})
+		compare({a: {b: Buffer.from([1, 2])}}, {a: {b: Buffer.from([2, 2])}}),
 	);
 });
 
@@ -89,14 +89,14 @@ test('compare includes buffers inside arrays when comparing', (t) => {
 	t.true(
 		compare(
 			{a: {b: ['1', Buffer.from([1, 2])]}},
-			{a: {b: ['1', Buffer.from([1, 2])]}}
-		)
+			{a: {b: ['1', Buffer.from([1, 2])]}},
+		),
 	);
 	t.false(
 		compare(
 			{a: {b: ['1', Buffer.from([1, 2])]}},
-			{a: {b: ['1', Buffer.from([2, 2])]}}
-		)
+			{a: {b: ['1', Buffer.from([2, 2])]}},
+		),
 	);
 });
 
@@ -139,8 +139,8 @@ test('returns true for urls that contain the same hosts in different order', (t)
 	t.true(
 		compareUris(
 			parse('mongodb://host1:1234,host2:5678/database'),
-			parse('mongodb://host2:5678,host1:1234/database')
-		)
+			parse('mongodb://host2:5678,host1:1234/database'),
+		),
 	);
 });
 
@@ -148,8 +148,8 @@ test('returns false for urls with different parameters', (t) => {
 	t.false(
 		compareUris(
 			parse('mongodb://host1:1234,host2:5678/database?authSource=admin'),
-			parse('mongodb://host2:5678,host1:1234/database')
-		)
+			parse('mongodb://host2:5678,host1:1234/database'),
+		),
 	);
 });
 
@@ -157,12 +157,12 @@ test('returns true for urls with the same parameters in different order', (t) =>
 	t.true(
 		compareUris(
 			parse(
-				'mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000'
+				'mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000',
 			),
 			parse(
-				'mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin'
-			)
-		)
+				'mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin',
+			),
+		),
 	);
 });
 

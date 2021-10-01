@@ -5,17 +5,17 @@ import multer from 'multer';
 import mongoose from 'mongoose';
 import {MongoClient} from 'mongodb';
 import delay from 'delay';
+import {GridFsStorage} from '../src';
 import {
 	files,
 	cleanStorage,
 	getDb,
 	getClient,
 	dropDatabase,
-	mongoVersion
+	mongoVersion,
 } from './utils/testutils';
 import {storageOptions} from './utils/settings';
 import {fileMatchMd5Hash} from './utils/macros';
-import {GridFsStorage} from '../src';
 import {StorageConstructorContext} from './types/storage-constructor-context';
 
 const test = anyTest as TestInterface<StorageConstructorContext>;
@@ -45,7 +45,7 @@ test('create storage from url parameter', async (t) => {
 		result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});
@@ -73,7 +73,7 @@ test('create storage from db parameter', async (t) => {
 		result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});
@@ -99,7 +99,7 @@ test('connects to a mongoose instance', async (t) => {
 		result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});
@@ -130,7 +130,7 @@ test('creates an instance without the new keyword', async (t) => {
 		result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});
@@ -159,7 +159,7 @@ if (major >= 3) {
 			result = {
 				headers: request_.headers,
 				files: request_.files,
-				body: request_.body
+				body: request_.body,
 			};
 			response.end();
 		});
@@ -189,7 +189,7 @@ if (major >= 3) {
 			result = {
 				headers: request_.headers,
 				files: request_.files,
-				body: request_.body
+				body: request_.body,
 			};
 			response.end();
 		});

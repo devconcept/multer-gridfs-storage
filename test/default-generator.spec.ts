@@ -5,9 +5,9 @@ import multer from 'multer';
 import {ObjectId} from 'mongodb';
 import hasOwn from 'has-own-prop';
 
+import {GridFsStorage} from '../src';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {DefaultGeneratorContext} from './types/default-generator-context';
 
 const test = anyTest as TestInterface<DefaultGeneratorContext>;
@@ -17,7 +17,7 @@ test.before(async (t) => {
 	t.context.filePrefix = 'file';
 	t.context.metadatas = ['foo', 'bar'];
 	t.context.ids = [new ObjectId(), new ObjectId()];
-	t.context.sizes = [102400, 204800];
+	t.context.sizes = [102_400, 204_800];
 	t.context.collections = ['plants', 'animals'];
 	t.context.contentTypes = ['text/plain', 'image/jpeg'];
 	const storage = new GridFsStorage({
@@ -32,12 +32,12 @@ test.before(async (t) => {
 					id: t.context.ids[counter],
 					chunkSize: t.context.sizes[counter],
 					bucketName: t.context.collections[counter],
-					contentType: t.context.contentTypes[counter]
+					contentType: t.context.contentTypes[counter],
 				};
 				t.context.params.push({req: response[0], file: response[1]});
 				counter++;
 			}
-		}
+		},
 	});
 	t.context.storage = storage;
 
@@ -48,7 +48,7 @@ test.before(async (t) => {
 		t.context.result = {
 			headers: request_.headers,
 			files: request_.files,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});

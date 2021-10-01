@@ -6,9 +6,9 @@ import multer from 'multer';
 import pify from 'pify';
 import hasOwn from 'has-own-prop';
 
+import {GridFsStorage} from '../src';
 import {files, cleanStorage} from './utils/testutils';
 import {storageOptions} from './utils/settings';
-import {GridFsStorage} from '../src';
 import {UploadedFileContext} from './types/uploaded-file-context';
 
 const test = anyTest as TestInterface<UploadedFileContext>;
@@ -24,7 +24,7 @@ test.before(async (t) => {
 		t.context.result = {
 			headers: request_.headers,
 			file: request_.file,
-			body: request_.body
+			body: request_.body,
 		};
 		response.end();
 	});

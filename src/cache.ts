@@ -4,9 +4,9 @@
  */
 import {EventEmitter} from 'events';
 import mongoUri from 'mongodb-uri';
+import {Db, MongoClient} from 'mongodb';
 import {compare, compareUris} from './utils';
 import {CacheIndex, CacheValue} from './types';
-import {Db, MongoClient} from 'mongodb';
 
 /**
  * Plugin cached connection handling class.
@@ -49,14 +49,14 @@ export class Cache {
 					client: null,
 					pending: true,
 					opening: false,
-					init
+					init,
 				});
 				this.store.get(name).set(url, store);
 
 				return {
 					url,
 					name,
-					index: 0
+					index: 0,
 				};
 			}
 
@@ -70,7 +70,7 @@ export class Cache {
 				return {
 					url,
 					name,
-					index
+					index,
 				};
 			}
 		}
@@ -80,13 +80,13 @@ export class Cache {
 			client: null,
 			pending: true,
 			opening: false,
-			init
+			init,
 		});
 
 		return {
 			url,
 			name,
-			index: cached.size - 1
+			index: cached.size - 1,
 		};
 	}
 
@@ -256,7 +256,7 @@ export class Cache {
 				this.emitter.emit(
 					'reject',
 					cacheIndex,
-					new Error('The cache entry was deleted')
+					new Error('The cache entry was deleted'),
 				);
 			}
 

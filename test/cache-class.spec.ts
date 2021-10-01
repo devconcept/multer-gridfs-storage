@@ -28,7 +28,7 @@ test('cache initializes with a url and a cache name and no connection options', 
 		client: null,
 		pending: true,
 		opening: false,
-		init: null
+		init: null,
 	});
 	t.is(cache.connections(), 1);
 });
@@ -45,7 +45,7 @@ test('cache is reused if the same url and option is used in the same cache', (t)
 		client: null,
 		pending: true,
 		opening: false,
-		init: null
+		init: null,
 	});
 	t.is(cache.connections(), 1);
 });
@@ -62,14 +62,14 @@ test('new cache is created if the same url and different options are used', (t) 
 		client: null,
 		pending: true,
 		opening: false,
-		init: null
+		init: null,
 	});
 	t.deepEqual(cache.store.get(cacheName).get(url).get(1), {
 		db: null,
 		client: null,
 		pending: true,
 		opening: false,
-		init: {db: 1}
+		init: {db: 1},
 	});
 	t.is(cache.connections(), 2);
 });
@@ -86,7 +86,7 @@ test('cache is reused if a similar url is used', (t) => {
 	cachesShouldBeEqual(
 		t,
 		'mongodb://host1:1234,host2:5678/database',
-		'mongodb://host2:5678,host1:1234/database'
+		'mongodb://host2:5678,host1:1234/database',
 	);
 });
 
@@ -94,7 +94,7 @@ test('new cache is created if an url with more hosts is used', (t) => {
 	cachesShouldBeDifferent(
 		t,
 		'mongodb://host1:1234/database',
-		'mongodb://host1:1234,host2:5678/database'
+		'mongodb://host1:1234,host2:5678/database',
 	);
 });
 
@@ -102,7 +102,7 @@ test('new cache is created if urls with different hosts are used', (t) => {
 	cachesShouldBeDifferent(
 		t,
 		'mongodb://host1:1234/database',
-		'mongodb://host2:5678/database'
+		'mongodb://host2:5678/database',
 	);
 });
 
@@ -133,7 +133,7 @@ function cachesShouldBeDifferent(t, firstUrl, secondUrl) {
 		client: null,
 		pending: true,
 		opening: false,
-		init: null
+		init: null,
 	});
 	t.is(cache.store.get(cacheName).get(firstUrl).get(1), undefined);
 	t.not(cache.store.get(cacheName).get(secondUrl), undefined);
@@ -142,7 +142,7 @@ function cachesShouldBeDifferent(t, firstUrl, secondUrl) {
 		client: null,
 		pending: true,
 		opening: false,
-		init: null
+		init: null,
 	});
 	t.is(cache.connections(), 2);
 }
@@ -159,7 +159,7 @@ function cachesShouldBeEqual(t, firstUrl, secondUrl) {
 		client: null,
 		pending: true,
 		opening: false,
-		init: null
+		init: null,
 	});
 	t.is(cache.store.get(cacheName).get(firstUrl).get(1), undefined);
 	if (firstUrl !== secondUrl) {
@@ -185,7 +185,7 @@ test('returns a cache by its index', (t) => {
 		client: null,
 		pending: true,
 		opening: false,
-		init: null
+		init: null,
 	});
 	t.is(cache.get({url, name: 'a', index: 1}), null);
 	t.is(cache.get({url, name: 'b', index: 0}), null);

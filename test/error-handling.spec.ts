@@ -5,6 +5,8 @@ import express from 'express';
 import {MongoClient} from 'mongodb';
 import {spy, restore} from 'sinon';
 
+import {GridFsStorage} from '../src';
+import {shouldListenOnDb} from '../src/utils';
 import {storageOptions} from './utils/settings';
 import {
 	files,
@@ -13,11 +15,9 @@ import {
 	getClient,
 	dropDatabase,
 	ErrorReadableStream,
-	ErrorWritableStream
+	ErrorWritableStream,
 } from './utils/testutils';
-import {GridFsStorage} from '../src';
 import {ErrorHandlingContext} from './types/error-handling-context';
-import {shouldListenOnDb} from '../src/utils';
 
 const test = anyTest as TestInterface<ErrorHandlingContext>;
 
@@ -35,11 +35,11 @@ test('invalid configurations', (t) => {
 
 	t.throws(errorFn, {
 		message:
-			'Error creating storage engine. At least one of url or db option must be provided.'
+			'Error creating storage engine. At least one of url or db option must be provided.',
 	});
 	t.throws(errorFn2, {
 		message:
-			'Error creating storage engine. At least one of url or db option must be provided.'
+			'Error creating storage engine. At least one of url or db option must be provided.',
 	});
 });
 
@@ -48,7 +48,7 @@ test('invalid types as file configurations', async (t) => {
 	const app = express();
 	const storage = new GridFsStorage({
 		...storageOptions(),
-		file: () => true
+		file: () => true,
 	});
 	t.context.storage = storage;
 	const upload = multer({storage});
@@ -58,7 +58,7 @@ test('invalid types as file configurations', async (t) => {
 		(error_, request_, response, next) => {
 			error = error_;
 			next();
-		}
+		},
 	);
 
 	await storage.ready();
@@ -75,7 +75,7 @@ test('fails gracefully if an error is thrown inside the configuration function',
 		...storageOptions(),
 		file: () => {
 			throw new Error('Error thrown');
-		}
+		},
 	});
 
 	const upload = multer({storage});
@@ -86,7 +86,7 @@ test('fails gracefully if an error is thrown inside the configuration function',
 		(error_, request_, response, next) => {
 			error = error_;
 			next();
-		}
+		},
 	);
 
 	await storage.ready();
@@ -104,7 +104,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 		/* eslint-disable-next-line require-yield */
 		*file() {
 			throw new Error('File error');
-		}
+		},
 	});
 
 	const upload = multer({storage});
@@ -115,7 +115,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 		(error_, request_, response, next) => {
 			error = error_;
 			next();
-		}
+		},
 	);
 
 	await storage.ready();
@@ -145,7 +145,7 @@ test('connection promise fails to connect', async (t) => {
 		upload.single('photo'),
 		(error_, request_, response, _next) => {
 			response.end();
-		}
+		},
 	);
 
 	storage.on('connectionFailed', errorSpy);
@@ -176,7 +176,7 @@ test('connection is not opened', async (t) => {
 		(error_, request_, response, next) => {
 			error = error_;
 			next();
-		}
+		},
 	);
 
 	await request(app)
@@ -244,7 +244,7 @@ test('error event is emitted when there is an error in the writable stream', asy
 		(error_, request_, response, next) => {
 			error = error_;
 			next();
-		}
+		},
 	);
 
 	await request(app).post('/url').attach('photo', files[0]);
