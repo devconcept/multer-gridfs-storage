@@ -4,8 +4,8 @@
  * @module multer-gridfs-storage/gridfs
  *
  */
-import crypto from 'crypto';
-import {EventEmitter} from 'events';
+import crypto from 'node:crypto';
+import {EventEmitter} from 'node:events';
 import {
 	Db,
 	GridFSBucket,
@@ -32,13 +32,13 @@ import {
 	DbStorageOptions,
 } from './types';
 
-const isGeneratorFn = isGenerator.fn;
+const isGeneratorFn: any = isGenerator.fn;
 
 /**
  * Default file information
  * @const defaults
  **/
-const defaults = {
+const defaults: any = {
 	metadata: null,
 	chunkSize: 261_120,
 	bucketName: 'fs',
@@ -92,7 +92,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		this.setMaxListeners(0);
 		this.configuration = configuration;
 		this._file = this.configuration.file;
-		const {url, cache, options} = this.configuration as UrlStorageOptions;
+		const {url, cache, options}: UrlStorageOptions = this
+			.configuration as UrlStorageOptions;
 		if (url) {
 			this.caching = Boolean(cache);
 			this._options = options;
@@ -370,7 +371,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			// Invoking the callback with an error will cause file removal and aborting routines to be called twice
 			writeStream.on('error', emitError);
 			writeStream.on('finish', emitFile);
-			// @ts-ignore
+			// @ts-expect-error
 			pump([readStream, writeStream]);
 		});
 	}
@@ -456,9 +457,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		if (this.client) {
-			// @ts-ignore
+			// @ts-expect-error
 			this.connected = this.client.isConnected
-				? // @ts-ignore
+				? // @ts-expect-error
 				  this.client.isConnected()
 				: true;
 			return;

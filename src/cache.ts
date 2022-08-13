@@ -2,7 +2,7 @@
  * Storage cache
  * @module multer-gridfs-storage/cache
  */
-import {EventEmitter} from 'events';
+import {EventEmitter} from 'node:events';
 import mongoUri from 'mongodb-uri';
 import {Db, MongoClient} from 'mongodb';
 import {compare, compareUris} from './utils';

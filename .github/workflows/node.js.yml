@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 12.x, 14.x, 16.x ]
+        node-version: [ 14.x, 16.x, 16.x ]
         mongodb-version: [ '4.4' ]
 
     steps:
@@ -46,6 +46,6 @@ jobs:
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
       - run: npm ci
-      - run: npm install mongodb@2.2 --no-save
+      - run: npm install mongodb@3.6 --no-save
       - run: npm install multer --no-save
       - run: npm test
