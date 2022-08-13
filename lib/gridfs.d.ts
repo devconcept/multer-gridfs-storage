@@ -1,8 +1,7 @@
 /// <reference types="node" />
 /// <reference types="node" />
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import { Db, GridFSBucketWriteStream, MongoClient, MongoClientOptions } from 'mongodb';
-import { Request } from 'express';
 import { StorageEngine } from 'multer';
 import { Cache } from './cache';
 import { GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageOptions } from './types';
@@ -62,14 +61,14 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @param {File} file - The uploaded file stream
      * @param cb - A standard node callback to signal the end of the upload or an error
      **/
-    _handleFile(request: Request, file: any, cb: NodeCallback): void;
+    _handleFile(request: any, file: any, cb: NodeCallback): void;
     /**
      * Storage interface method to delete files in case an error turns the request invalid
      * @param request - The request that trigger the upload
      * @param {File} file - The uploaded file stream
      * @param cb - A standard node callback to signal the end of the upload or an error
      **/
-    _removeFile(request: Request, file: any, cb: NodeCallback): void;
+    _removeFile(request: any, file: any, cb: NodeCallback): void;
     /**
      * Waits for the MongoDb connection associated to the storage to succeed or fail
      */
@@ -80,7 +79,7 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @param {File} file - The file stream to pipe
      * @return  {Promise} Resolves with the uploaded file
      */
-    fromFile(request: Request, file: any): Promise<GridFile>;
+    fromFile(request: any, file: any): Promise<GridFile>;
     /**
      * Pipes the file stream to the MongoDb database. The request and file parameters are optional and used for file generation only
      * @param readStream - The http request where the file was uploaded
@@ -88,7 +87,7 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @param {File} [file] - The file stream to pipe
      * @return Resolves with the uploaded file
      */
-    fromStream(readStream: NodeJS.ReadableStream, request: Request, file: any): Promise<GridFile>;
+    fromStream(readStream: NodeJS.ReadableStream, request: any, file: any): Promise<GridFile>;
     protected _openConnection(url: string, options: MongoClientOptions): Promise<ConnectionResult>;
     /**
      * Create a writable stream with backwards compatibility with GridStore
