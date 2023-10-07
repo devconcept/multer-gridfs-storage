@@ -349,6 +349,10 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			};
 
 			const emitFile = (f) => {
+				if (f === undefined) {
+					// @ts-ignore - outdated types file this does exist
+					f = writeStream.gridFSFile;
+				}
 				const storedFile: GridFile = {
 					id: f._id,
 					filename: f.filename,
