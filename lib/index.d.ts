@@ -4,4 +4,4 @@
  */
 export * from './cache';
 export * from './types';
-export declare const GridFsStorage: typeof import("./gridfs").GridFsStorage;
+export { GridFsStorageCtr as GridFsStorage } from './gridfs';
