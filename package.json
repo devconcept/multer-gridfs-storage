@@ -34,7 +34,7 @@
 		"url": "git+https://github.com/devconcept/multer-gridfs-storage.git"
 	},
 	"dependencies": {
-		"@types/node": ">=14",
+		"@types/node": ">=16",
 		"@types/pump": "^1.1.0",
 		"has-own-prop": "^2.0.0",
 		"is-generator": "^1.0.3",
@@ -44,7 +44,7 @@
 		"pump": "^3.0.0"
 	},
 	"peerDependencies": {
-		"multer": ">1.4 || ~1.4.4-lts.1",
+		"multer": ">1.4 || ~1.4.5-lts.1",
 		"mongodb": ">=6"
 	},
 	"devDependencies": {
@@ -71,7 +71,7 @@
 		"xo": "^0.48.0"
 	},
 	"engines": {
-		"node": ">=14"
+		"node": ">=16"
 	},
 	"bugs": {
 		"url": "https://github.com/devconcept/multer-gridfs-storage/issues"
