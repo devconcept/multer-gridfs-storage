@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 14.x, 16.x, 16.x ]
-        mongodb-version: [ '4.4' ]
+        node-version: [ 14.x, 16.x, 18.x ]
+        mongodb-version: [ '6.3' ]
 
     steps:
       - uses: actions/checkout@v2
@@ -27,25 +27,5 @@ jobs:
           mongodb-version: ${{ matrix.mongodb-version }}
       - run: npm ci
       - run: npm install multer --no-save
-      - run: npm test
-  mongodb2:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ 14.x ]
-        mongodb-version: [ '4.4' ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.6.0
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
-      - run: npm ci
-      - run: npm install mongodb@3.6 --no-save
-      - run: npm install multer --no-save
+      - run: npm install mongodb --no-save
       - run: npm test
