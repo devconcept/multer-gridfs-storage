@@ -38,7 +38,7 @@
 		"@types/multer": ">=1.4",
 		"@types/node": ">=14",
 		"@types/pump": "^1.1.0",
-		"has-own-prop": "^2.0.0",
+		"has-own-prop": "^3.1.0",
 		"is-generator": "^1.0.3",
 		"is-promise": "^4.0.0",
 		"lodash.isplainobject": ">=0.8.0",
