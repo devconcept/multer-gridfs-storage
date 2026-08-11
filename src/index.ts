@@ -6,4 +6,4 @@
 export * from './cache';
 export * from './types';
 
-export {GridFsStorageCtr as GridFsStorage} from './gridfs';
+export { GridFsStorageCtr as GridFsStorage } from './gridfs';

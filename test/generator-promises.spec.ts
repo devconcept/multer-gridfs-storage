@@ -1,12 +1,12 @@
-import anyTest, {TestInterface} from 'ava';
+import anyTest, { TestInterface } from 'ava';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 
-import {GridFsStorage} from '../src';
-import {files, cleanStorage} from './utils/testutils';
-import {storageOptions} from './utils/settings';
-import {GeneratorPromisesContext} from './types/generator-promises-context';
+import { GridFsStorage } from '../src';
+import { files, cleanStorage } from './utils/testutils';
+import { storageOptions } from './utils/settings';
+import { GeneratorPromisesContext } from './types/generator-promises-context';
 
 const test = anyTest as TestInterface<GeneratorPromisesContext>;
 
@@ -27,7 +27,7 @@ async function successfulPromiseSetup(t) {
 	});
 	t.context.storage = storage;
 
-	const upload = multer({storage});
+	const upload = multer({ storage });
 
 	app.post('/url', upload.array('photos', 2), (request_, response) => {
 		t.context.result = {
@@ -39,10 +39,7 @@ async function successfulPromiseSetup(t) {
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photos', files[0])
-		.attach('photos', files[1]);
+	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 }
 
 test.afterEach.always('cleanup', async (t) => {
@@ -51,11 +48,10 @@ test.afterEach.always('cleanup', async (t) => {
 
 test('yielding a promise is resolved as file configuration', async (t) => {
 	await successfulPromiseSetup(t);
-	const {result} = t.context;
+	const { result } = t.context;
 	t.true(Array.isArray(result.files));
 	t.is(result.files.length, 2);
-	for (const [idx, f] of result.files.entries())
-		t.is(f.filename, t.context.filePrefix + (idx + 1));
+	for (const [idx, f] of result.files.entries()) t.is(f.filename, t.context.filePrefix + (idx + 1));
 });
 
 async function failedPromiseSetup(t) {
@@ -68,16 +64,12 @@ async function failedPromiseSetup(t) {
 		},
 	});
 	t.context.storage = storage;
-	const upload = multer({storage});
+	const upload = multer({ storage });
 
-	app.post(
-		'/url',
-		upload.array('photos', 2),
-		(error, request_, response, next) => {
-			t.context.error = error;
-			next();
-		},
-	);
+	app.post('/url', upload.array('photos', 2), (error, request_, response, next) => {
+		t.context.error = error;
+		next();
+	});
 
 	await storage.ready();
 	await request(app).post('/url').attach('photos', files[0]);
@@ -85,13 +77,11 @@ async function failedPromiseSetup(t) {
 
 test('yielding a promise rejection is handled properly', async (t) => {
 	await failedPromiseSetup(t);
-	const {error, storage} = t.context;
-	const {db} = storage;
+	const { error, storage } = t.context;
+	const { db } = storage;
 	t.true(error instanceof Error);
 	t.is(error, t.context.rejectedError);
 	const collection = db.collection('fs.files');
-	const count = await (collection.estimatedDocumentCount
-		? collection.estimatedDocumentCount()
-		: collection.count());
+	const count = await (collection.estimatedDocumentCount ? collection.estimatedDocumentCount() : collection.count());
 	t.is(count, 0);
 });

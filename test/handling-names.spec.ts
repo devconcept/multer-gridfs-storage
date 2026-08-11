@@ -1,12 +1,12 @@
-import anyTest, {TestInterface} from 'ava';
+import anyTest, { TestInterface } from 'ava';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
 
-import {GridFsStorage} from '../src';
-import {files, cleanStorage} from './utils/testutils';
-import {storageOptions} from './utils/settings';
-import {HandlingNamesContext} from './types/handling-names-context';
+import { GridFsStorage } from '../src';
+import { files, cleanStorage } from './utils/testutils';
+import { storageOptions } from './utils/settings';
+import { HandlingNamesContext } from './types/handling-names-context';
 
 const test = anyTest as TestInterface<HandlingNamesContext>;
 
@@ -28,7 +28,7 @@ test('handling empty name values', async (t) => {
 		},
 	});
 	t.context.storage = storage;
-	const upload = multer({storage});
+	const upload = multer({ storage });
 
 	app.post('/url', upload.array('photo', 3), (request_, response) => {
 		result = {
@@ -40,11 +40,7 @@ test('handling empty name values', async (t) => {
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0])
-		.attach('photo', files[0])
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]).attach('photo', files[0]).attach('photo', files[0]);
 
 	for (const file of result.files) t.regex(file.filename, /^[\da-f]{32}$/);
 	for (const file of result.files) t.is(file.metadata, null);
@@ -66,7 +62,7 @@ test('handling primitive values as names', async (t) => {
 		},
 	});
 	t.context.storage = storage;
-	const upload = multer({storage});
+	const upload = multer({ storage });
 
 	app.post('/url', upload.array('photo', 2), (request_, response) => {
 		result = {
@@ -78,13 +74,9 @@ test('handling primitive values as names', async (t) => {
 	});
 
 	await storage.ready();
-	await request(app)
-		.post('/url')
-		.attach('photo', files[0])
-		.attach('photo', files[0]);
+	await request(app).post('/url').attach('photo', files[0]).attach('photo', files[0]);
 
-	for (const [idx, f] of result.files.entries())
-		t.is(f.filename, values[idx].toString());
+	for (const [idx, f] of result.files.entries()) t.is(f.filename, values[idx].toString());
 	for (const file of result.files) t.is(file.metadata, null);
 	for (const file of result.files) t.is(file.bucketName, 'fs');
 	for (const file of result.files) t.is(file.chunkSize, 261_120);

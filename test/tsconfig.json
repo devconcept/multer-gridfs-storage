@@ -4,6 +4,6 @@
 		"resolveJsonModule": true
   },
 	"include": [
-		"./test/**/*"
+		"./**/*"
 	]
 }

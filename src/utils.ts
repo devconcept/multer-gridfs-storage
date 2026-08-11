@@ -4,10 +4,10 @@
  */
 
 import isPlainObject from 'lodash.isplainobject';
-import {Db} from 'mongodb';
-import {version} from 'mongodb/package.json';
+import { Db } from 'mongodb';
+import { version } from 'mongodb/package.json';
 
-import {ComparatorResult} from './types';
+import { ComparatorResult } from './types';
 
 export function shouldListenOnDb(v = version): boolean {
 	const [major, minor, patch] = v.split('.').map((vn) => Number(vn));
@@ -204,11 +204,7 @@ export function compareUris(uri1, uri2): boolean {
 
 	// Check if every host in one array is present on the other array no matter where is positioned
 	for (const hostObject of hosts1) {
-		if (
-			!hosts2.some(
-				(h) => h.host === hostObject.host && h.port === hostObject.port,
-			)
-		) {
+		if (!hosts2.some((h) => h.host === hostObject.host && h.port === hostObject.port)) {
 			return false;
 		}
 	}

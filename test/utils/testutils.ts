@@ -1,23 +1,17 @@
-import {Readable, Writable} from 'stream';
+import { Readable, Writable } from 'stream';
 import path from 'path';
-import {parse} from 'mongodb-uri';
-import {MongoClient} from 'mongodb';
-import hasOwn from 'has-own-prop';
+import { parse } from 'mongodb-uri';
+import { MongoClient } from 'mongodb';
 import delay from 'delay';
 
-import {version} from 'mongodb/package.json';
-import {connection, storageOptions} from './settings';
+import { version } from 'mongodb/package.json';
+import { connection, storageOptions } from './settings';
 
 export const mongoVersion = version.split('.').map((v) => Number(v));
 
-export const files = ['sample1.jpg', 'sample2.jpg'].map((file) =>
-	path.join(__dirname, '/../attachments/', file),
-);
+export const files = ['sample1.jpg', 'sample2.jpg'].map((file) => path.join(__dirname, '/../attachments/', file));
 
-export async function cleanStorage(
-	storage: any,
-	{client = null, db = null} = {},
-) {
+export async function cleanStorage(storage: any, { client = null, db = null } = {}) {
 	if (storage) {
 		storage.removeAllListeners();
 		if (!db && !client) {
@@ -27,28 +21,27 @@ export async function cleanStorage(
 
 		if (db) {
 			await db.dropDatabase();
-			return closeConnections({db, client});
+			return closeConnections({ db, client });
 		}
 	}
 }
 
-export function closeConnections({db, client}) {
+export function closeConnections({ db, client }) {
 	if (client) {
-		if (hasOwn(client, 'readyState') && client.readyState === 1) {
+		// MongoClient is ready when it has an open topology
+		// isConnected() was removed in mongodb driver 4.x; check the internal topology state instead
+		const topology = client.topology;
+		if (topology && topology.isConnected) {
 			return client.close();
 		}
-
-		if (hasOwn(client, 'isConnected') && client.isConnected()) {
-			return client.close();
-		}
-	} else {
+	} else if (db) {
 		return db.close();
 	}
 }
 
 export async function dropDatabase(url: string): Promise<any> {
 	if (url) {
-		const {options} = storageOptions();
+		const { options } = storageOptions();
 		const _db = await MongoClient.connect(url, options);
 		const db = getDb(_db, url);
 		const client = getClient(_db);
@@ -63,7 +56,7 @@ export async function dropDatabase(url: string): Promise<any> {
 
 export function getDb(client, url) {
 	if (client instanceof MongoClient) {
-		const {database} = parse(url);
+		const { database } = parse(url);
 		return client.db(database || connection.database);
 	}
 
@@ -107,7 +100,7 @@ export function defer() {
 export class ErrorReadableStream extends Readable {
 	err: Error;
 
-	_read(size: number) {
+	_read(_size: number) {
 		this.err = new Error('Stream error');
 		this.emit('error', this.err);
 	}
@@ -115,7 +108,7 @@ export class ErrorReadableStream extends Readable {
 export class ErrorWritableStream extends Writable {
 	err: Error;
 
-	_write(size: number) {
+	_write(_size: number) {
 		this.err = new Error('Stream error');
 		this.emit('error', this.err);
 	}

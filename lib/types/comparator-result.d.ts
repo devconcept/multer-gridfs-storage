@@ -1,1 +1,1 @@
-export declare type ComparatorResult = 'object' | 'array' | 'buffer' | 'identity';
+export type ComparatorResult = 'object' | 'array' | 'buffer' | 'identity';

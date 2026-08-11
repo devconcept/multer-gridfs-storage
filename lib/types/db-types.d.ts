@@ -5,4 +5,4 @@ export interface MongooseConnectionInstance {
 export interface MongooseInstance {
     connection: MongooseConnectionInstance;
 }
-export declare type DbTypes = MongooseInstance | MongooseConnectionInstance | Db;
+export type DbTypes = MongooseInstance | MongooseConnectionInstance | Db;

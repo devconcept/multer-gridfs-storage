@@ -1,4 +1,4 @@
-import {MulterGfsOptions} from './multer-gfs-options';
+import { MulterGfsOptions } from './multer-gfs-options';
 
 export interface UrlStorageOptions extends MulterGfsOptions {
 	url: string;

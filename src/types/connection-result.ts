@@ -1,4 +1,4 @@
-import {Db, MongoClient} from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 
 export interface ConnectionResult {
 	db: Db;

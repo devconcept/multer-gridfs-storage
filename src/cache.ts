@@ -2,11 +2,11 @@
  * Storage cache
  * @module multer-gridfs-storage/cache
  */
-import {EventEmitter} from 'node:events';
+import { EventEmitter } from 'node:events';
 import mongoUri from 'mongodb-uri';
-import {Db, MongoClient} from 'mongodb';
-import {compare, compareUris} from './utils';
-import {CacheIndex, CacheValue} from './types';
+import { Db, MongoClient } from 'mongodb';
+import { compare, compareUris } from './utils';
+import { CacheIndex, CacheValue } from './types';
 
 /**
  * Plugin cached connection handling class.
@@ -28,7 +28,8 @@ export class Cache {
 	 * @param {any} options.init - The connection options provided
 	 **/
 	initialize(options): CacheIndex {
-		let {url, cacheName: name} = options;
+		const { cacheName: name } = options;
+		let { url } = options;
 		// If the option is a falsey value or empty object use null as initial value
 		const init = compare(options.init, null) ? null : options.init;
 
@@ -124,7 +125,7 @@ export class Cache {
 	 * @return {object} The cache contents or null if was not found
 	 */
 	get(cacheIndex: CacheIndex): CacheValue {
-		const {name, url, index} = cacheIndex;
+		const { name, url, index } = cacheIndex;
 		if (!this.store.has(name)) {
 			return null;
 		}
@@ -146,7 +147,7 @@ export class Cache {
 	 * @param value The value to set
 	 */
 	set(cacheIndex: CacheIndex, value: CacheValue): void {
-		const {name, url, index} = cacheIndex;
+		const { name, url, index } = cacheIndex;
 		this.store.get(name).get(url).set(index, value);
 	}
 
@@ -253,14 +254,10 @@ export class Cache {
 	remove(cacheIndex: CacheIndex): void {
 		if (this.has(cacheIndex)) {
 			if (this.isPending(cacheIndex)) {
-				this.emitter.emit(
-					'reject',
-					cacheIndex,
-					new Error('The cache entry was deleted'),
-				);
+				this.emitter.emit('reject', cacheIndex, new Error('The cache entry was deleted'));
 			}
 
-			const {name, url, index} = cacheIndex;
+			const { name, url, index } = cacheIndex;
 			this.store.get(name).get(url).delete(index);
 		}
 	}

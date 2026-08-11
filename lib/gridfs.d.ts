@@ -1,5 +1,3 @@
-/// <reference types="node" />
-/// <reference types="node" />
 import { EventEmitter } from 'node:events';
 import { Db, GridFSBucketWriteStream, MongoClient, MongoClientOptions } from 'mongodb';
 import { StorageEngine } from 'multer';

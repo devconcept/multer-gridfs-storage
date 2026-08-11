@@ -1,16 +1,16 @@
 import crypto from 'crypto';
-import anyTest, {TestInterface} from 'ava';
+import anyTest, { TestInterface } from 'ava';
 import multer from 'multer';
 import request from 'supertest';
 import express from 'express';
-import {MongoClient} from 'mongodb';
+import { MongoClient } from 'mongodb';
 import delay from 'delay';
-import {spy, stub, restore} from 'sinon';
+import { spy, stub, restore } from 'sinon';
 
-import {GridFsStorage} from '../src';
-import {storageOptions} from './utils/settings';
-import {files, cleanStorage, fakeConnectCb} from './utils/testutils';
-import {EdgeCasesContext} from './types/edge-cases-context';
+import { GridFsStorage } from '../src';
+import { storageOptions } from './utils/settings';
+import { files, cleanStorage, fakeConnectCb } from './utils/testutils';
+import { EdgeCasesContext } from './types/edge-cases-context';
 
 const test = anyTest as TestInterface<EdgeCasesContext>;
 
@@ -43,16 +43,12 @@ test.serial('errors generating random bytes', async (t) => {
 		throw generatedError;
 	});
 	t.context.storage = storage;
-	const upload = multer({storage});
+	const upload = multer({ storage });
 
-	app.post(
-		'/url',
-		upload.single('photo'),
-		(error_, request_, response, next) => {
-			error = error_;
-			next();
-		},
-	);
+	app.post('/url', upload.single('photo'), (error_, request_, response, next) => {
+		error = error_;
+		next();
+	});
 
 	await storage.ready();
 	await request(app).post('/url').attach('photo', files[0]);

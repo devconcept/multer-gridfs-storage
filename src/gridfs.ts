@@ -5,31 +5,17 @@
  *
  */
 import crypto from 'node:crypto';
-import {EventEmitter} from 'node:events';
-import {
-	Db,
-	GridFSBucket,
-	GridFSBucketWriteStream,
-	MongoClient,
-	MongoClientOptions,
-	ObjectId,
-} from 'mongodb';
+import { EventEmitter } from 'node:events';
+import { Db, GridFSBucket, GridFSBucketWriteStream, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
 import isPromise from 'is-promise';
 import isGenerator from 'is-generator';
 import pump from 'pump';
-import {StorageEngine} from 'multer';
+import { StorageEngine } from 'multer';
 import mongoUri from 'mongodb-uri';
 
-import {getDatabase, shouldListenOnDb} from './utils';
-import {Cache} from './cache';
-import {
-	CacheIndex,
-	GridFile,
-	ConnectionResult,
-	NodeCallback,
-	UrlStorageOptions,
-	DbStorageOptions,
-} from './types';
+import { getDatabase, shouldListenOnDb } from './utils';
+import { Cache } from './cache';
+import { CacheIndex, GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageOptions } from './types';
 
 const isGeneratorFn: any = isGenerator.fn;
 
@@ -78,28 +64,21 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	constructor(configuration: UrlStorageOptions | DbStorageOptions) {
 		super();
 
-		if (
-			!configuration ||
-			(!(configuration as UrlStorageOptions).url &&
-				!(configuration as DbStorageOptions).db)
-		) {
-			throw new Error(
-				'Error creating storage engine. At least one of url or db option must be provided.',
-			);
+		if (!configuration || (!(configuration as UrlStorageOptions).url && !(configuration as DbStorageOptions).db)) {
+			throw new Error('Error creating storage engine. At least one of url or db option must be provided.');
 		}
 
 		this.setMaxListeners(0);
 		this.configuration = configuration;
 		this._file = this.configuration.file;
-		const {url, cache, options}: UrlStorageOptions = this
-			.configuration as UrlStorageOptions;
+		const { url, cache, options }: UrlStorageOptions = this.configuration as UrlStorageOptions;
 		if (url) {
 			this.caching = Boolean(cache);
 			this._options = options;
 		}
 
 		if (this.caching) {
-			const {cache, url} = configuration as UrlStorageOptions;
+			const { cache, url } = configuration as UrlStorageOptions;
 			const cacheName = typeof cache === 'string' ? cache : 'default';
 			this.cacheName = cacheName;
 			this.cacheIndex = GridFsStorage.cache.initialize({
@@ -115,7 +94,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	/**
 	 * Generates 16 bytes long strings in hexadecimal format
 	 */
-	static async generateBytes(): Promise<{filename: string}> {
+	static async generateBytes(): Promise<{ filename: string }> {
 		return new Promise((resolve, reject) => {
 			crypto.randomBytes(16, (error, buffer) => {
 				if (error) {
@@ -123,7 +102,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 					return;
 				}
 
-				resolve({filename: buffer.toString('hex')});
+				resolve({ filename: buffer.toString('hex') });
 			});
 		});
 	}
@@ -136,9 +115,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 */
 	private static async _mergeProps(extra, fileSettings): Promise<any> {
 		// If the filename is not provided generate one
-		const previous: any = await (fileSettings.filename
-			? {}
-			: GridFsStorage.generateBytes());
+		const previous: any = await (fileSettings.filename ? {} : GridFsStorage.generateBytes());
 		// If no id is provided generate one
 		// If an error occurs the emitted file information will contain the id
 		const hasId = fileSettings.id;
@@ -146,7 +123,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			previous.id = new ObjectId();
 		}
 
-		return {...previous, ...defaults, ...extra, ...fileSettings};
+		return { ...previous, ...defaults, ...extra, ...fileSettings };
 	}
 
 	/**
@@ -154,10 +131,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param result - Can be a promise or a generator yielded value
 	 * @param isGen - True if is a yielded value
 	 **/
-	private static async _handleResult(
-		result: any,
-		isGen: boolean,
-	): Promise<any> {
+	private static async _handleResult(result: any, isGen: boolean): Promise<any> {
 		let value = result;
 
 		if (isGen) {
@@ -180,9 +154,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	_handleFile(request: any, file, cb: NodeCallback): void {
 		if (this.connecting) {
 			this.ready()
-				/* eslint-disable-next-line promise/prefer-await-to-then */
 				.then(async () => this.fromFile(request, file))
-				/* eslint-disable-next-line promise/prefer-await-to-then */
 				.then((file) => {
 					cb(null, file);
 				})
@@ -193,7 +165,6 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		this._updateConnectionStatus();
 		if (this.connected) {
 			this.fromFile(request, file)
-				/* eslint-disable-next-line promise/prefer-await-to-then */
 				.then((file) => {
 					cb(null, file);
 				})
@@ -211,9 +182,14 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param cb - A standard node callback to signal the end of the upload or an error
 	 **/
 	_removeFile(request: any, file, cb: NodeCallback): void {
-		const options = {bucketName: file.bucketName};
+		const options = { bucketName: file.bucketName };
 		const bucket = new GridFSBucket(this.db, options);
-		bucket.delete(file.id, cb);
+		bucket
+			.delete(file.id)
+			.then(() => {
+				cb(null);
+			})
+			.catch(cb);
 	}
 
 	/**
@@ -225,7 +201,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		if (this.connected) {
-			return {db: this.db, client: this.client};
+			return { db: this.db, client: this.client };
 		}
 
 		return new Promise((resolve, reject) => {
@@ -261,24 +237,14 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param {File} [file] - The file stream to pipe
 	 * @return Resolves with the uploaded file
 	 */
-	async fromStream(
-		readStream: NodeJS.ReadableStream,
-		request: any,
-		file: any,
-	): Promise<GridFile> {
+	async fromStream(readStream: NodeJS.ReadableStream, request: any, file: any): Promise<GridFile> {
 		return new Promise<GridFile>((resolve, reject) => {
 			readStream.on('error', reject);
-			this.fromMulterStream(readStream, request, file)
-				/* eslint-disable-next-line promise/prefer-await-to-then */
-				.then(resolve)
-				.catch(reject);
+			this.fromMulterStream(readStream, request, file).then(resolve).catch(reject);
 		});
 	}
 
-	protected async _openConnection(
-		url: string,
-		options: MongoClientOptions,
-	): Promise<ConnectionResult> {
+	protected async _openConnection(url: string, options: MongoClientOptions): Promise<ConnectionResult> {
 		let client = null;
 		let db;
 		const connection = await MongoClient.connect(url, options);
@@ -290,7 +256,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			db = connection;
 		}
 
-		return {client, db};
+		return { client, db };
 	}
 
 	/**
@@ -306,15 +272,11 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			aliases: options.aliases,
 			disableMD5: options.disableMD5,
 		};
-		const gfs = new GridFSBucket(this.db, {bucketName: options.bucketName});
+		const gfs = new GridFSBucket(this.db, { bucketName: options.bucketName });
 		return gfs.openUploadStream(options.filename, settings);
 	}
 
-	private async fromMulterStream(
-		readStream: NodeJS.ReadableStream,
-		request: any,
-		file: any,
-	): Promise<GridFile> {
+	private async fromMulterStream(readStream: NodeJS.ReadableStream, request: any, file: any): Promise<GridFile> {
 		if (this.connecting) {
 			await this.ready();
 		}
@@ -338,15 +300,21 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		const contentType = file ? file.mimetype : undefined;
-		const streamOptions = await GridFsStorage._mergeProps(
-			{contentType},
-			settings,
-		);
+		const streamOptions = await GridFsStorage._mergeProps({ contentType }, settings);
 		return new Promise((resolve, reject) => {
 			const emitError = (streamError) => {
 				this.emit('streamError', streamError, streamOptions);
 				reject(streamError);
 			};
+
+			// Compute the MD5 hash client-side. MongoDB 4.4+ and mongodb driver 4.x+ no
+			// longer populate `md5` on the stored GridFS file document, so we hash the
+			// incoming bytes while the stream is pumped into GridFS and use the digest
+			// when the upload finishes. Honour `disableMD5` so callers who explicitly
+			// opt out still receive no hash.
+			const computeMd5 = !streamOptions.disableMD5;
+			const hash = computeMd5 ? crypto.createHash('md5') : null;
+			readStream.on('data', (chunk) => hash?.update(chunk));
 
 			const emitFile = (f) => {
 				const storedFile: GridFile = {
@@ -356,9 +324,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 					bucketName: streamOptions.bucketName,
 					chunkSize: f.chunkSize,
 					size: f.length,
-					md5: f.md5,
+					md5: f.md5 || (computeMd5 ? hash.digest('hex') : undefined),
 					uploadDate: f.uploadDate,
-					contentType: f.contentType,
+					contentType: streamOptions.contentType,
 				};
 				this.emit('file', storedFile);
 				resolve(storedFile);
@@ -369,7 +337,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			// Multer already handles the error event on the readable stream(Busboy).
 			// Invoking the callback with an error will cause file removal and aborting routines to be called twice
 			writeStream.on('error', emitError);
-			writeStream.on('finish', emitFile);
+			writeStream.on('finish', () => emitFile(writeStream.gridFSFile));
 			pump([readStream, writeStream]);
 		});
 	}
@@ -378,7 +346,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * Determines if a new connection should be created, a explicit connection is provided or a cached instance is required.
 	 */
 	private _connect() {
-		const {db, client = null} = this.configuration as DbStorageOptions<Db>;
+		const { db, client = null } = this.configuration as DbStorageOptions<Db>;
 
 		if (db && !isPromise(db) && !isPromise(client)) {
 			this._setDb(db, client);
@@ -386,8 +354,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		this._resolveConnection()
-			/* eslint-disable-next-line promise/prefer-await-to-then */
-			.then(({db, client}) => {
+			.then(({ db, client }) => {
 				this._setDb(db, client);
 			})
 			.catch((error) => {
@@ -400,17 +367,17 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 */
 	private async _resolveConnection(): Promise<ConnectionResult> {
 		this.connecting = true;
-		const {db, client = null} = this.configuration as DbStorageOptions<Db>;
+		const { db, client = null } = this.configuration as DbStorageOptions<Db>;
 		if (db) {
 			const [_db, _client] = await Promise.all([db, client]);
-			return {db: _db, client: _client};
+			return { db: _db, client: _client };
 		}
 
 		if (!this.caching) {
 			return this._createConnection();
 		}
 
-		const {cache} = GridFsStorage;
+		const { cache } = GridFsStorage;
 		if (!cache.isOpening(this.cacheIndex) && cache.isPending(this.cacheIndex)) {
 			const cached = cache.get(this.cacheIndex);
 			cached.opening = true;
@@ -424,17 +391,17 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * Handles creating a new connection from an url and storing it in the cache if necessary*}>}
 	 */
 	private async _createConnection(): Promise<ConnectionResult> {
-		const {url} = this.configuration as UrlStorageOptions;
+		const { url } = this.configuration as UrlStorageOptions;
 		const options: MongoClientOptions = this._options;
 
-		const {cache} = GridFsStorage;
+		const { cache } = GridFsStorage;
 		try {
-			const {db, client} = await this._openConnection(url, options);
+			const { db, client } = await this._openConnection(url, options);
 			if (this.caching) {
 				cache.resolve(this.cacheIndex, db, client);
 			}
 
-			return {db, client};
+			return { db, client };
 		} catch (error: unknown) {
 			if (this.cacheIndex) {
 				cache.reject(this.cacheIndex, error);
@@ -455,13 +422,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		if (this.client) {
-			this.connected = this.client.isConnected
-				? this.client.isConnected()
-				: true;
+			// @ts-expect-error topology is not part of the public API
+			this.connected = this.client.topology?.isConnected?.() ?? true;
 			return;
 		}
 
-		// @ts-expect-error
+		// @ts-expect-error topology is not part of the public API
 		this.connected = this.db?.topology?.isConnected() || true;
 	}
 
@@ -503,7 +469,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 		// Emit on next tick so user code can set listeners in case the db object is already available
 		process.nextTick(() => {
-			this.emit('connection', {db: this.db, client: this.client});
+			this.emit('connection', { db: this.db, client: this.client });
 		});
 	}
 
@@ -591,7 +557,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 export const GridFsStorageCtr = new Proxy(GridFsStorage, {
 	apply(target, thisArg, argumentsList) {
-		// @ts-expect-error
+		// @ts-expect-error constructor called without new is intentional
 		return new target(...argumentsList); // eslint-disable-line new-cap
 	},
 });
