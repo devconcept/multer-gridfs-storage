@@ -110,7 +110,7 @@ test('returns identity when the objects have different types', (t) => {
 
 test('returns the type of the objects when they have the same type', (t) => {
 	t.is(compareBy([], ['a', 'b']), 'array');
-	t.is(compareBy(Buffer.from([1, 2]), Buffer.from(['a', 'b'])), 'buffer');
+	t.is(compareBy(Buffer.from([1, 2]), Buffer.from('ab')), 'buffer');
 	t.is(compareBy({}, { a: 1 }), 'object');
 });
 

@@ -38,7 +38,7 @@ test.serial('returns a promise that rejects when the connection fails', async (t
 	const error = await t.throwsAsync(async () => {
 		await result;
 		t.is(resolveSpy.callCount, 0);
-		t.is(rejectSpy, 1);
+		t.is(rejectSpy.callCount, 1);
 	});
 	t.is(error, rejectSpy.getCall(0).args[0]);
 	t.is(error, t.context.error);
