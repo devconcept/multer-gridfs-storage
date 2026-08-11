@@ -12,12 +12,6 @@
 		"docs": "jsdoc -c ./conf.json --readme ./README.md",
 		"coveralls": "npm run coverage | coveralls"
 	},
-	"xo": {
-		"prettier": true,
-		"rules": {
-			"@typescript-eslint/restrict-plus-operands": 0
-		}
-	},
 	"keywords": [
 		"multer",
 		"mongodb",

@@ -32,10 +32,6 @@ updates:
     - 4.1.3
     - 4.1.5
     - 4.2.3
-  - dependency-name: xo
-    versions:
-    - 0.37.1
-    - 0.38.1
   - dependency-name: supertest
     versions:
     - 6.1.2
