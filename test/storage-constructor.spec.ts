@@ -56,7 +56,6 @@ test('create storage from db parameter', async (t) => {
 	const db = getDb(_db, url);
 	prepareTest(t, { db });
 	const { app, storage, upload } = t.context;
-	storage.client = getClient(_db);
 
 	app.post('/url', upload.array('photos', 2), (request_, response) => {
 		result = {
@@ -95,8 +94,6 @@ test('connects to a mongoose instance', async (t) => {
 
 	t.true(db instanceof mongoose.mongo.Db);
 	await fileMatchMd5Hash(t, result.files);
-
-	storage.client = mongoose.connection;
 });
 
 test('creates an instance without the new keyword', async (t) => {
@@ -124,16 +121,16 @@ test('creates an instance without the new keyword', async (t) => {
 	return fileMatchMd5Hash(t, result.files);
 });
 
-test('accept the client as one of the parameters', async (t) => {
+test('client is derived from the db', async (t) => {
 	const { url, options } = storageOptions();
 	t.context.url = url;
 	let result: any = {};
 	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 	const client = getClient(_db);
-	prepareTest(t, { db, client });
+	prepareTest(t, { db });
 	const { app, storage, upload } = t.context;
-	t.is(storage.client, client);
+	t.is(storage.db.client, client);
 
 	app.post('/url', upload.array('photos', 2), (request_, response) => {
 		result = {
@@ -147,32 +144,5 @@ test('accept the client as one of the parameters', async (t) => {
 	await storage.ready();
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	return fileMatchMd5Hash(t, result.files);
-});
-
-test('waits for the client if is a promise', async (t) => {
-	const { url, options } = storageOptions();
-	t.context.url = url;
-	let result: any = {};
-	const _db = await MongoClient.connect(url, options);
-	const db = getDb(_db, url);
-	const client = delay(100).then(() => getClient(_db));
-	prepareTest(t, { db, client });
-	const { app, storage, upload } = t.context;
-	t.is(storage.client, null);
-
-	app.post('/url', upload.array('photos', 2), (request_, response) => {
-		result = {
-			headers: request_.headers,
-			files: request_.files,
-			body: request_.body,
-		};
-		response.end();
-	});
-
-	await storage.ready();
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
-
-	t.not(storage.client, null);
 	return fileMatchMd5Hash(t, result.files);
 });

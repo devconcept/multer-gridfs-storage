@@ -6,7 +6,7 @@
  */
 import crypto from 'node:crypto';
 import { EventEmitter } from 'node:events';
-import { Db, GridFSBucket, GridFSBucketWriteStream, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
+import {Db, GridFSBucket, GridFSBucketWriteStream, MongoClient, MongoClientOptions, ObjectId} from 'mongodb';
 import isPromise from 'is-promise';
 import isGenerator from 'is-generator';
 import pump from 'pump';
@@ -50,7 +50,6 @@ const defaults: any = {
 export class GridFsStorage extends EventEmitter implements StorageEngine {
 	static cache: Cache = new Cache();
 	db: Db = null;
-	client: MongoClient = null;
 	configuration: DbStorageOptions | UrlStorageOptions;
 	connecting = false;
 	caching = false;
@@ -199,7 +198,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		if (this.db) {
-			return { db: this.db, client: this.client };
+			return { db: this.db };
 		}
 
 		return new Promise((resolve, reject) => {
@@ -243,18 +242,16 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	}
 
 	protected async _openConnection(url: string, options: MongoClientOptions): Promise<ConnectionResult> {
-		let client = null;
 		let db;
 		const connection = await MongoClient.connect(url, options);
 		if (connection instanceof MongoClient) {
-			client = connection;
 			const parsedUri = mongoUri.parse(url);
-			db = client.db(parsedUri.database);
+			db = connection.db(parsedUri.database);
 		} else {
 			db = connection;
 		}
 
-		return { client, db };
+		return { db };
 	}
 
 	/**
@@ -361,14 +358,14 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	}
 
 	/**
-	 * Returns a promise that will resolve to the db and client from the cache or a new connection depending on the provided configuration
+	 * Returns a promise that will resolve to the db from the cache or a new connection depending on the provided configuration
 	 */
 	private async _resolveConnection(): Promise<ConnectionResult> {
 		this.connecting = true;
 		const { db } = this.configuration as DbStorageOptions<Db>;
 		if (db) {
 			const _db = await db;
-			return { db: _db, client: null };
+			return { db: _db };
 		}
 
 		if (!this.caching) {
@@ -394,12 +391,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 		const { cache } = GridFsStorage;
 		try {
-			const { db, client } = await this._openConnection(url, options);
+			const { db } = await this._openConnection(url, options);
 			if (this.caching) {
-				cache.resolve(this.cacheIndex, db, client);
+				cache.resolve(this.cacheIndex, db);
 			}
 
-			return { db, client };
+			return { db };
 		} catch (error: unknown) {
 			if (this.cacheIndex) {
 				cache.reject(this.cacheIndex, error);
@@ -417,8 +414,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		this.connecting = false;
 		// Check if the object is a mongoose instance, a mongoose Connection or a mongo Db object
 		this.db = getDatabase(db);
-		// Derive the MongoClient from the Db — it's a public property in the driver
-		this.client = this.db.client ?? null;
+		// Derive the MongoClient from the Db — it's a public property in the driver (MongoClient is
+		// the only EventEmitter in the modern driver, needed for dbError event listeners)
+		const client = this.db?.client ?? null;
 
 		const errorEvent = (error_) => {
 			// Needs verification. Sometimes the event fires without an error object
@@ -430,7 +428,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		// These are all the events that emit errors
 		const errorEventNames = ['error', 'parseError', 'timeout', 'close'];
 		// Only the MongoClient is an EventEmitter in the modern driver
-		const eventSource = this.client;
+		const eventSource = client;
 
 		if (eventSource) {
 			for (const evt of errorEventNames) eventSource.on(evt, errorEvent);
@@ -438,7 +436,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 		// Emit on next tick so user code can set listeners in case the db object is already available
 		process.nextTick(() => {
-			this.emit('connection', { db: this.db, client: this.client });
+			this.emit('connection', { db: this.db, client: this.db?.client ?? null });
 		});
 	}
 
@@ -449,7 +447,6 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	private _fail(error: any): void {
 		this.connecting = false;
 		this.db = null;
-		this.client = null;
 		this.error = error;
 		// Fail event is only emitted after either a then promise handler or an I/O phase so is guaranteed to be asynchronous
 		this.emit('connectionFailed', error);

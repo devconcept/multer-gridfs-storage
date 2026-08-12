@@ -4,7 +4,7 @@
  */
 import { EventEmitter } from 'node:events';
 import mongoUri from 'mongodb-uri';
-import { Db, MongoClient } from 'mongodb';
+import { Db } from 'mongodb';
 import { compare, compareUris } from './utils';
 import { CacheIndex, CacheValue } from './types';
 
@@ -47,7 +47,6 @@ export class Cache {
 				const store = new Map();
 				store.set(0, {
 					db: null,
-					client: null,
 					pending: true,
 					opening: false,
 					init,
@@ -78,7 +77,6 @@ export class Cache {
 
 		cached.set(cached.size, {
 			db: null,
-			client: null,
 			pending: true,
 			opening: false,
 			init,
@@ -172,15 +170,13 @@ export class Cache {
 	}
 
 	/**
-	 * Sets the database and client for a given cache and resolves all instances waiting for it
+	 * Sets the database for a given cache and resolves all instances waiting for it
 	 * @param cacheIndex {object} The index to look for
 	 * @param db  The database used to store files
-	 * @param [client] The client used to open the connection or null if none is provided
 	 */
-	resolve(cacheIndex: CacheIndex, db: Db, client?: MongoClient): void {
+	resolve(cacheIndex: CacheIndex, db: Db): void {
 		const cached = this.get(cacheIndex);
 		cached.db = db;
-		cached.client = client;
 		cached.pending = false;
 		cached.opening = false;
 		this.emitter.emit('resolve', cacheIndex);

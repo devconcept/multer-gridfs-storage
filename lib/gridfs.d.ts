@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { Db, GridFSBucketWriteStream, MongoClient, MongoClientOptions } from 'mongodb';
+import { Db, GridFSBucketWriteStream, MongoClientOptions } from 'mongodb';
 import { StorageEngine } from 'multer';
 import { Cache } from './cache';
 import { GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageOptions } from './types';
@@ -23,7 +23,6 @@ import { GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageO
 export declare class GridFsStorage extends EventEmitter implements StorageEngine {
     static cache: Cache;
     db: Db;
-    client: MongoClient;
     configuration: DbStorageOptions | UrlStorageOptions;
     connecting: boolean;
     caching: boolean;
@@ -97,7 +96,7 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      */
     private _connect;
     /**
-     * Returns a promise that will resolve to the db and client from the cache or a new connection depending on the provided configuration
+     * Returns a promise that will resolve to the db from the cache or a new connection depending on the provided configuration
      */
     private _resolveConnection;
     /**
@@ -107,12 +106,11 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
     /**
      * Sets the database connection and emit the connection event
      * @param db - Database instance or Mongoose instance to set
-     * @param [client] - Optional Mongo client for MongoDb v3
      **/
     private _setDb;
     /**
      * Removes the database reference and emit the connectionFailed event
-     * @param err - The error received while trying to connect
+     * @param error - The error received while trying to connect
      **/
     private _fail;
     /**

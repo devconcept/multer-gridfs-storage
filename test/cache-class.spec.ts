@@ -25,7 +25,6 @@ test('cache initializes with a url and a cache name and no connection options', 
 	t.not(cache.store.get(cacheName).get(url), undefined);
 	t.deepEqual(cache.store.get(cacheName).get(url).get(0), {
 		db: null,
-		client: null,
 		pending: true,
 		opening: false,
 		init: null,
@@ -42,7 +41,6 @@ test('cache is reused if the same url and option is used in the same cache', (t)
 	t.not(cache.store.get(cacheName).get(url), undefined);
 	t.deepEqual(cache.store.get(cacheName).get(url).get(0), {
 		db: null,
-		client: null,
 		pending: true,
 		opening: false,
 		init: null,
@@ -59,14 +57,12 @@ test('new cache is created if the same url and different options are used', (t) 
 	t.not(cache.store.get(cacheName).get(url), undefined);
 	t.deepEqual(cache.store.get(cacheName).get(url).get(0), {
 		db: null,
-		client: null,
 		pending: true,
 		opening: false,
 		init: null,
 	});
 	t.deepEqual(cache.store.get(cacheName).get(url).get(1), {
 		db: null,
-		client: null,
 		pending: true,
 		opening: false,
 		init: { db: 1 },
@@ -115,7 +111,6 @@ function cachesShouldBeDifferent(t, firstUrl, secondUrl) {
 	t.not(cache.store.get(cacheName).get(firstUrl), undefined);
 	t.deepEqual(cache.store.get(cacheName).get(firstUrl).get(0), {
 		db: null,
-		client: null,
 		pending: true,
 		opening: false,
 		init: null,
@@ -124,7 +119,6 @@ function cachesShouldBeDifferent(t, firstUrl, secondUrl) {
 	t.not(cache.store.get(cacheName).get(secondUrl), undefined);
 	t.deepEqual(cache.store.get(cacheName).get(secondUrl).get(0), {
 		db: null,
-		client: null,
 		pending: true,
 		opening: false,
 		init: null,
@@ -141,7 +135,6 @@ function cachesShouldBeEqual(t, firstUrl, secondUrl) {
 	t.not(cache.store.get(cacheName).get(firstUrl), undefined);
 	t.deepEqual(cache.store.get(cacheName).get(firstUrl).get(0), {
 		db: null,
-		client: null,
 		pending: true,
 		opening: false,
 		init: null,
@@ -167,7 +160,6 @@ test('returns a cache by its index', (t) => {
 	const index = cache.initialize({ url, cacheName: 'a' });
 	t.deepEqual(cache.get(index), {
 		db: null,
-		client: null,
 		pending: true,
 		opening: false,
 		init: null,

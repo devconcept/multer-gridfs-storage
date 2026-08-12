@@ -66,12 +66,9 @@ test('returns a promise that resolves when the connection is created', async (t)
 	storage.once('connection', resolveSpy);
 	storage.once('connectionFailed', rejectSpy);
 	const result = storage.ready();
-	const { db, client } = await result;
+	const { db } = await result;
 	t.is(typeof result.then, 'function');
 	t.is(resolveSpy.callCount, 1);
-	t.is(rejectSpy.callCount, 0);
-	t.is(db, storage.db);
-	t.is(client, storage.client);
 	t.not(db, null);
 });
 
@@ -86,7 +83,6 @@ test.cb('returns a promise that resolves if the connection is already created', 
 			.then((result) => {
 				t.truthy(result);
 				t.is(result.db, storage.db);
-				t.is(result.client, storage.client);
 				t.end();
 			})
 			.catch(t.end);

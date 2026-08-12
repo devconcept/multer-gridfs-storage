@@ -13,7 +13,7 @@ export async function cleanStorage(storage: any, { client = null, db = null } = 
 		storage.removeAllListeners();
 		if (!db && !client) {
 			db = storage.db;
-			client = storage.client;
+			client = db?.client ?? null;
 		}
 
 		if (db) {
