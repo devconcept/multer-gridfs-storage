@@ -6,7 +6,6 @@ import { MongoClient } from 'mongodb';
 import { spy, restore } from 'sinon';
 
 import { GridFsStorage } from '../src';
-import { shouldListenOnDb } from '../src/utils';
 import { storageOptions } from './utils/settings';
 import { files, cleanStorage, getDb, getClient, dropDatabase, ErrorReadableStream, ErrorWritableStream } from './utils/testutils';
 import { ErrorHandlingContext } from './types/error-handling-context';
@@ -152,8 +151,8 @@ test('connection is not opened', async (t) => {
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[0]);
 
 	t.true(error instanceof Error);
-	// Driver 6+ throws before the storage's guard runs
-	t.true(error.message === 'The database connection must be open to store files' || error.message === 'Client must be connected before running operations');
+	// The driver throws on operations against a closed client
+	t.is(error.message, 'Client must be connected before running operations');
 });
 
 test('event is emitted when there is an error in the database', async (t) => {
@@ -166,9 +165,9 @@ test('event is emitted when there is an error in the database', async (t) => {
 
 	const storage = new GridFsStorage({ db, client });
 	storage.on('dbError', errorSpy);
-	const evtSource = shouldListenOnDb() ? db : client;
+	const evtSource = client;
 	evtSource.emit('error', error);
-	evtSource.emit('error');
+	(evtSource as unknown as NodeJS.EventEmitter).emit('error');
 
 	t.is(errorSpy.callCount, 2);
 	t.is(errorSpy.getCall(0).args[0], error);

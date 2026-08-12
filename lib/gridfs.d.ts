@@ -25,7 +25,6 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
     db: Db;
     client: MongoClient;
     configuration: DbStorageOptions | UrlStorageOptions;
-    connected: boolean;
     connecting: boolean;
     caching: boolean;
     error: any;
@@ -105,10 +104,6 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * Handles creating a new connection from an url and storing it in the cache if necessary*}>}
      */
     private _createConnection;
-    /**
-     * Updates the connection status based on the internal db or client object
-     **/
-    private _updateConnectionStatus;
     /**
      * Sets the database connection and emit the connection event
      * @param db - Database instance or Mongoose instance to set

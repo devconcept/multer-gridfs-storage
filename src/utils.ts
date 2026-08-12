@@ -5,22 +5,8 @@
 
 import isPlainObject from 'lodash.isplainobject';
 import { Db } from 'mongodb';
-import { version } from 'mongodb/package.json';
 
 import { ComparatorResult } from './types';
-
-export function shouldListenOnDb(v = version): boolean {
-	const [major, minor, patch] = v.split('.').map((vn) => Number(vn));
-	if (major === 3) {
-		if (minor <= 5) {
-			return true;
-		}
-
-		return minor === 6 && patch < 4;
-	}
-
-	return major < 4;
-}
 
 /**
  * Compare two objects by value.

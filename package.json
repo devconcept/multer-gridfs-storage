@@ -38,7 +38,7 @@
 	},
 	"peerDependencies": {
 		"@types/multer": "^2.2.0",
-		"mongodb": ">=6",
+		"mongodb": "^7.5.0",
 		"multer": "^2.2.0"
 	},
 	"devDependencies": {

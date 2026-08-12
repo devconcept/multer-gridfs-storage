@@ -6,13 +6,12 @@ import mongoose from 'mongoose';
 import { MongoClient } from 'mongodb';
 import delay from 'delay';
 import { GridFsStorage } from '../src';
-import { files, cleanStorage, getDb, getClient, dropDatabase, mongoVersion } from './utils/testutils';
+import { files, cleanStorage, getDb, getClient, dropDatabase } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { fileMatchMd5Hash } from './utils/macros';
 import { StorageConstructorContext } from './types/storage-constructor-context';
 
 const test = anyTest as TestInterface<StorageConstructorContext>;
-const [major] = mongoVersion;
 
 function prepareTest(t, options) {
 	const app = express();
@@ -124,57 +123,56 @@ test('creates an instance without the new keyword', async (t) => {
 
 	return fileMatchMd5Hash(t, result.files);
 });
-if (major >= 3) {
-	test('accept the client as one of the parameters', async (t) => {
-		const { url, options } = storageOptions();
-		t.context.url = url;
-		let result: any = {};
-		const _db = await MongoClient.connect(url, options);
-		const db = getDb(_db, url);
-		const client = getClient(_db);
-		prepareTest(t, { db, client });
-		const { app, storage, upload } = t.context;
-		t.is(storage.client, client);
 
-		app.post('/url', upload.array('photos', 2), (request_, response) => {
-			result = {
-				headers: request_.headers,
-				files: request_.files,
-				body: request_.body,
-			};
-			response.end();
-		});
+test('accept the client as one of the parameters', async (t) => {
+	const { url, options } = storageOptions();
+	t.context.url = url;
+	let result: any = {};
+	const _db = await MongoClient.connect(url, options);
+	const db = getDb(_db, url);
+	const client = getClient(_db);
+	prepareTest(t, { db, client });
+	const { app, storage, upload } = t.context;
+	t.is(storage.client, client);
 
-		await storage.ready();
-		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
-
-		return fileMatchMd5Hash(t, result.files);
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body,
+		};
+		response.end();
 	});
 
-	test('waits for the client if is a promise', async (t) => {
-		const { url, options } = storageOptions();
-		t.context.url = url;
-		let result: any = {};
-		const _db = await MongoClient.connect(url, options);
-		const db = getDb(_db, url);
-		const client = delay(100).then(() => getClient(_db));
-		prepareTest(t, { db, client });
-		const { app, storage, upload } = t.context;
-		t.is(storage.client, null);
+	await storage.ready();
+	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-		app.post('/url', upload.array('photos', 2), (request_, response) => {
-			result = {
-				headers: request_.headers,
-				files: request_.files,
-				body: request_.body,
-			};
-			response.end();
-		});
+	return fileMatchMd5Hash(t, result.files);
+});
 
-		await storage.ready();
-		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+test('waits for the client if is a promise', async (t) => {
+	const { url, options } = storageOptions();
+	t.context.url = url;
+	let result: any = {};
+	const _db = await MongoClient.connect(url, options);
+	const db = getDb(_db, url);
+	const client = delay(100).then(() => getClient(_db));
+	prepareTest(t, { db, client });
+	const { app, storage, upload } = t.context;
+	t.is(storage.client, null);
 
-		t.not(storage.client, null);
-		return fileMatchMd5Hash(t, result.files);
+	app.post('/url', upload.array('photos', 2), (request_, response) => {
+		result = {
+			headers: request_.headers,
+			files: request_.files,
+			body: request_.body,
+		};
+		response.end();
 	});
-}
+
+	await storage.ready();
+	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+
+	t.not(storage.client, null);
+	return fileMatchMd5Hash(t, result.files);
+});

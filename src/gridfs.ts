@@ -13,7 +13,7 @@ import pump from 'pump';
 import { StorageEngine } from 'multer';
 import mongoUri from 'mongodb-uri';
 
-import { getDatabase, shouldListenOnDb } from './utils';
+import { getDatabase } from './utils';
 import { Cache } from './cache';
 import { CacheIndex, GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageOptions } from './types';
 
@@ -52,7 +52,6 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	db: Db = null;
 	client: MongoClient = null;
 	configuration: DbStorageOptions | UrlStorageOptions;
-	connected = false;
 	connecting = false;
 	caching = false;
 	error: any = null;
@@ -162,17 +161,16 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			return;
 		}
 
-		this._updateConnectionStatus();
-		if (this.connected) {
-			this.fromFile(request, file)
-				.then((file) => {
-					cb(null, file);
-				})
-				.catch(cb);
+		if (!this.db) {
+			cb(this.error || new Error('The database connection must be open to store files'));
 			return;
 		}
 
-		cb(new Error('The database connection must be open to store files'));
+		this.fromFile(request, file)
+			.then((file) => {
+				cb(null, file);
+			})
+			.catch(cb);
 	}
 
 	/**
@@ -200,7 +198,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			throw this.error;
 		}
 
-		if (this.connected) {
+		if (this.db) {
 			return { db: this.db, client: this.client };
 		}
 
@@ -346,16 +344,16 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * Determines if a new connection should be created, a explicit connection is provided or a cached instance is required.
 	 */
 	private _connect() {
-		const { db, client = null } = this.configuration as DbStorageOptions<Db>;
+		const { db } = this.configuration as DbStorageOptions<Db>;
 
-		if (db && !isPromise(db) && !isPromise(client)) {
-			this._setDb(db, client);
+		if (db && !isPromise(db)) {
+			this._setDb(db);
 			return;
 		}
 
 		this._resolveConnection()
-			.then(({ db, client }) => {
-				this._setDb(db, client);
+			.then(({ db }) => {
+				this._setDb(db);
 			})
 			.catch((error) => {
 				this._fail(error);
@@ -367,10 +365,10 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 */
 	private async _resolveConnection(): Promise<ConnectionResult> {
 		this.connecting = true;
-		const { db, client = null } = this.configuration as DbStorageOptions<Db>;
+		const { db } = this.configuration as DbStorageOptions<Db>;
 		if (db) {
-			const [_db, _client] = await Promise.all([db, client]);
-			return { db: _db, client: _client };
+			const _db = await db;
+			return { db: _db, client: null };
 		}
 
 		if (!this.caching) {
@@ -412,60 +410,31 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	}
 
 	/**
-	 * Updates the connection status based on the internal db or client object
-	 **/
-	private _updateConnectionStatus(): void {
-		if (!this.db) {
-			this.connected = false;
-			this.connecting = false;
-			return;
-		}
-
-		if (this.client) {
-			// @ts-expect-error topology is not part of the public API
-			this.connected = this.client.topology?.isConnected?.() ?? true;
-			return;
-		}
-
-		// @ts-expect-error topology is not part of the public API
-		this.connected = this.db?.topology?.isConnected() || true;
-	}
-
-	/**
 	 * Sets the database connection and emit the connection event
 	 * @param db - Database instance or Mongoose instance to set
-	 * @param [client] - Optional Mongo client for MongoDb v3
 	 **/
-	private _setDb(db: Db, client?: MongoClient): void {
+	private _setDb(db: Db): void {
 		this.connecting = false;
 		// Check if the object is a mongoose instance, a mongoose Connection or a mongo Db object
 		this.db = getDatabase(db);
-		if (client) {
-			this.client = client;
-		}
+		// Derive the MongoClient from the Db — it's a public property in the driver
+		this.client = this.db.client ?? null;
 
 		const errorEvent = (error_) => {
 			// Needs verification. Sometimes the event fires without an error object
 			// although the docs specify each of the events has a MongoError argument
-			this._updateConnectionStatus();
 			const error = error_ || new Error('Unknown database error');
 			this.emit('dbError', error);
 		};
 
-		// This are all the events that emit errors
+		// These are all the events that emit errors
 		const errorEventNames = ['error', 'parseError', 'timeout', 'close'];
-		let eventSource;
-		if (shouldListenOnDb()) {
-			eventSource = this.db;
-		} else if (this.client) {
-			eventSource = this.client;
-		}
+		// Only the MongoClient is an EventEmitter in the modern driver
+		const eventSource = this.client;
 
 		if (eventSource) {
 			for (const evt of errorEventNames) eventSource.on(evt, errorEvent);
 		}
-
-		this._updateConnectionStatus();
 
 		// Emit on next tick so user code can set listeners in case the db object is already available
 		process.nextTick(() => {
@@ -475,14 +444,13 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 	/**
 	 * Removes the database reference and emit the connectionFailed event
-	 * @param err - The error received while trying to connect
+	 * @param error - The error received while trying to connect
 	 **/
 	private _fail(error: any): void {
 		this.connecting = false;
 		this.db = null;
 		this.client = null;
 		this.error = error;
-		this._updateConnectionStatus();
 		// Fail event is only emitted after either a then promise handler or an I/O phase so is guaranteed to be asynchronous
 		this.emit('connectionFailed', error);
 	}
