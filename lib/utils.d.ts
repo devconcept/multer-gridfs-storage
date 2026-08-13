@@ -3,7 +3,7 @@
  * @module multer-gridfs-storage/utils
  */
 import { Db } from 'mongodb';
-import { UriObject } from 'mongodb-uri';
+import ConnectionString from 'mongodb-connection-string-url';
 import { ComparatorResult, MongooseConnectionInstance, MongooseInstance } from './types';
 /**
  * Compare two objects by value.
@@ -41,7 +41,7 @@ export declare function hasKeys(obj: object): boolean;
  * @param {*} uri2 The target parsed uri to compare
  * @return {boolean} Return true if both uris are equivalent
  */
-export declare function compareUris(uri1: UriObject, uri2: UriObject): boolean;
+export declare function compareUris(uri1: ConnectionString, uri2: ConnectionString): boolean;
 /**
  * Checks if an object is a mongoose instance, a connection or a mongo Db object
  * @param {*} obj The object to check

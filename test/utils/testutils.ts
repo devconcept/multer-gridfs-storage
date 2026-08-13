@@ -1,6 +1,6 @@
 import { Readable, Writable } from 'stream';
 import path from 'path';
-import { parse } from 'mongodb-uri';
+import ConnectionString from 'mongodb-connection-string-url';
 import { Db, MongoClient } from 'mongodb';
 import delay from 'delay';
 
@@ -53,7 +53,7 @@ export async function dropDatabase(url: string): Promise<any> {
 
 export function getDb(client: MongoClient | Db, url: string): Db {
 	if (client instanceof MongoClient) {
-		const { database } = parse(url);
+		const database = new ConnectionString(url).pathname.slice(1);
 		return client.db(database || connection.database);
 	}
 

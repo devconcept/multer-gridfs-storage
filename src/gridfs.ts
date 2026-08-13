@@ -12,7 +12,6 @@ import isGenerator from 'is-generator';
 import pump from 'pump';
 import { StorageEngine } from 'multer';
 import { Request } from 'express';
-import mongoUri from 'mongodb-uri';
 
 import { getDatabase } from './utils';
 import { Cache } from './cache';
@@ -265,8 +264,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		let db;
 		const connection = await MongoClient.connect(url, options);
 		if (connection instanceof MongoClient) {
-			const parsedUri = mongoUri.parse(url);
-			db = connection.db(parsedUri.database);
+			// With no name argument the driver uses the database from the connection string
+			db = connection.db();
 		} else {
 			db = connection;
 		}

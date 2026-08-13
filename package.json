@@ -33,7 +33,7 @@
 		"is-generator": "^1.0.3",
 		"is-promise": "^4.0.0",
 		"lodash.isplainobject": ">=0.8.0",
-		"mongodb-uri": "^0.9.7",
+		"mongodb-connection-string-url": "^7.0.2",
 		"pump": "^3.0.0"
 	},
 	"peerDependencies": {
@@ -47,7 +47,6 @@
 		"@types/express-serve-static-core": ">=4.17.21",
 		"@types/is-generator": "^1.0.2",
 		"@types/lodash.isplainobject": "^4.0.9",
-		"@types/mongodb-uri": "^0.9.4",
 		"@types/node": "^22.20.1",
 		"@types/pify": "^5.0.4",
 		"@types/sinon": "^10.0.2",

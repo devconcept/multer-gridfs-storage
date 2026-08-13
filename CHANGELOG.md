@@ -1,3 +1,8 @@
+# Unreleased
+
+* Removed: Dropped the `md5` file property and the `disableMD5` file option. MongoDB removed automatic md5 hashing from GridFS in the mongodb Node.js driver 4.0.0 (`disableMD5` has had no effect since), so stored files no longer expose an md5 hash.
+* Changed: Replaced the `mongodb-uri` dependency with `mongodb-connection-string-url` (the parser used by the mongodb driver itself) for connection string comparison. The database name is now resolved by the driver via `client.db()` instead of being parsed manually.
+
 # 5.0.2
 
 * Fixed: Solved bug when not using the client parameter and the topology is not present in the db object #377

@@ -5,7 +5,7 @@
 
 import isPlainObject from 'lodash.isplainobject';
 import { Db } from 'mongodb';
-import { UriObject } from 'mongodb-uri';
+import ConnectionString from 'mongodb-connection-string-url';
 
 import { ComparatorResult, MongooseConnectionInstance, MongooseInstance } from './types';
 
@@ -169,16 +169,16 @@ export function hasKeys(obj: object): boolean {
  * @param {*} uri2 The target parsed uri to compare
  * @return {boolean} Return true if both uris are equivalent
  */
-export function compareUris(uri1: UriObject, uri2: UriObject): boolean {
+export function compareUris(uri1: ConnectionString, uri2: ConnectionString): boolean {
 	// Compare properties that are string values
-	const stringProps: Array<keyof UriObject> = ['scheme', 'username', 'password', 'database'];
+	const stringProps: Array<keyof ConnectionString> = ['protocol', 'username', 'password', 'pathname'];
 	const diff = stringProps.find((prop) => uri1[prop] !== uri2[prop]);
 	if (diff) {
 		return false;
 	}
 
-	// Compare query parameter values
-	if (!compare(uri1.options, uri2.options)) {
+	// Compare query parameter values regardless of the order they appear in
+	if (!compare(Object.fromEntries(uri1.searchParams), Object.fromEntries(uri2.searchParams))) {
 		return false;
 	}
 
@@ -190,8 +190,8 @@ export function compareUris(uri1: UriObject, uri2: UriObject): boolean {
 	}
 
 	// Check if every host in one array is present on the other array no matter where is positioned
-	for (const hostObject of hosts1) {
-		if (!hosts2.some((h) => h.host === hostObject.host && h.port === hostObject.port)) {
+	for (const host of hosts1) {
+		if (!hosts2.includes(host)) {
 			return false;
 		}
 	}

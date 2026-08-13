@@ -3,7 +3,7 @@
  * @module multer-gridfs-storage/cache
  */
 import { EventEmitter } from 'node:events';
-import mongoUri from 'mongodb-uri';
+import ConnectionString from 'mongodb-connection-string-url';
 import { Db } from 'mongodb';
 import { compare, compareUris } from './utils';
 import { CacheIndex, CacheValue } from './types';
@@ -111,9 +111,9 @@ export class Cache {
 			return undefined;
 		}
 
+		const parsedCache = new ConnectionString(url);
 		for (const [storedUrl] of namedCache) {
-			const parsedUri = mongoUri.parse(storedUrl);
-			const parsedCache = mongoUri.parse(url);
+			const parsedUri = new ConnectionString(storedUrl);
 			if (compareUris(parsedUri, parsedCache)) {
 				return storedUrl;
 			}

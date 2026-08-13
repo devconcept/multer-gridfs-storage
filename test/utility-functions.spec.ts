@@ -1,5 +1,5 @@
 import anyTest, { TestInterface } from 'ava';
-import { parse } from 'mongodb-uri';
+import ConnectionString from 'mongodb-connection-string-url';
 import { Db } from 'mongodb';
 import { compare, compareArrays, compareBy, compareUris, getDatabase, hasKeys } from '../src/utils';
 import { UtilityFunctionsContext } from './types/utility-functions-context';
@@ -117,16 +117,19 @@ test('returns the type of the objects when they have the same type', (t) => {
 
 /* CompareUris */
 test('returns true for urls that contain the same hosts in different order', (t) => {
-	t.true(compareUris(parse('mongodb://host1:1234,host2:5678/database'), parse('mongodb://host2:5678,host1:1234/database')));
+	t.true(compareUris(new ConnectionString('mongodb://host1:1234,host2:5678/database'), new ConnectionString('mongodb://host2:5678,host1:1234/database')));
 });
 
 test('returns false for urls with different parameters', (t) => {
-	t.false(compareUris(parse('mongodb://host1:1234,host2:5678/database?authSource=admin'), parse('mongodb://host2:5678,host1:1234/database')));
+	t.false(compareUris(new ConnectionString('mongodb://host1:1234,host2:5678/database?authSource=admin'), new ConnectionString('mongodb://host2:5678,host1:1234/database')));
 });
 
 test('returns true for urls with the same parameters in different order', (t) => {
 	t.true(
-		compareUris(parse('mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000'), parse('mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin')),
+		compareUris(
+			new ConnectionString('mongodb://host1:1234/database?authSource=admin&connectTimeoutMS=300000'),
+			new ConnectionString('mongodb://host1:1234/database?connectTimeoutMS=300000&authSource=admin'),
+		),
 	);
 });
 
