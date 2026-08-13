@@ -1,8 +1,8 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestInterface, ExecutionContext } from 'ava';
 import { MongoClient, Db } from 'mongodb';
 import { spy, stub, restore } from 'sinon';
 
-import { Cache, GridFsStorage } from '../src';
+import { Cache, GridFsStorage, UrlStorageOptions } from '../src';
 import { storageOptions } from './utils/settings';
 import { cleanStorage, fakeConnectCb } from './utils/testutils';
 import { CacheErrorsContext } from './types/cache-errors-context';
@@ -10,10 +10,10 @@ import { CacheErrorsContext } from './types/cache-errors-context';
 const { url, options } = storageOptions();
 const test = anyTest as TestInterface<CacheErrorsContext>;
 
-function createStorage(settings, { t = null, key = '' } = {}) {
+function createStorage(settings: Partial<UrlStorageOptions>, { t, key }: { t?: ExecutionContext<CacheErrorsContext>; key?: string } = {}) {
 	const storage = new GridFsStorage({ url, options, ...settings });
 	if (t && key) {
-		t.context[key] = storage;
+		t.context[key as keyof CacheErrorsContext] = storage;
 	}
 
 	return storage;
@@ -25,7 +25,10 @@ test.serial.before((t) => {
 	GridFsStorage.cache = cache;
 	t.context.cache = cache;
 	t.context.error = new Error('reason');
-	t.context.mongoSpy = stub(MongoClient, 'connect').callThrough().onSecondCall().callsFake(fakeConnectCb(t.context.error));
+	t.context.mongoSpy = stub(MongoClient, 'connect')
+		.callThrough()
+		.onSecondCall()
+		.callsFake(fakeConnectCb(t.context.error) as any);
 	createStorage({ cache: '1' }, { t, key: 'storage1' });
 	createStorage({ cache: '2' }, { t, key: 'storage2' });
 	createStorage({ cache: '1' }, { t, key: 'storage3' });

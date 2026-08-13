@@ -1,5 +1,5 @@
 import anyTest, { TestInterface } from 'ava';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import { ObjectId } from 'mongodb';
@@ -22,7 +22,7 @@ test.before(async (t) => {
 	t.context.contentTypes = ['text/plain', 'image/jpeg'];
 	const storage = new GridFsStorage({
 		...storageOptions(),
-		*file(request_, file) {
+		*file(request_, file): Generator<Record<string, unknown>, void, any> {
 			let counter = 0;
 			t.context.params = [{ req: request_, file }];
 			for (;;) {
@@ -43,7 +43,7 @@ test.before(async (t) => {
 
 	const upload = multer({ storage });
 
-	app.post('/url', upload.array('photos', 2), (request_, response) => {
+	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
 		t.context.req = request_;
 		t.context.result = {
 			headers: request_.headers,

@@ -15,7 +15,11 @@ export declare class Cache {
      * @param {string} options.cacheName - The name of the cache to use
      * @param {any} options.init - The connection options provided
      **/
-    initialize(options: any): CacheIndex;
+    initialize(options: {
+        url: string;
+        cacheName: string;
+        init?: unknown;
+    }): CacheIndex;
     /**
      * Search the cache for a space stored under an equivalent url.
      *
@@ -25,7 +29,7 @@ export declare class Cache {
      * @param url The mongodb url to compare
      * @return The similar url already in the cache
      */
-    findUri(cacheName: string, url: string): string;
+    findUri(cacheName: string, url: string): string | undefined;
     /**
      * Returns true if the cache has an entry matching the given index
      * @param cacheIndex The index to look for
@@ -37,7 +41,7 @@ export declare class Cache {
      * @param cacheIndex {object} The index to look for
      * @return {object} The cache contents or null if was not found
      */
-    get(cacheIndex: CacheIndex): CacheValue;
+    get(cacheIndex: CacheIndex): CacheValue | null;
     /**
      * Sets the contents of the cache in a given index
      * @param cacheIndex The index to look for
@@ -67,7 +71,7 @@ export declare class Cache {
      * @param cacheIndex The index to look for
      * @param err The error thrown by the driver
      */
-    reject(cacheIndex: CacheIndex, error: any): void;
+    reject(cacheIndex: CacheIndex, error: unknown): void;
     /**
      * Allows waiting for a connection associated to a given cache
      * @param cacheIndex The index to look for

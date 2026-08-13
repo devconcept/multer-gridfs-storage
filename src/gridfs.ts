@@ -6,29 +6,44 @@
  */
 import crypto from 'node:crypto';
 import { EventEmitter } from 'node:events';
-import {Db, GridFSBucket, GridFSBucketWriteStream, MongoClient, MongoClientOptions, ObjectId} from 'mongodb';
+import { Db, Document, GridFSBucket, GridFSBucketWriteStream, GridFSFile, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
 import isPromise from 'is-promise';
 import isGenerator from 'is-generator';
 import pump from 'pump';
 import { StorageEngine } from 'multer';
+import { Request } from 'express';
 import mongoUri from 'mongodb-uri';
 
 import { getDatabase } from './utils';
 import { Cache } from './cache';
 import { CacheIndex, GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageOptions } from './types';
 
-const isGeneratorFn: any = isGenerator.fn;
+const isGeneratorFn = isGenerator.fn;
 
 /**
  * Default file information
  * @const defaults
  **/
-const defaults: any = {
+const defaults: Partial<CreateStreamOptions> = {
 	metadata: null,
 	chunkSize: 261_120,
 	bucketName: 'fs',
 	aliases: null,
 };
+
+/**
+ * Options used to open a GridFS upload stream, produced by merging the plugin
+ * defaults with the values returned by the file naming function.
+ */
+interface CreateStreamOptions {
+	id?: ObjectId;
+	filename: string;
+	chunkSize?: number;
+	contentType?: string;
+	metadata?: Document | null;
+	aliases?: string[] | null;
+	bucketName: string;
+}
 
 /**
  * Multer GridFS Storage Engine class definition.
@@ -49,15 +64,15 @@ const defaults: any = {
  */
 export class GridFsStorage extends EventEmitter implements StorageEngine {
 	static cache: Cache = new Cache();
-	db: Db = null;
+	db: Db | null = null;
 	configuration: DbStorageOptions | UrlStorageOptions;
 	connecting = false;
 	caching = false;
-	error: any = null;
+	error: unknown = null;
 	private _file: any;
-	private readonly _options: any;
-	private readonly cacheName: string;
-	private readonly cacheIndex: CacheIndex;
+	private readonly _options: MongoClientOptions | undefined;
+	private readonly cacheName?: string;
+	private readonly cacheIndex?: CacheIndex;
 
 	constructor(configuration: UrlStorageOptions | DbStorageOptions) {
 		super();
@@ -111,9 +126,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param fileSettings Properties received in the file function
 	 * @return An object with the merged properties wrapped in a promise
 	 */
-	private static async _mergeProps(extra, fileSettings): Promise<any> {
+	private static async _mergeProps(extra: Record<string, unknown>, fileSettings: Record<string, unknown>): Promise<CreateStreamOptions> {
 		// If the filename is not provided generate one
-		const previous: any = await (fileSettings.filename ? {} : GridFsStorage.generateBytes());
+		const previous: { filename?: string; id?: ObjectId } = await (fileSettings.filename ? {} : GridFsStorage.generateBytes());
 		// If no id is provided generate one
 		// If an error occurs the emitted file information will contain the id
 		const hasId = fileSettings.id;
@@ -121,7 +136,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			previous.id = new ObjectId();
 		}
 
-		return { ...previous, ...defaults, ...extra, ...fileSettings };
+		return { ...previous, ...defaults, ...extra, ...fileSettings } as unknown as CreateStreamOptions;
 	}
 
 	/**
@@ -149,7 +164,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param {File} file - The uploaded file stream
 	 * @param cb - A standard node callback to signal the end of the upload or an error
 	 **/
-	_handleFile(request: any, file, cb: NodeCallback): void {
+	_handleFile(request: Request, file: Express.Multer.File, cb: NodeCallback): void {
 		if (this.connecting) {
 			this.ready()
 				.then(async () => this.fromFile(request, file))
@@ -178,7 +193,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param {File} file - The uploaded file stream
 	 * @param cb - A standard node callback to signal the end of the upload or an error
 	 **/
-	_removeFile(request: any, file, cb: NodeCallback): void {
+	_removeFile(request: Request, file: Express.Multer.File, cb: NodeCallback): void {
+		if (!this.db) {
+			cb(this.error || new Error('The database connection must be open to remove files'));
+			return;
+		}
+
 		const options = { bucketName: file.bucketName };
 		const bucket = new GridFSBucket(this.db, options);
 		bucket
@@ -202,12 +222,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		return new Promise((resolve, reject) => {
-			const done = (result) => {
+			const done = (result: ConnectionResult) => {
 				this.removeListener('connectionFailed', fail);
 				resolve(result);
 			};
 
-			const fail = (error) => {
+			const fail = (error: unknown) => {
 				this.removeListener('connection', done);
 				reject(error);
 			};
@@ -223,7 +243,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param {File} file - The file stream to pipe
 	 * @return  {Promise} Resolves with the uploaded file
 	 */
-	async fromFile(request: any, file): Promise<GridFile> {
+	async fromFile(request: Request, file: Express.Multer.File): Promise<GridFile> {
 		return this.fromStream(file.stream, request, file);
 	}
 
@@ -234,14 +254,14 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param {File} [file] - The file stream to pipe
 	 * @return Resolves with the uploaded file
 	 */
-	async fromStream(readStream: NodeJS.ReadableStream, request: any, file: any): Promise<GridFile> {
+	async fromStream(readStream: NodeJS.ReadableStream, request: Request, file: Express.Multer.File): Promise<GridFile> {
 		return new Promise<GridFile>((resolve, reject) => {
 			readStream.on('error', reject);
 			this.fromMulterStream(readStream, request, file).then(resolve).catch(reject);
 		});
 	}
 
-	protected async _openConnection(url: string, options: MongoClientOptions): Promise<ConnectionResult> {
+	protected async _openConnection(url: string, options?: MongoClientOptions): Promise<ConnectionResult> {
 		let db;
 		const connection = await MongoClient.connect(url, options);
 		if (connection instanceof MongoClient) {
@@ -258,20 +278,23 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * Create a writable stream with backwards compatibility with GridStore
 	 * @param {object} options - The stream options
 	 */
-	protected createStream(options): GridFSBucketWriteStream {
+	protected createStream(options: CreateStreamOptions): GridFSBucketWriteStream {
+		if (!this.db) {
+			throw this.error || new Error('The database connection must be open to store files');
+		}
+
 		const settings = {
 			id: options.id,
 			chunkSizeBytes: options.chunkSize,
 			contentType: options.contentType,
-			metadata: options.metadata,
+			metadata: options.metadata ?? undefined,
 			aliases: options.aliases,
-			disableMD5: options.disableMD5,
 		};
 		const gfs = new GridFSBucket(this.db, { bucketName: options.bucketName });
 		return gfs.openUploadStream(options.filename, settings);
 	}
 
-	private async fromMulterStream(readStream: NodeJS.ReadableStream, request: any, file: any): Promise<GridFile> {
+	private async fromMulterStream(readStream: NodeJS.ReadableStream, request: Request, file: Express.Multer.File): Promise<GridFile> {
 		if (this.connecting) {
 			await this.ready();
 		}
@@ -297,21 +320,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		const contentType = file ? file.mimetype : undefined;
 		const streamOptions = await GridFsStorage._mergeProps({ contentType }, settings);
 		return new Promise((resolve, reject) => {
-			const emitError = (streamError) => {
+			const emitError = (streamError: unknown) => {
 				this.emit('streamError', streamError, streamOptions);
 				reject(streamError);
 			};
 
-			// Compute the MD5 hash client-side. MongoDB 4.4+ and mongodb driver 4.x+ no
-			// longer populate `md5` on the stored GridFS file document, so we hash the
-			// incoming bytes while the stream is pumped into GridFS and use the digest
-			// when the upload finishes. Honour `disableMD5` so callers who explicitly
-			// opt out still receive no hash.
-			const computeMd5 = !streamOptions.disableMD5;
-			const hash = computeMd5 ? crypto.createHash('md5') : null;
-			readStream.on('data', (chunk) => hash?.update(chunk));
-
-			const emitFile = (f) => {
+			const emitFile = (f: GridFSFile) => {
 				const storedFile: GridFile = {
 					id: f._id,
 					filename: f.filename,
@@ -319,7 +333,6 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 					bucketName: streamOptions.bucketName,
 					chunkSize: f.chunkSize,
 					size: f.length,
-					md5: f.md5 || (computeMd5 ? hash.digest('hex') : undefined),
 					uploadDate: f.uploadDate,
 					contentType: streamOptions.contentType,
 				};
@@ -332,7 +345,11 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			// Multer already handles the error event on the readable stream(Busboy).
 			// Invoking the callback with an error will cause file removal and aborting routines to be called twice
 			writeStream.on('error', emitError);
-			writeStream.on('finish', () => emitFile(writeStream.gridFSFile));
+			writeStream.on('finish', () => {
+				if (writeStream.gridFSFile) {
+					emitFile(writeStream.gridFSFile);
+				}
+			});
 			pump([readStream, writeStream]);
 		});
 	}
@@ -368,18 +385,26 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			return { db: _db };
 		}
 
-		if (!this.caching) {
+		if (!this.caching || !this.cacheIndex) {
 			return this._createConnection();
 		}
 
 		const { cache } = GridFsStorage;
 		if (!cache.isOpening(this.cacheIndex) && cache.isPending(this.cacheIndex)) {
 			const cached = cache.get(this.cacheIndex);
-			cached.opening = true;
+			if (cached) {
+				cached.opening = true;
+			}
+
 			return this._createConnection();
 		}
 
-		return cache.waitFor(this.cacheIndex);
+		const cached = await cache.waitFor(this.cacheIndex);
+		if (!cached.db) {
+			throw new Error('The cached connection was resolved without a database');
+		}
+
+		return { db: cached.db };
 	}
 
 	/**
@@ -387,12 +412,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 */
 	private async _createConnection(): Promise<ConnectionResult> {
 		const { url } = this.configuration as UrlStorageOptions;
-		const options: MongoClientOptions = this._options;
+		const options = this._options;
 
 		const { cache } = GridFsStorage;
 		try {
 			const { db } = await this._openConnection(url, options);
-			if (this.caching) {
+			if (this.caching && this.cacheIndex) {
 				cache.resolve(this.cacheIndex, db);
 			}
 
@@ -418,7 +443,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		// the only EventEmitter in the modern driver, needed for dbError event listeners)
 		const client = this.db?.client ?? null;
 
-		const errorEvent = (error_) => {
+		const errorEvent = (error_: unknown) => {
 			// Needs verification. Sometimes the event fires without an error object
 			// although the docs specify each of the events has a MongoError argument
 			const error = error_ || new Error('Unknown database error');
@@ -444,7 +469,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * Removes the database reference and emit the connectionFailed event
 	 * @param error - The error received while trying to connect
 	 **/
-	private _fail(error: any): void {
+	private _fail(error: unknown): void {
 		this.connecting = false;
 		this.db = null;
 		this.error = error;
@@ -458,7 +483,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param {File} file - The uploaded file stream as received in _handleFile
 	 * @return A promise with the value generated by the file function
 	 **/
-	private async _generate(request: any, file): Promise<any> {
+	private async _generate(request: Request, file: Express.Multer.File): Promise<any> {
 		let result;
 		let generator;
 		let isGen = false;

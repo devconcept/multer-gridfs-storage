@@ -1,5 +1,5 @@
 import anyTest, { TestInterface } from 'ava';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
 
@@ -21,7 +21,7 @@ test.before(async (t) => {
 	t.context.storage = storage;
 	const upload = multer({ storage });
 
-	app.post('/url', upload.array('photos', 2), (error, request_, response, _next) => {
+	app.post('/url', upload.array('photos', 2), (error: any, request_: Request, response: Response, _next: NextFunction) => {
 		t.context.error = error;
 		response.end();
 	});

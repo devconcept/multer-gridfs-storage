@@ -1,9 +1,9 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestInterface, ExecutionContext } from 'ava';
 import { MongoClient } from 'mongodb';
 import delay from 'delay';
 import { spy, stub, restore } from 'sinon';
 
-import { Cache, GridFsStorage } from '../src';
+import { Cache, GridFsStorage, UrlStorageOptions } from '../src';
 import { storageOptions } from './utils/settings';
 import { cleanStorage } from './utils/testutils';
 import { CacheHandlingContext } from './types/cache-handling-context';
@@ -26,10 +26,10 @@ test.serial.afterEach.always(async (t) => {
 	await Promise.all([cleanStorage(storage1), cleanStorage(storage2)]);
 });
 
-function createStorage(settings, { t = null, key = '' } = {}) {
+function createStorage(settings: Partial<UrlStorageOptions>, { t, key }: { t?: ExecutionContext<CacheHandlingContext>; key?: string } = {}) {
 	const storage = new GridFsStorage({ url, options, ...settings });
 	if (t && key) {
-		t.context[key] = storage;
+		t.context[key as keyof CacheHandlingContext] = storage;
 	}
 
 	return storage;

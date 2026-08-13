@@ -19,6 +19,6 @@ test('is compatible with an options object on url based connections', async (t) 
 	t.context.storage = storage;
 
 	await storage.ready();
-	const value = storage.db.client.options.maxPoolSize;
+	const value = storage.db!.client.options.maxPoolSize;
 	t.is(value, 10);
 });

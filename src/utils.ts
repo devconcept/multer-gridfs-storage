@@ -5,8 +5,9 @@
 
 import isPlainObject from 'lodash.isplainobject';
 import { Db } from 'mongodb';
+import { UriObject } from 'mongodb-uri';
 
-import { ComparatorResult } from './types';
+import { ComparatorResult, MongooseConnectionInstance, MongooseInstance } from './types';
 
 /**
  * Compare two objects by value.
@@ -149,12 +150,12 @@ export function compareBy(object1: any, object2: any): ComparatorResult {
 
 /**
  * Return true if the object has at least one property inherited or not
- * @param object The object to inspect
+ * @param obj The object to inspect
  * @return If the object has any properties or not
  */
-export function hasKeys(object: any): boolean {
+export function hasKeys(obj: object): boolean {
 	/* eslint-disable-next-line guard-for-in, no-unreachable-loop */
-	for (const prop in object) {
+	for (const prop in obj) {
 		// Stop testing if the object has at least one property
 		return true;
 	}
@@ -168,9 +169,9 @@ export function hasKeys(object: any): boolean {
  * @param {*} uri2 The target parsed uri to compare
  * @return {boolean} Return true if both uris are equivalent
  */
-export function compareUris(uri1, uri2): boolean {
+export function compareUris(uri1: UriObject, uri2: UriObject): boolean {
 	// Compare properties that are string values
-	const stringProps = ['scheme', 'username', 'password', 'database'];
+	const stringProps: Array<keyof UriObject> = ['scheme', 'username', 'password', 'database'];
 	const diff = stringProps.find((prop) => uri1[prop] !== uri2[prop]);
 	if (diff) {
 		return false;
@@ -200,21 +201,21 @@ export function compareUris(uri1, uri2): boolean {
 
 /**
  * Checks if an object is a mongoose instance, a connection or a mongo Db object
- * @param {*} object The object to check
+ * @param {*} obj The object to check
  * @return The database object
  */
-export function getDatabase(object: any): Db {
-	// If the object has a db property should be a mongoose connection instance
-	// Mongo 2 has a db property but its a function. See issue #14
-	if (object.db && typeof object.db !== 'function') {
-		return object.db;
+export function getDatabase(obj: MongooseConnectionInstance | MongooseInstance | Db): Db {
+	// If the object has a db property it should be a mongoose connection instance.
+	// Mongo 2 had a db property but it was a function. See issue #14
+	if ('db' in obj && obj.db && typeof obj.db !== 'function') {
+		return obj.db;
 	}
 
 	// If it has a connection property with a db property on it is a mongoose instance
-	if (object?.connection?.db) {
-		return object.connection.db;
+	if ('connection' in obj && obj.connection?.db) {
+		return obj.connection.db;
 	}
 
 	// If none of the above are true it should be a mongo database object
-	return object;
+	return obj as Db;
 }

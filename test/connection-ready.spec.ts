@@ -1,4 +1,4 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestInterface, ExecutionContext } from 'ava';
 import { MongoClient } from 'mongodb';
 import { spy, restore, stub } from 'sinon';
 
@@ -15,13 +15,13 @@ test.afterEach.always('cleanup', async (t) => {
 	await cleanStorage(storage);
 });
 
-function createStorage(t) {
+function createStorage(t: ExecutionContext<ConnectionReadyContext>) {
 	t.context.storage = new GridFsStorage(storageOptions());
 }
 
-function forceFailure(t) {
+function forceFailure(t: ExecutionContext<ConnectionReadyContext>) {
 	t.context.error = new Error('Fake error');
-	stub(MongoClient, 'connect').callsFake(fakeConnectCb(t.context.error));
+	stub(MongoClient, 'connect').callsFake(fakeConnectCb(t.context.error) as any);
 	createStorage(t);
 }
 
@@ -47,10 +47,10 @@ test.serial('returns a promise that rejects when the connection fails', async (t
 test.serial.cb('returns a promise that rejects if the module already failed connecting', (t) => {
 	forceFailure(t);
 	const { storage } = t.context;
-	storage.once('connectionFailed', (evtError) => {
+	storage.once('connectionFailed', (evtError: any) => {
 		const result = storage.ready();
 		t.is(typeof result.then, 'function');
-		result.catch((error) => {
+		result.catch((error: any) => {
 			t.is(error, evtError);
 			t.is(error, t.context.error);
 			t.end();
@@ -80,7 +80,7 @@ test.cb('returns a promise that resolves if the connection is already created', 
 		t.is(typeof result.then, 'function');
 
 		result
-			.then((result) => {
+			.then((result: any) => {
 				t.truthy(result);
 				t.is(result.db, storage.db);
 				t.end();

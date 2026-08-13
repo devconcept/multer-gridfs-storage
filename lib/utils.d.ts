@@ -3,7 +3,8 @@
  * @module multer-gridfs-storage/utils
  */
 import { Db } from 'mongodb';
-import { ComparatorResult } from './types';
+import { UriObject } from 'mongodb-uri';
+import { ComparatorResult, MongooseConnectionInstance, MongooseInstance } from './types';
 /**
  * Compare two objects by value.
  *
@@ -30,20 +31,20 @@ export declare function compareArrays(array1: any[], array2: any[]): boolean;
 export declare function compareBy(object1: any, object2: any): ComparatorResult;
 /**
  * Return true if the object has at least one property inherited or not
- * @param object The object to inspect
+ * @param obj The object to inspect
  * @return If the object has any properties or not
  */
-export declare function hasKeys(object: any): boolean;
+export declare function hasKeys(obj: object): boolean;
 /**
  * Compare two parsed uris checking if they are equivalent
  * @param {*} uri1 The source parsed uri
  * @param {*} uri2 The target parsed uri to compare
  * @return {boolean} Return true if both uris are equivalent
  */
-export declare function compareUris(uri1: any, uri2: any): boolean;
+export declare function compareUris(uri1: UriObject, uri2: UriObject): boolean;
 /**
  * Checks if an object is a mongoose instance, a connection or a mongo Db object
- * @param {*} object The object to check
+ * @param {*} obj The object to check
  * @return The database object
  */
-export declare function getDatabase(object: any): Db;
+export declare function getDatabase(obj: MongooseConnectionInstance | MongooseInstance | Db): Db;

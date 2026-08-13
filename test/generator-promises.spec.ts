@@ -1,5 +1,5 @@
-import anyTest, { TestInterface } from 'ava';
-import express from 'express';
+import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
 
@@ -10,7 +10,7 @@ import { GeneratorPromisesContext } from './types/generator-promises-context';
 
 const test = anyTest as TestInterface<GeneratorPromisesContext>;
 
-async function successfulPromiseSetup(t) {
+async function successfulPromiseSetup(t: ExecutionContext<GeneratorPromisesContext>) {
 	const app = express();
 	t.context.filePrefix = 'file';
 	const storage = new GridFsStorage({
@@ -29,7 +29,7 @@ async function successfulPromiseSetup(t) {
 
 	const upload = multer({ storage });
 
-	app.post('/url', upload.array('photos', 2), (request_, response) => {
+	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
 		t.context.result = {
 			headers: request_.headers,
 			files: request_.files,
@@ -54,7 +54,7 @@ test('yielding a promise is resolved as file configuration', async (t) => {
 	for (const [idx, f] of result.files.entries()) t.is(f.filename, t.context.filePrefix + (idx + 1));
 });
 
-async function failedPromiseSetup(t) {
+async function failedPromiseSetup(t: ExecutionContext<GeneratorPromisesContext>) {
 	const app = express();
 	t.context.rejectedError = new Error('reason');
 	const storage = new GridFsStorage({
@@ -66,7 +66,7 @@ async function failedPromiseSetup(t) {
 	t.context.storage = storage;
 	const upload = multer({ storage });
 
-	app.post('/url', upload.array('photos', 2), (error, request_, response, next) => {
+	app.post('/url', upload.array('photos', 2), (error: any, request_: Request, response: Response, next: NextFunction) => {
 		t.context.error = error;
 		next();
 	});

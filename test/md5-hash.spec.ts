@@ -12,10 +12,7 @@ const test = anyTest as TestInterface<Md5HashContext>;
 
 test.before(async (t) => {
 	const app = express();
-	const storage = new GridFsStorage({
-		...storageOptions(),
-		file: () => ({ disableMD5: true }),
-	});
+	const storage = new GridFsStorage(storageOptions());
 	t.context.storage = storage;
 	const upload = multer({ storage });
 
@@ -36,8 +33,10 @@ test.after.always('cleanup', async (t) => {
 	await cleanStorage(t.context.storage);
 });
 
-test('files don’t have a computed MD5 hash', (t) => {
+test('files don’t have an md5 hash', (t) => {
 	const { result } = t.context;
-	t.is(result.files[0].md5, undefined);
-	t.is(result.files[1].md5, undefined);
+	// md5 support was removed from GridFS in the mongodb driver 4.0.0, so stored
+	// files never carry an md5 property.
+	t.false('md5' in result.files[0]);
+	t.false('md5' in result.files[1]);
 });

@@ -1,4 +1,4 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestInterface, ExecutionContext } from 'ava';
 import { restore, stub } from 'sinon';
 
 import { Cache } from '../src';
@@ -102,7 +102,7 @@ test('new cache is created if urls with different options are used', (t) => {
 	cachesShouldBeDifferent(t, firstUrl, secondUrl);
 });
 
-function cachesShouldBeDifferent(t, firstUrl, secondUrl) {
+function cachesShouldBeDifferent(t: ExecutionContext<CacheClassContext>, firstUrl: string, secondUrl: string) {
 	const { cache } = t.context;
 	const cacheName = 'a';
 	cache.initialize({ url: firstUrl, cacheName });
@@ -126,7 +126,7 @@ function cachesShouldBeDifferent(t, firstUrl, secondUrl) {
 	t.is(cache.connections(), 2);
 }
 
-function cachesShouldBeEqual(t, firstUrl, secondUrl) {
+function cachesShouldBeEqual(t: ExecutionContext<CacheClassContext>, firstUrl: string, secondUrl: string) {
 	const { cache } = t.context;
 	const cacheName = 'a';
 	cache.initialize({ url: firstUrl, cacheName });

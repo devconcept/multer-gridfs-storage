@@ -70,19 +70,19 @@ test('upload a file using the fromStream method after another upload', async (t)
 	});
 	const upload = multer({ storage: diskStorage });
 	const app = express();
-	const route = defer();
+	const route = defer<any>();
 	app.post('/url', upload.single('photos'), (request, response) => {
 		const storage = new GridFsStorage({
 			...storageOptions(),
 			file: () => 'test.jpg',
 		});
 		t.context.storage = storage;
-		const { file } = request;
+		const file = request.file as Express.Multer.File;
 		const stream = fs.createReadStream(file.path);
 		storage
 			.fromStream(stream, request, file)
-			.then((file) => route.resolve(file))
-			.catch((error) => route.reject(error));
+			.then((file: any) => route.resolve(file))
+			.catch((error: any) => route.reject(error));
 		response.end();
 	});
 

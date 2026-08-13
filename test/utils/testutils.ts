@@ -1,14 +1,14 @@
 import { Readable, Writable } from 'stream';
 import path from 'path';
 import { parse } from 'mongodb-uri';
-import { MongoClient } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 import delay from 'delay';
 
 import { connection, storageOptions } from './settings';
 
 export const files = ['sample1.jpg', 'sample2.jpg'].map((file) => path.join(__dirname, '/../attachments/', file));
 
-export async function cleanStorage(storage: any, { client = null, db = null } = {}) {
+export async function cleanStorage(storage: any, { client = null, db = null }: { client?: MongoClient | null; db?: Db | null } = {}) {
 	if (storage) {
 		storage.removeAllListeners();
 		if (!db && !client) {
@@ -23,7 +23,7 @@ export async function cleanStorage(storage: any, { client = null, db = null } = 
 	}
 }
 
-export function closeConnections({ db, client }) {
+export function closeConnections({ db, client }: { db?: any; client?: any }) {
 	if (client) {
 		// MongoClient is ready when it has an open topology
 		// isConnected() was removed in mongodb driver 4.x; check the internal topology state instead
@@ -47,11 +47,11 @@ export async function dropDatabase(url: string): Promise<any> {
 			return client.close();
 		}
 
-		return db.close();
+		return (db as any).close();
 	}
 }
 
-export function getDb(client, url) {
+export function getDb(client: MongoClient | Db, url: string): Db {
 	if (client instanceof MongoClient) {
 		const { database } = parse(url);
 		return client.db(database || connection.database);
@@ -60,12 +60,12 @@ export function getDb(client, url) {
 	return client;
 }
 
-export function getClient(client) {
+export function getClient(client: unknown): MongoClient | null {
 	return client instanceof MongoClient ? client : null;
 }
 
-export function fakeConnectCb(error = null) {
-	return async (...args) => {
+export function fakeConnectCb(error: Error | null = null) {
+	return async (...args: any[]) => {
 		if (args.length === 3) {
 			const cb = args[2];
 			setTimeout(() => {
@@ -81,21 +81,24 @@ export function fakeConnectCb(error = null) {
 	};
 }
 
-export function defer() {
-	const d = {
-		promise: null,
-		resolve: null,
-		reject: null,
-	};
-	d.promise = new Promise((resolve, reject) => {
-		d.resolve = resolve;
-		d.reject = reject;
+export interface Deferred<T = unknown> {
+	promise: Promise<T>;
+	resolve: (value: T | PromiseLike<T>) => void;
+	reject: (reason?: any) => void;
+}
+
+export function defer<T = unknown>(): Deferred<T> {
+	let resolve!: (value: T | PromiseLike<T>) => void;
+	let reject!: (reason?: any) => void;
+	const promise = new Promise<T>((res, rej) => {
+		resolve = res;
+		reject = rej;
 	});
-	return d;
+	return { promise, resolve, reject };
 }
 
 export class ErrorReadableStream extends Readable {
-	err: Error;
+	err!: Error;
 
 	_read(_size: number) {
 		this.err = new Error('Stream error');
@@ -103,7 +106,7 @@ export class ErrorReadableStream extends Readable {
 	}
 }
 export class ErrorWritableStream extends Writable {
-	err: Error;
+	err!: Error;
 
 	_write(_size: number) {
 		this.err = new Error('Stream error');

@@ -27,31 +27,33 @@ export class Cache {
 	 * @param {string} options.cacheName - The name of the cache to use
 	 * @param {any} options.init - The connection options provided
 	 **/
-	initialize(options): CacheIndex {
+	initialize(options: { url: string; cacheName: string; init?: unknown }): CacheIndex {
 		const { cacheName: name } = options;
 		let { url } = options;
 		// If the option is a falsey value or empty object use null as initial value
 		const init = compare(options.init, null) ? null : options.init;
 
 		// If a cache under that name does not exist create one
-		if (!this.store.has(name)) {
-			this.store.set(name, new Map());
+		let namedCache = this.store.get(name);
+		if (!namedCache) {
+			namedCache = new Map();
+			this.store.set(name, namedCache);
 		}
 
 		// Check if the url has been used for that cache before
-		let cached = this.store.get(name).get(url);
-		if (!this.store.get(name).has(url)) {
+		let cached = namedCache.get(url);
+		if (!namedCache.has(url)) {
 			// If the url matches any equivalent url used before use that connection instead
 			const eqUrl = this.findUri(name, url);
 			if (!eqUrl) {
-				const store = new Map();
+				const store = new Map<number, CacheValue>();
 				store.set(0, {
 					db: null,
 					pending: true,
 					opening: false,
 					init,
 				});
-				this.store.get(name).set(url, store);
+				namedCache.set(url, store);
 
 				return {
 					url,
@@ -61,7 +63,12 @@ export class Cache {
 			}
 
 			url = eqUrl;
-			cached = this.store.get(name).get(url);
+			cached = namedCache.get(url);
+		}
+
+		// After the checks above an entry for this url is guaranteed to exist
+		if (!cached) {
+			throw new Error('Cache entry not found');
 		}
 
 		// Compare connection options to create more only if they are semantically different
@@ -98,14 +105,21 @@ export class Cache {
 	 * @param url The mongodb url to compare
 	 * @return The similar url already in the cache
 	 */
-	findUri(cacheName: string, url: string): string {
-		for (const [storedUrl] of this.store.get(cacheName)) {
+	findUri(cacheName: string, url: string): string | undefined {
+		const namedCache = this.store.get(cacheName);
+		if (!namedCache) {
+			return undefined;
+		}
+
+		for (const [storedUrl] of namedCache) {
 			const parsedUri = mongoUri.parse(storedUrl);
 			const parsedCache = mongoUri.parse(url);
 			if (compareUris(parsedUri, parsedCache)) {
 				return storedUrl;
 			}
 		}
+
+		return undefined;
 	}
 
 	/**
@@ -122,21 +136,19 @@ export class Cache {
 	 * @param cacheIndex {object} The index to look for
 	 * @return {object} The cache contents or null if was not found
 	 */
-	get(cacheIndex: CacheIndex): CacheValue {
+	get(cacheIndex: CacheIndex): CacheValue | null {
 		const { name, url, index } = cacheIndex;
-		if (!this.store.has(name)) {
+		const namedCache = this.store.get(name);
+		if (!namedCache) {
 			return null;
 		}
 
-		if (!this.store.get(name).has(url)) {
+		const urlCache = namedCache.get(url);
+		if (!urlCache) {
 			return null;
 		}
 
-		if (!this.store.get(name).get(url).has(index)) {
-			return null;
-		}
-
-		return this.store.get(name).get(url).get(index);
+		return urlCache.get(index) ?? null;
 	}
 
 	/**
@@ -146,7 +158,7 @@ export class Cache {
 	 */
 	set(cacheIndex: CacheIndex, value: CacheValue): void {
 		const { name, url, index } = cacheIndex;
-		this.store.get(name).get(url).set(index, value);
+		this.store.get(name)?.get(url)?.set(index, value);
 	}
 
 	/**
@@ -156,7 +168,7 @@ export class Cache {
 	 */
 	isPending(cacheIndex: CacheIndex): boolean {
 		const cached = this.get(cacheIndex);
-		return Boolean(cached) && cached.pending;
+		return cached?.pending ?? false;
 	}
 
 	/**
@@ -176,6 +188,10 @@ export class Cache {
 	 */
 	resolve(cacheIndex: CacheIndex, db: Db): void {
 		const cached = this.get(cacheIndex);
+		if (!cached) {
+			return;
+		}
+
 		cached.db = db;
 		cached.pending = false;
 		cached.opening = false;
@@ -187,8 +203,12 @@ export class Cache {
 	 * @param cacheIndex The index to look for
 	 * @param err The error thrown by the driver
 	 */
-	reject(cacheIndex: CacheIndex, error: any): void {
+	reject(cacheIndex: CacheIndex, error: unknown): void {
 		const cached = this.get(cacheIndex);
+		if (!cached) {
+			return;
+		}
+
 		cached.pending = false;
 		this.emitter.emit('reject', cacheIndex, error);
 		this.remove(cacheIndex);
@@ -201,19 +221,27 @@ export class Cache {
 	 */
 	async waitFor(cacheIndex: CacheIndex): Promise<CacheValue> {
 		if (!this.isPending(cacheIndex) && !this.isOpening(cacheIndex)) {
-			return this.get(cacheIndex);
+			const cached = this.get(cacheIndex);
+			if (cached) {
+				return cached;
+			}
 		}
 
 		return new Promise((resolve, reject) => {
-			const _resolve = (index) => {
+			const _resolve = (index: CacheIndex) => {
 				if (compare(cacheIndex, index)) {
 					this.emitter.removeListener('resolve', _resolve);
 					this.emitter.removeListener('reject', _reject);
-					resolve(this.get(cacheIndex));
+					const cached = this.get(cacheIndex);
+					if (cached) {
+						resolve(cached);
+					} else {
+						reject(new Error('The cache entry was deleted'));
+					}
 				}
 			};
 
-			const _reject = (index, error) => {
+			const _reject = (index: CacheIndex, error: unknown) => {
 				if (compare(cacheIndex, index)) {
 					this.emitter.removeListener('resolve', _resolve);
 					this.emitter.removeListener('reject', _reject);
@@ -254,7 +282,7 @@ export class Cache {
 			}
 
 			const { name, url, index } = cacheIndex;
-			this.store.get(name).get(url).delete(index);
+			this.store.get(name)?.get(url)?.delete(index);
 		}
 	}
 

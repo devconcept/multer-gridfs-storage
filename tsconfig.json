@@ -5,7 +5,8 @@
     "sourceMap": true,
 		"outDir": "./lib",
 		"esModuleInterop": true,
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
+		"strict": true
 	},
 	"exclude": [
     "node_modules"

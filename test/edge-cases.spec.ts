@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import anyTest, { TestInterface } from 'ava';
 import multer from 'multer';
 import request from 'supertest';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { MongoClient } from 'mongodb';
 import delay from 'delay';
 import { spy, stub, restore } from 'sinon';
@@ -16,7 +16,7 @@ const test = anyTest as TestInterface<EdgeCasesContext>;
 
 test.serial('connection function fails to connect', async (t) => {
 	const error = new Error('Failed connection');
-	const mongoSpy = stub(MongoClient, 'connect').callsFake(fakeConnectCb(error));
+	const mongoSpy = stub(MongoClient, 'connect').callsFake(fakeConnectCb(error) as any);
 
 	const connectionSpy = spy();
 	const storage = new GridFsStorage(storageOptions());
@@ -36,7 +36,7 @@ test.serial('errors generating random bytes', async (t) => {
 	const storage = new GridFsStorage(storageOptions());
 	const randomBytesSpy = stub(crypto, 'randomBytes').callsFake((size, cb) => {
 		if (cb) {
-			cb(generatedError, null);
+			cb(generatedError, Buffer.alloc(0));
 			return;
 		}
 
@@ -45,7 +45,7 @@ test.serial('errors generating random bytes', async (t) => {
 	t.context.storage = storage;
 	const upload = multer({ storage });
 
-	app.post('/url', upload.single('photo'), (error_, request_, response, next) => {
+	app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, next: NextFunction) => {
 		error = error_;
 		next();
 	});

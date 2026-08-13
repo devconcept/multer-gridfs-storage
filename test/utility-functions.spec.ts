@@ -1,5 +1,6 @@
 import anyTest, { TestInterface } from 'ava';
 import { parse } from 'mongodb-uri';
+import { Db } from 'mongodb';
 import { compare, compareArrays, compareBy, compareUris, getDatabase, hasKeys } from '../src/utils';
 import { UtilityFunctionsContext } from './types/utility-functions-context';
 
@@ -35,11 +36,11 @@ test('compare considers equal objects by reference', (t) => {
 });
 
 test('compare considers equal objects with same property values', (t) => {
-	function Object_() {
-		this.a = 1;
+	class Object_ {
+		a = 1;
 	}
 
-	Object_.prototype.b = 2;
+	(Object_.prototype as any).b = 2;
 	t.true(compare({ a: 1 }, { a: 1 }));
 	t.true(compare({ a: 1, b: 2 }, new Object_()));
 });
@@ -131,16 +132,16 @@ test('returns true for urls with the same parameters in different order', (t) =>
 
 /* GetDatabase */
 test('returns the database object fom a mongoose instance', (t) => {
-	const database = {};
+	const database = {} as Db;
 	t.is(getDatabase({ connection: { db: database } }), database);
 });
 
 test('returns the database object fom a mongoose connection instance', (t) => {
-	const database = {};
+	const database = {} as Db;
 	t.is(getDatabase({ db: database }), database);
 });
 
 test('returns the database object directly if is not a mongoose object', (t) => {
-	const database = {};
+	const database = {} as Db;
 	t.is(getDatabase(database), database);
 });

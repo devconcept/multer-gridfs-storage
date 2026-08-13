@@ -1,6 +1,8 @@
+import { Db } from 'mongodb';
+
 export interface CacheValue {
-	db: any;
+	db: Db | null;
 	pending: boolean;
 	opening: boolean;
-	init: any;
+	init: unknown;
 }

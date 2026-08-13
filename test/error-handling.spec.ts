@@ -1,7 +1,7 @@
 import anyTest, { TestInterface } from 'ava';
 import multer from 'multer';
 import request from 'supertest';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { MongoClient } from 'mongodb';
 import { spy, restore } from 'sinon';
 
@@ -41,7 +41,7 @@ test('invalid types as file configurations', async (t) => {
 	});
 	t.context.storage = storage;
 	const upload = multer({ storage });
-	app.post('/url', upload.single('photo'), (error_, request_, response, next) => {
+	app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, next: NextFunction) => {
 		error = error_;
 		next();
 	});
@@ -65,7 +65,7 @@ test('fails gracefully if an error is thrown inside the configuration function',
 
 	const upload = multer({ storage });
 
-	app.post('/url', upload.single('photo'), (error_, request_, response, next) => {
+	app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, next: NextFunction) => {
 		error = error_;
 		next();
 	});
@@ -90,7 +90,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 
 	const upload = multer({ storage });
 
-	app.post('/url', upload.single('photo'), (error_, request_, response, next) => {
+	app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, next: NextFunction) => {
 		error = error_;
 		next();
 	});
@@ -117,7 +117,7 @@ test('connection promise fails to connect', async (t) => {
 
 	const upload = multer({ storage });
 
-	app.post('/url', upload.single('photo'), (error_, request_, response, _next) => {
+	app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, _next: NextFunction) => {
 		response.end();
 	});
 
@@ -138,12 +138,12 @@ test('connection is not opened', async (t) => {
 	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 	const client = getClient(_db);
-	await (client ? client.close(true) : db.close());
+	await (client ? client.close(true) : (db as any).close());
 
-	const storage = new GridFsStorage({ db, client });
+	const storage = new GridFsStorage({ db });
 	const upload = multer({ storage });
 
-	app.post('/url', upload.array('photos', 2), (error_, request_, response, next) => {
+	app.post('/url', upload.array('photos', 2), (error_: any, request_: Request, response: Response, next: NextFunction) => {
 		error = error_;
 		next();
 	});
@@ -163,7 +163,7 @@ test('event is emitted when there is an error in the database', async (t) => {
 	const client = await MongoClient.connect(url, options);
 	const db = getDb(client, url);
 
-	const storage = new GridFsStorage({ db, client });
+	const storage = new GridFsStorage({ db });
 	storage.on('dbError', errorSpy);
 	const evtSource = client;
 	evtSource.emit('error', error);
@@ -184,12 +184,12 @@ test('error event is emitted when there is an error in the readable stream using
 
 	const storage = new GridFsStorage({ db });
 
-	await t.throwsAsync(async () => storage.fromStream(stream, {} as any, {}));
+	await t.throwsAsync(async () => storage.fromStream(stream, {} as any, {} as any));
 });
 
 test('error event is emitted when there is an error in the writable stream', async (t) => {
 	class StorageStub extends GridFsStorage {
-		createStream(_options): any {
+		protected createStream(_options: any): any {
 			return new ErrorWritableStream();
 		}
 	}
@@ -204,7 +204,7 @@ test('error event is emitted when there is an error in the writable stream', asy
 	const app = express();
 
 	storage.on('streamError', errorSpy);
-	app.post('/url', upload.single('photo'), (error_, request_, response, next) => {
+	app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, next: NextFunction) => {
 		next();
 	});
 

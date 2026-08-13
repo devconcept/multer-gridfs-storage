@@ -1,5 +1,5 @@
-import anyTest, { TestInterface } from 'ava';
-import express from 'express';
+import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import { MongoClient } from 'mongodb';
@@ -7,13 +7,13 @@ import delay from 'delay';
 
 import { GridFsStorage } from '../src';
 import { storageOptions } from './utils/settings';
-import { fileMatchMd5Hash } from './utils/macros';
+import { filesMatchSource } from './utils/macros';
 import { files, cleanStorage, getDb, getClient, dropDatabase } from './utils/testutils';
 import { FileConcurrencyContext } from './types/file-concurrency-context';
 
 const test = anyTest as TestInterface<FileConcurrencyContext>;
 
-function prepareTest(t, error?) {
+function prepareTest(t: ExecutionContext<FileConcurrencyContext>, error?: Error) {
 	const { url, options } = storageOptions();
 	t.context.url = url;
 	const app = express();
@@ -45,7 +45,7 @@ test('buffers incoming files while the connection is opening', async (t) => {
 	prepareTest(t);
 	const { storage, app, upload } = t.context;
 
-	app.post('/url', upload.array('photos', 2), (request_, response) => {
+	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
 		result = {
 			headers: request_.headers,
 			files: request_.files,
@@ -57,7 +57,7 @@ test('buffers incoming files while the connection is opening', async (t) => {
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
 	await storage.ready();
-	return fileMatchMd5Hash(t, result.files);
+	return filesMatchSource(t, result.files);
 });
 
 test('rejects incoming files if the connection does not open', async (t) => {
@@ -66,7 +66,7 @@ test('rejects incoming files if the connection does not open', async (t) => {
 	prepareTest(t, error);
 	const { storage, app, upload } = t.context;
 
-	app.post('/url', upload.array('photos', 2), (error_, request_, response, _next) => {
+	app.post('/url', upload.array('photos', 2), (error_: any, request_: Request, response: Response, _next: NextFunction) => {
 		result = error_;
 		response.end();
 	});

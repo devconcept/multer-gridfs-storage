@@ -1,8 +1,22 @@
 import { EventEmitter } from 'node:events';
-import { Db, GridFSBucketWriteStream, MongoClientOptions } from 'mongodb';
+import { Db, Document, GridFSBucketWriteStream, MongoClientOptions, ObjectId } from 'mongodb';
 import { StorageEngine } from 'multer';
+import { Request } from 'express';
 import { Cache } from './cache';
 import { GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageOptions } from './types';
+/**
+ * Options used to open a GridFS upload stream, produced by merging the plugin
+ * defaults with the values returned by the file naming function.
+ */
+interface CreateStreamOptions {
+    id?: ObjectId;
+    filename: string;
+    chunkSize?: number;
+    contentType?: string;
+    metadata?: Document | null;
+    aliases?: string[] | null;
+    bucketName: string;
+}
 /**
  * Multer GridFS Storage Engine class definition.
  * @extends EventEmitter
@@ -22,15 +36,15 @@ import { GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageO
  */
 export declare class GridFsStorage extends EventEmitter implements StorageEngine {
     static cache: Cache;
-    db: Db;
+    db: Db | null;
     configuration: DbStorageOptions | UrlStorageOptions;
     connecting: boolean;
     caching: boolean;
-    error: any;
+    error: unknown;
     private _file;
     private readonly _options;
-    private readonly cacheName;
-    private readonly cacheIndex;
+    private readonly cacheName?;
+    private readonly cacheIndex?;
     constructor(configuration: UrlStorageOptions | DbStorageOptions);
     /**
      * Generates 16 bytes long strings in hexadecimal format
@@ -57,14 +71,14 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @param {File} file - The uploaded file stream
      * @param cb - A standard node callback to signal the end of the upload or an error
      **/
-    _handleFile(request: any, file: any, cb: NodeCallback): void;
+    _handleFile(request: Request, file: Express.Multer.File, cb: NodeCallback): void;
     /**
      * Storage interface method to delete files in case an error turns the request invalid
      * @param request - The request that trigger the upload
      * @param {File} file - The uploaded file stream
      * @param cb - A standard node callback to signal the end of the upload or an error
      **/
-    _removeFile(request: any, file: any, cb: NodeCallback): void;
+    _removeFile(request: Request, file: Express.Multer.File, cb: NodeCallback): void;
     /**
      * Waits for the MongoDb connection associated to the storage to succeed or fail
      */
@@ -75,7 +89,7 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @param {File} file - The file stream to pipe
      * @return  {Promise} Resolves with the uploaded file
      */
-    fromFile(request: any, file: any): Promise<GridFile>;
+    fromFile(request: Request, file: Express.Multer.File): Promise<GridFile>;
     /**
      * Pipes the file stream to the MongoDb database. The request and file parameters are optional and used for file generation only
      * @param readStream - The http request where the file was uploaded
@@ -83,13 +97,13 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
      * @param {File} [file] - The file stream to pipe
      * @return Resolves with the uploaded file
      */
-    fromStream(readStream: NodeJS.ReadableStream, request: any, file: any): Promise<GridFile>;
-    protected _openConnection(url: string, options: MongoClientOptions): Promise<ConnectionResult>;
+    fromStream(readStream: NodeJS.ReadableStream, request: Request, file: Express.Multer.File): Promise<GridFile>;
+    protected _openConnection(url: string, options?: MongoClientOptions): Promise<ConnectionResult>;
     /**
      * Create a writable stream with backwards compatibility with GridStore
      * @param {object} options - The stream options
      */
-    protected createStream(options: any): GridFSBucketWriteStream;
+    protected createStream(options: CreateStreamOptions): GridFSBucketWriteStream;
     private fromMulterStream;
     /**
      * Determines if a new connection should be created, a explicit connection is provided or a cached instance is required.
@@ -153,3 +167,4 @@ export declare class GridFsStorage extends EventEmitter implements StorageEngine
  * @version 1.2.2
  **/
 export declare const GridFsStorageCtr: typeof GridFsStorage;
+export {};

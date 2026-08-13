@@ -207,7 +207,6 @@ Property name | Description
 `bucketName` | The GridFs collection to store the file (default: `fs`)
 `contentType` | The content type for the file (default: inferred from the request)
 `aliases` | Optional array of strings to store in the file document's aliases field (default: `null`)
-`disableMD5` | If true, disables adding an md5 field to file data (default: `false`, available only on MongoDb >= 3.1)
 
 Any missing properties will use the defaults. Also, note that each property must be supported by your installed version of MongoDb.
 
@@ -304,7 +303,6 @@ Key | Description
 `bucketName` | The name of the GridFs collection used to store the file
 `chunkSize` | The size of file chunks used to store the file
 `size` | The final size of the file in bytes
-`md5` | The md5 hash of the file
 `contentType` | Content type of the file in the database
 `uploadDate` | The timestamp when the file was uploaded
 
