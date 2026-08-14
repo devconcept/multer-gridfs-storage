@@ -1,5 +1,11 @@
-# Unreleased
+# 6.0.0
 
+This is a major release. Upgrading requires Node.js 22 or newer, installing `mongodb` yourself, and Multer 2. See the breaking changes below.
+
+* Breaking: Raised the minimum supported Node.js version to **22**.
+* Breaking: `mongodb` is now a **peer dependency** (`^7.5.0`) instead of a bundled dependency. Install it alongside this package. The bundled `@types/mongodb` and `@types/express` type packages were removed because the mongodb driver now ships its own types, which also resolves the type conflicts reported in [#529](https://github.com/devconcept/multer-gridfs-storage/issues/529), [#554](https://github.com/devconcept/multer-gridfs-storage/issues/554) and [#502](https://github.com/devconcept/multer-gridfs-storage/issues/502).
+* Breaking: Raised the Multer peer dependency to `^2.2.0`, and `@types/multer` is now a peer dependency (`^2.2.0`). This clears the install conflicts reported in [#517](https://github.com/devconcept/multer-gridfs-storage/issues/517) and [#490](https://github.com/devconcept/multer-gridfs-storage/issues/490).
+* Breaking: Removed the `client` option. The `MongoClient` is now inferred from the provided `db`, so it no longer needs to be passed separately.
 * Added: The `file` option can return a `transforms` array of transform streams, piped in order between the incoming file and GridFS before it is stored (for example to encrypt or compress uploads). Resolves [#405](https://github.com/devconcept/multer-gridfs-storage/issues/405).
 * Removed: Dropped the `md5` file property and the `disableMD5` file option. MongoDB removed automatic md5 hashing from GridFS in the mongodb Node.js driver 4.0.0 (`disableMD5` has had no effect since), so stored files no longer expose an md5 hash.
 * Changed: Replaced the `mongodb-uri` dependency with `mongodb-connection-string-url` (the parser used by the mongodb driver itself) for connection string comparison. The database name is now resolved by the driver via `client.db()` instead of being parsed manually.

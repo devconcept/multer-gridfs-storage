@@ -8,10 +8,10 @@
   },
   "source": {
     "include": [
-      "index.js",
-      "lib/gridfs.js",
-      "lib/cache.js",
-      "lib/utils.js"
+      "dist/commonjs/index.js",
+      "dist/commonjs/gridfs.js",
+      "dist/commonjs/cache.js",
+      "dist/commonjs/utils.js"
     ],
     "includePattern": ".+\\.js(doc|x)?$",
     "excludePattern": "(^|\\/|\\\\)_"
