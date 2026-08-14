@@ -6,6 +6,7 @@
  */
 import crypto from 'node:crypto';
 import { EventEmitter } from 'node:events';
+import { Duplex } from 'node:stream';
 import { Db, Document, GridFSBucket, GridFSBucketWriteStream, GridFSFile, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
 import isGenerator from 'is-generator';
 import pump from 'pump';
@@ -41,6 +42,7 @@ interface CreateStreamOptions {
 	metadata?: Document | null;
 	aliases?: string[] | null;
 	bucketName: string;
+	transforms?: Duplex[];
 }
 
 /**
@@ -352,7 +354,15 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 					emitError(new Error('GridFS write stream finished without storing a file'));
 				}
 			});
-			pump([readStream, writeStream]);
+
+			// Optional user transforms (e.g. encryption) are piped between the incoming file and the
+			// write stream. Surface their errors as a stream error instead of leaving the request hanging.
+			const transforms = streamOptions.transforms ?? [];
+			for (const transform of transforms) {
+				transform.on('error', emitError);
+			}
+
+			pump([readStream, ...transforms, writeStream]);
 		});
 	}
 

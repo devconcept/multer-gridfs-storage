@@ -189,6 +189,7 @@ Property name | Description
 `bucketName` | The GridFs collection to store the file (default: `fs`)
 `contentType` | The content type for the file (default: inferred from the request)
 `aliases` | Optional array of strings to store in the file document's aliases field (default: `null`)
+`transforms` | Optional array of transform streams to pipe the file through before it is stored (default: none). See [Transforming the stored file](#transforming-the-stored-file)
 
 Any missing properties will use the defaults. Also, note that each property must be supported by your installed version of MongoDb.
 
@@ -313,6 +314,32 @@ const storage = new GridFsStorage({
     }
   }
 });
+```
+
+### Transforming the stored file
+
+The [`file`][file-option] option can return a `transforms` array of [transform streams][transform]. The incoming file is piped through them, in order, before it reaches the database, which lets you encrypt, compress or otherwise rewrite the bytes as they are stored. If any transform emits an error the upload fails with a [`streamError`](#event-streamerror) event.
+
+Because transform streams can only be used once, return **fresh instances** from the `file` function so every upload gets its own.
+
+```javascript
+const crypto = require('crypto');
+const { GridFsStorage } = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database',
+  file: (req, file) => {
+    const iv = crypto.randomBytes(16);
+    return {
+      filename: file.originalname,
+      // encrypt the file before it is written to GridFs
+      transforms: [crypto.createCipheriv('aes-256-ctr', key, iv)],
+      // keep the iv around so the file can be decrypted later
+      metadata: { iv: iv.toString('hex') },
+    };
+  },
+});
+const upload = multer({ storage });
 ```
 
 ### File information
@@ -588,3 +615,4 @@ $ npm run coverage
 [file-option]: #file
 [cache-option]: #cache
 [gen]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"
+[transform]: https://nodejs.org/api/stream.html#class-streamtransform "Transform stream"

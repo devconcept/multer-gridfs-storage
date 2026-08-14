@@ -1,5 +1,6 @@
 # Unreleased
 
+* Added: The `file` option can return a `transforms` array of transform streams, piped in order between the incoming file and GridFS before it is stored (for example to encrypt or compress uploads). Resolves [#405](https://github.com/devconcept/multer-gridfs-storage/issues/405).
 * Removed: Dropped the `md5` file property and the `disableMD5` file option. MongoDB removed automatic md5 hashing from GridFS in the mongodb Node.js driver 4.0.0 (`disableMD5` has had no effect since), so stored files no longer expose an md5 hash.
 * Changed: Replaced the `mongodb-uri` dependency with `mongodb-connection-string-url` (the parser used by the mongodb driver itself) for connection string comparison. The database name is now resolved by the driver via `client.db()` instead of being parsed manually.
 * Changed: The package is now a dual ESM/CommonJS module, built with [tshy](https://github.com/isaacs/tshy). It exposes an `exports` map with both `import` and `require` entry points (output moved from `lib/` to `dist/`).
