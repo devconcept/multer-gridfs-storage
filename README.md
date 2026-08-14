@@ -442,6 +442,59 @@ Of course if you want to create more connections this is still possible. Caching
 
 Using [options][options-option] has a particular side effect. The cache will spawn more connections only **when they differ in their values**. Objects provided here are not compared by reference as long as they are just plain objects. Falsey values like `null` and `undefined` are considered equal. This is required because various options can lead to completely different connections, for example when using replicas or server configurations. Only connections that are *semantically equivalent* are considered equal.
 
+### 🗂️ Multiple databases
+
+Each storage engine holds a single connection, so to send uploads to a different database depending on the request you keep one engine per connection and pick the right one at request time. A Multer instance is just standard Express middleware (`(req, res, next)`), so it can be dispatched dynamically.
+
+Keep *how* the target is chosen behind a function that returns the engine configuration for the request. It can decide from anything on the request and pick either form the engine accepts, per request: an existing connection (a `Db` or a Mongoose connection) via the `db` option, or a connection string via the `url` option — add `cache: true` so the library opens each database only once.
+
+```javascript
+const express = require('express');
+const multer = require('multer');
+const { GridFsStorage } = require('multer-gridfs-storage');
+
+// Resolve the engine configuration for a request. Replace the body with your own
+// logic and return whichever form fits the target database:
+//   { db: existingConnection }               -> reuse a connection you manage
+//   { url: 'mongodb://.../db', cache: true }  -> let the library open and reuse it
+async function resolveStorage(req) {
+  // return { db: connectionPool.get(/* ...derive the target from req... */) };
+  // return { url: `mongodb://yourhost:27017/${/* ...target database... */}`, cache: true };
+}
+
+// Build one upload middleware per target, reusing it on later requests.
+const uploaders = new Map();
+
+function uploaderFor(config) {
+  // Both forms carry a stable identity: the connection object or the url string.
+  const key = config.db ?? config.url;
+  if (!uploaders.has(key)) {
+    uploaders.set(key, multer({ storage: new GridFsStorage(config) }).single('file'));
+  }
+
+  return uploaders.get(key);
+}
+
+// Dispatch each request to the engine for its database.
+async function upload(req, res, next) {
+  try {
+    const config = await resolveStorage(req);
+    uploaderFor(config)(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+}
+
+const app = express();
+app.post('/upload', upload, (req, res) => {
+  res.json(req.file);
+});
+```
+
+The `uploaders` map is keyed by the connection or the url itself, so each engine is created once and reused, and databases discovered at runtime get their own engine automatically. Every connection stays isolated with its own state and events, and this needs no special support from the library.
+
+This is only a recipe, not the only way to implement it — the building blocks (one engine per connection, dispatched per request) can be arranged however suits your application.
+
 ### 🧰 Utility methods
 
 #### `generateBytes`
