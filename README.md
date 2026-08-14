@@ -646,7 +646,7 @@ $ npm run db:down  # stop and remove it
 
 Tests are written with the [ava](https://avajs.dev) testing framework.
 
-Code coverage thanks to [istanbul](https://istanbul.js.org/)
+Code coverage thanks to [c8](https://github.com/bcoe/c8)
 
 ```bash
 $ npm run coverage
