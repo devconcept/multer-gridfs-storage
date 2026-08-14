@@ -5,7 +5,6 @@ import multer from 'multer';
 import express from 'express';
 import request from 'supertest';
 import path from 'path';
-import util from 'util';
 import { fileURLToPath } from 'node:url';
 
 import { GridFsStorage } from '../src';
@@ -14,15 +13,13 @@ import { storageOptions } from './utils/settings';
 import { UtilityMethodsContext } from './types/utility-methods-context';
 
 const test = anyTest as TestFn<UtilityMethodsContext>;
-const unlink = util.promisify(fs.unlink);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 test.afterEach.always('cleanup', async (t) => {
 	const testFile = path.join(__dirname, 'attachments', 'test_disk.jpg');
-	if (fs.existsSync(testFile)) {
-		await unlink(testFile);
-	}
-
+	// `force: true` removes the file if present and is a no-op when it is already
+	// gone, avoiding a race between concurrent cleanups on this shared file.
+	await fs.promises.rm(testFile, { force: true });
 	return cleanStorage(t.context.storage);
 });
 
