@@ -34,13 +34,17 @@ test.serial('errors generating random bytes', async (t) => {
 	let error: any = {};
 
 	const storage = new GridFsStorage(storageOptions());
+	const originalRandomBytes = crypto.randomBytes;
 	const randomBytesSpy = stub(crypto, 'randomBytes').callsFake((size, cb) => {
-		if (cb) {
+		// The storage engine calls randomBytes with a callback; fail only that path.
+		if (typeof cb === 'function') {
 			cb(generatedError, Buffer.alloc(0));
 			return;
 		}
 
-		throw generatedError;
+		// Other consumers (e.g. form-data generating the multipart boundary) use the
+		// synchronous form and must keep working, so delegate to the real implementation.
+		return (originalRandomBytes as any)(size);
 	});
 	t.context.storage = storage;
 	const upload = multer({ storage });
@@ -55,7 +59,10 @@ test.serial('errors generating random bytes', async (t) => {
 
 	t.is(error, generatedError);
 	t.is(error.message, 'Random bytes error');
-	t.is(randomBytesSpy.callCount, 1);
+	// Assert on the callback-style invocation the library makes; form-data may also call
+	// randomBytes synchronously for its boundary, which should not count here.
+	const callbackCalls = randomBytesSpy.getCalls().filter((call) => typeof call.args[1] === 'function');
+	t.is(callbackCalls.length, 1);
 });
 
 test.serial.afterEach.always(async (t) => {

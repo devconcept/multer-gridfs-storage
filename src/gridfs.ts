@@ -546,6 +546,6 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 export const GridFsStorageCtr = new Proxy(GridFsStorage, {
 	apply(target, thisArg, argumentsList) {
 		// @ts-expect-error constructor called without new is intentional
-		return new target(...argumentsList); // eslint-disable-line new-cap
+		return new target(...argumentsList);
 	},
 });

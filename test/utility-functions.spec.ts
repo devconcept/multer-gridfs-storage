@@ -88,7 +88,6 @@ test('returns true when the object has at least one property', (t) => {
 
 test('returns false when the object has no properties', (t) => {
 	t.false(hasKeys({}));
-	/* eslint-disable-next-line no-new-object */
 	t.false(hasKeys(new Object()));
 });
 

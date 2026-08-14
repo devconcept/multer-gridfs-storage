@@ -49,7 +49,6 @@ export function compare(object1: any, object2: any): boolean {
 	}
 
 	// Check both own and inherited properties, MongoDb doesn't care where the property was defined
-	/* eslint-disable-next-line guard-for-in */
 	for (prop in object1) {
 		value1 = object1[prop];
 		value2 = object2[prop];
@@ -94,7 +93,6 @@ export function compare(object1: any, object2: any): boolean {
 	}
 
 	// Count all properties from the target object
-	/* eslint-disable-next-line guard-for-in */
 	for (prop in object2) {
 		keys2++;
 	}
@@ -163,7 +161,6 @@ export function compareBy(object1: any, object2: any): ComparatorResult {
  * @return If the object has any properties or not
  */
 export function hasKeys(obj: object): boolean {
-	/* eslint-disable-next-line guard-for-in, no-unreachable-loop */
 	for (const prop in obj) {
 		// Stop testing if the object has at least one property
 		return true;

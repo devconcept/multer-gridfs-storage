@@ -98,10 +98,9 @@ test('connects to a mongoose instance', async (t) => {
 test('creates an instance without the new keyword', async (t) => {
 	let result: any = {};
 	const app = express();
-	/* eslint-disable new-cap */
 	// @ts-expect-error calling constructor without new is intentional
 	const storage = GridFsStorage(storageOptions());
-	/* eslint-enable new-cap */
+
 	const upload = multer({ storage });
 	t.context.storage = storage;
 

@@ -104,8 +104,10 @@ test('should the parameters be a request and a file objects', (t) => {
 	for (const p of params) {
 		const { req, file } = p;
 		t.is(req, appRequest);
+		// Use `in` rather than an own-property check: since Express 5, `req.query` is a lazy
+		// getter on the prototype instead of an own property.
 		for (const k of ['body', 'query', 'params', 'files']) {
-			t.true(hasOwn(req, k));
+			t.true(k in req);
 		}
 
 		for (const k of ['fieldname', 'originalname', 'encoding', 'mimetype']) {
