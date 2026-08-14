@@ -346,6 +346,10 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			writeStream.on('finish', () => {
 				if (writeStream.gridFSFile) {
 					emitFile(writeStream.gridFSFile);
+				} else {
+					// The driver populates gridFSFile before emitting 'finish'; a null value here means the
+					// file document was never written, so surface an error instead of leaving the request hanging.
+					emitError(new Error('GridFS write stream finished without storing a file'));
 				}
 			});
 			pump([readStream, writeStream]);

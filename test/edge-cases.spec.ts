@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { Writable } from 'stream';
 import anyTest, { TestFn } from 'ava';
 import multer from 'multer';
 import request from 'supertest';
@@ -63,6 +64,39 @@ test.serial('errors generating random bytes', async (t) => {
 	// randomBytes synchronously for its boundary, which should not count here.
 	const callbackCalls = randomBytesSpy.getCalls().filter((call) => typeof call.args[1] === 'function');
 	t.is(callbackCalls.length, 1);
+});
+
+test.serial('errors when the write stream finishes without storing a file', async (t) => {
+	const app = express();
+	let error: any = null;
+
+	const storage = new GridFsStorage(storageOptions());
+	t.context.storage = storage;
+	await storage.ready();
+
+	// Return a writable sink that discards data and exposes no `gridFSFile`, simulating a `finish`
+	// event without a stored document. Without the else branch this would leave the request hanging.
+	const sink = new Writable({
+		write(chunk, encoding, callback) {
+			callback();
+		},
+	});
+	stub(storage as any, 'createStream').returns(sink);
+
+	const streamErrorSpy = spy();
+	storage.on('streamError', streamErrorSpy);
+
+	const upload = multer({ storage });
+	app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, next: NextFunction) => {
+		error = error_;
+		next();
+	});
+
+	await request(app).post('/url').attach('photo', files[0]);
+
+	t.true(error instanceof Error);
+	t.is(error.message, 'GridFS write stream finished without storing a file');
+	t.is(streamErrorSpy.callCount, 1);
 });
 
 test.serial.afterEach.always(async (t) => {

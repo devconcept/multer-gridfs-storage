@@ -7,6 +7,7 @@
 * Changed: Updated development dependencies to their latest versions (including Express 5, supertest 7 and sinon 22 in the test suite) and migrated ESLint to v10 with a flat `eslint.config.js` (replacing `.eslintrc.json`/`.eslintignore`).
 * Changed: Replaced the unmaintained `coveralls` package (which pulled in the deprecated `request` dependency and its security advisories) with Codecov coverage uploads from CI.
 * Removed: Dropped the `is-promise` dependency; the trivial promise check is now inlined.
+* Fixed: Uploads no longer throw `TypeError: Cannot read properties of undefined (reading '_id')` with recent MongoDB driver versions ([#560](https://github.com/devconcept/multer-gridfs-storage/issues/560)). The stored file's id and metadata are read from the write stream's `gridFSFile` property, and a `finish` event without a stored file now rejects with an error instead of leaving the request hanging.
 
 # 5.0.2
 
