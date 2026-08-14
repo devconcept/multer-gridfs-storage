@@ -68,8 +68,6 @@ app.post('/cool-profile', upload.fields([{ name: 'avatar', maxCount: 1 }, { name
 
 The module returns a function that can be invoked to create a Multer storage engine. It also works as a class. It is up to you to decide the best way to invoke it.
 
-Check the [wiki][wiki] for an in depth guide on how to use this module.
-
 ### Configuration
 
 The configuration parameter is an object with the following properties.
@@ -273,6 +271,48 @@ var storage = new GridFsStorage({
   }
 });
 const upload = multer({ storage });
+```
+
+### Using generator functions
+
+The [`file`][file-option] option also accepts a [generator function][gen]. Generators let you produce a sequence of file configurations without keeping counters or other state in outer variables.
+
+You **must** use *infinite* generators — ones that never reach the `{ done: true }` state — by wrapping the `yield` in an endless loop such as `for (;;)`. If a finite generator runs out of values, every file uploaded afterwards will fail.
+
+Asynchronous work inside a generator should `yield` a promise instead of a plain value; the module waits for it to resolve or reject.
+
+```javascript
+const { GridFsStorage } = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database',
+  file: function* () {
+    let counter = 1;
+    for (;;) {
+      yield { filename: 'name' + counter };
+      counter++;
+    }
+  }
+});
+const upload = multer({ storage });
+```
+
+The `req` and `file` objects arrive as the function parameters on the first file. On each subsequent file, execution resumes right after the `yield`, so they come back as the array it returns — destructure them to reassign:
+
+```javascript
+const { GridFsStorage } = require('multer-gridfs-storage');
+
+const storage = new GridFsStorage({
+  url: 'mongodb://yourhost:27017/database',
+  file: function* (req, file) {
+    let counter = 1;
+    for (;;) {
+      // req and file are reassigned from the yielded array on each new file
+      [req, file] = yield { filename: `${file.originalname}_${counter}` };
+      counter++;
+    }
+  }
+});
 ```
 
 ### File information
@@ -547,4 +587,4 @@ $ npm run coverage
 [db-option]: #db
 [file-option]: #file
 [cache-option]: #cache
-[wiki]: https://github.com/devconcept/multer-gridfs-storage/wiki
+[gen]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function* "Generator function"
