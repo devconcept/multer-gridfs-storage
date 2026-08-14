@@ -9,9 +9,8 @@
 		"prepublishOnly": "tshy",
 		"test": "npm run compile && ava",
 		"lint": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" && eslint . --fix",
-		"coverage": "c8 --reporter=lcov ava --timeout=30s",
-		"docs": "jsdoc -c ./conf.json --readme ./README.md",
-		"coveralls": "npm run coverage | coveralls"
+		"coverage": "c8 --reporter=lcov --reporter=text ava --timeout=30s",
+		"docs": "jsdoc -c ./conf.json --readme ./README.md"
 	},
 	"tshy": {
 		"exports": {
@@ -60,7 +59,6 @@
 		"@typescript-eslint/eslint-plugin": "^8.67.0",
 		"ava": "^8.0.1",
 		"c8": "^12.0.0",
-		"coveralls": "^3.0.9",
 		"crypto-random-string": "^6.0.0",
 		"delay": "^7.0.0",
 		"eslint": "^10.8.1",

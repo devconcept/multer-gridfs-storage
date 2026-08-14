@@ -1,6 +1,6 @@
 # Multer's GridFS storage engine
 
-[![Build Status][github-image]][github-url] [![Coverage Status][coveralls-image]][coveralls-url] ![Npm version][version-image] ![Downloads][downloads-image] [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage?ref=badge_shield) [![Gitter](https://badges.gitter.im/multer-gridfs-storage/community.svg)](https://gitter.im/multer-gridfs-storage/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status][github-image]][github-url] [![Coverage Status][codecov-image]][codecov-url] ![Npm version][version-image] ![Downloads][downloads-image] [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage?ref=badge_shield) [![Gitter](https://badges.gitter.im/multer-gridfs-storage/community.svg)](https://gitter.im/multer-gridfs-storage/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb.
 
@@ -567,8 +567,8 @@ $ npm run coverage
 
 [github-url]: https://github.com/devconcept/multer-gridfs-storage/actions
 [github-image]: https://github.com/devconcept/multer-gridfs-storage/actions/workflows/node.js.yml/badge.svg "Build status"
-[coveralls-url]: https://coveralls.io/github/devconcept/multer-gridfs-storage?branch=master
-[coveralls-image]: https://coveralls.io/repos/github/devconcept/multer-gridfs-storage/badge.svg?branch=master "Coverage report"
+[codecov-url]: https://codecov.io/gh/devconcept/multer-gridfs-storage
+[codecov-image]: https://codecov.io/gh/devconcept/multer-gridfs-storage/branch/master/graph/badge.svg "Coverage report"
 [version-image]:https://img.shields.io/npm/v/multer-gridfs-storage.svg "Npm version"
 [downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 

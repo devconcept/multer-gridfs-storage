@@ -27,4 +27,11 @@ jobs:
       - run: npm ci
       - run: npm install multer --no-save
       - run: npm install mongodb --no-save
-      - run: npm test
+      - run: npm run compile
+      - run: npm run coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
