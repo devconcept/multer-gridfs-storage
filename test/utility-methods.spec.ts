@@ -1,19 +1,21 @@
 import fs from 'fs';
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import hasOwn from 'has-own-prop';
 import multer from 'multer';
 import express from 'express';
 import request from 'supertest';
 import path from 'path';
 import util from 'util';
+import { fileURLToPath } from 'node:url';
 
 import { GridFsStorage } from '../src';
 import { cleanStorage, defer, files } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { UtilityMethodsContext } from './types/utility-methods-context';
 
-const test = anyTest as TestInterface<UtilityMethodsContext>;
+const test = anyTest as TestFn<UtilityMethodsContext>;
 const unlink = util.promisify(fs.unlink);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 test.afterEach.always('cleanup', async (t) => {
 	const testFile = path.join(__dirname, 'attachments', 'test_disk.jpg');

@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import multer from 'multer';
 import request from 'supertest';
 import express, { Request, Response, NextFunction } from 'express';
@@ -12,7 +12,7 @@ import { storageOptions } from './utils/settings';
 import { files, cleanStorage, fakeConnectCb } from './utils/testutils';
 import { EdgeCasesContext } from './types/edge-cases-context';
 
-const test = anyTest as TestInterface<EdgeCasesContext>;
+const test = anyTest as TestFn<EdgeCasesContext>;
 
 test.serial('connection function fails to connect', async (t) => {
 	const error = new Error('Failed connection');

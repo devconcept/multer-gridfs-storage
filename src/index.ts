@@ -3,7 +3,7 @@
  * @module multer-gridfs-storage
  */
 
-export * from './cache';
-export * from './types';
+export * from './cache.js';
+export * from './types/index.js';
 
-export { GridFsStorageCtr as GridFsStorage } from './gridfs';
+export { GridFsStorageCtr as GridFsStorage } from './gridfs.js';

@@ -1,4 +1,4 @@
-import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import anyTest, { TestFn, ExecutionContext } from 'ava';
 import { MongoClient } from 'mongodb';
 import { spy, restore, stub } from 'sinon';
 
@@ -7,7 +7,7 @@ import { cleanStorage, fakeConnectCb } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { ConnectionReadyContext } from './types/connection-ready-context';
 
-const test = anyTest as TestInterface<ConnectionReadyContext>;
+const test = anyTest as TestFn<ConnectionReadyContext>;
 
 test.afterEach.always('cleanup', async (t) => {
 	const { storage } = t.context;
@@ -44,18 +44,15 @@ test.serial('returns a promise that rejects when the connection fails', async (t
 	t.is(error, t.context.error);
 });
 
-test.serial.cb('returns a promise that rejects if the module already failed connecting', (t) => {
+test.serial('returns a promise that rejects if the module already failed connecting', async (t) => {
 	forceFailure(t);
 	const { storage } = t.context;
-	storage.once('connectionFailed', (evtError: any) => {
-		const result = storage.ready();
-		t.is(typeof result.then, 'function');
-		result.catch((error: any) => {
-			t.is(error, evtError);
-			t.is(error, t.context.error);
-			t.end();
-		});
-	});
+	const evtError: any = await new Promise((resolve) => storage.once('connectionFailed', resolve));
+	const result = storage.ready();
+	t.is(typeof result.then, 'function');
+	const error = await t.throwsAsync(result);
+	t.is(error, evtError);
+	t.is(error, t.context.error);
 });
 
 test('returns a promise that resolves when the connection is created', async (t) => {
@@ -72,19 +69,13 @@ test('returns a promise that resolves when the connection is created', async (t)
 	t.not(db, null);
 });
 
-test.cb('returns a promise that resolves if the connection is already created', (t) => {
+test('returns a promise that resolves if the connection is already created', async (t) => {
 	createStorage(t);
 	const { storage } = t.context;
-	storage.once('connection', () => {
-		const result = storage.ready();
-		t.is(typeof result.then, 'function');
-
-		result
-			.then((result: any) => {
-				t.truthy(result);
-				t.is(result.db, storage.db);
-				t.end();
-			})
-			.catch(t.end);
-	});
+	await new Promise((resolve) => storage.once('connection', resolve));
+	const result = storage.ready();
+	t.is(typeof result.then, 'function');
+	const resolved = await result;
+	t.truthy(resolved);
+	t.is(resolved.db, storage.db);
 });

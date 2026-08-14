@@ -1,10 +1,10 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import { GridFsStorage } from '../src';
 import { cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { ConnectionOptionsContext } from './types/connection-options-context';
 
-const test = anyTest as TestInterface<ConnectionOptionsContext>;
+const test = anyTest as TestFn<ConnectionOptionsContext>;
 
 test.afterEach.always('cleanup', async (t) => {
 	await cleanStorage(t.context.storage);

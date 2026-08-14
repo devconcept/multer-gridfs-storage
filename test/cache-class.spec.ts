@@ -1,11 +1,11 @@
-import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import anyTest, { TestFn, ExecutionContext } from 'ava';
 import { restore, stub } from 'sinon';
 
 import { Cache } from '../src';
 import { storageOptions } from './utils/settings';
 import { CacheClassContext } from './types/cache-class-context';
 
-const test = anyTest as TestInterface<CacheClassContext>;
+const test = anyTest as TestFn<CacheClassContext>;
 const { url } = storageOptions();
 const url2 = 'mongodb://mongoserver.com:27017/testdatabase';
 

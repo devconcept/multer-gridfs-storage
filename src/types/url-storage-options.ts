@@ -1,5 +1,5 @@
 import { MongoClientOptions } from 'mongodb';
-import { MulterGfsOptions } from './multer-gfs-options';
+import { MulterGfsOptions } from './multer-gfs-options.js';
 
 export interface UrlStorageOptions extends MulterGfsOptions {
 	url: string;

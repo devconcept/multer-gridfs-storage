@@ -1,4 +1,4 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import multer from 'multer';
 import request from 'supertest';
 import express, { Request, Response, NextFunction } from 'express';
@@ -10,7 +10,7 @@ import { storageOptions } from './utils/settings';
 import { files, cleanStorage, getDb, getClient, dropDatabase, ErrorReadableStream, ErrorWritableStream } from './utils/testutils';
 import { ErrorHandlingContext } from './types/error-handling-context';
 
-const test = anyTest as TestInterface<ErrorHandlingContext>;
+const test = anyTest as TestFn<ErrorHandlingContext>;
 
 test.afterEach.always(async (t) => {
 	restore();
@@ -62,6 +62,7 @@ test('fails gracefully if an error is thrown inside the configuration function',
 			throw new Error('Error thrown');
 		},
 	});
+	t.context.storage = storage;
 
 	const upload = multer({ storage });
 
@@ -87,6 +88,7 @@ test('fails gracefully if an error is thrown inside a generator function', async
 			throw new Error('File error');
 		},
 	});
+	t.context.storage = storage;
 
 	const upload = multer({ storage });
 
@@ -164,6 +166,7 @@ test('event is emitted when there is an error in the database', async (t) => {
 	const db = getDb(client, url);
 
 	const storage = new GridFsStorage({ db });
+	t.context.storage = storage;
 	storage.on('dbError', errorSpy);
 	const evtSource = client;
 	evtSource.emit('error', error);
@@ -183,6 +186,7 @@ test('error event is emitted when there is an error in the readable stream using
 	const stream = new ErrorReadableStream();
 
 	const storage = new GridFsStorage({ db });
+	t.context.storage = storage;
 
 	await t.throwsAsync(async () => storage.fromStream(stream, {} as any, {} as any));
 });
@@ -199,6 +203,7 @@ test('error event is emitted when there is an error in the writable stream', asy
 	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 	const storage = new StorageStub({ db });
+	t.context.storage = storage;
 	const errorSpy = spy();
 	const upload = multer({ storage });
 	const app = express();

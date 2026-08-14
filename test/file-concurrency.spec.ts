@@ -1,4 +1,4 @@
-import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import anyTest, { TestFn, ExecutionContext } from 'ava';
 import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -11,7 +11,7 @@ import { filesMatchSource } from './utils/macros';
 import { files, cleanStorage, getDb, getClient, dropDatabase } from './utils/testutils';
 import { FileConcurrencyContext } from './types/file-concurrency-context';
 
-const test = anyTest as TestInterface<FileConcurrencyContext>;
+const test = anyTest as TestFn<FileConcurrencyContext>;
 
 function prepareTest(t: ExecutionContext<FileConcurrencyContext>, error?: Error) {
 	const { url, options } = storageOptions();

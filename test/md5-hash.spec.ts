@@ -1,4 +1,4 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -8,7 +8,7 @@ import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { Md5HashContext } from './types/md5-hash-context';
 
-const test = anyTest as TestInterface<Md5HashContext>;
+const test = anyTest as TestFn<Md5HashContext>;
 
 test.before(async (t) => {
 	const app = express();

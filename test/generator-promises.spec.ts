@@ -1,4 +1,4 @@
-import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import anyTest, { TestFn, ExecutionContext } from 'ava';
 import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -8,7 +8,7 @@ import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { GeneratorPromisesContext } from './types/generator-promises-context';
 
-const test = anyTest as TestInterface<GeneratorPromisesContext>;
+const test = anyTest as TestFn<GeneratorPromisesContext>;
 
 async function successfulPromiseSetup(t: ExecutionContext<GeneratorPromisesContext>) {
 	const app = express();

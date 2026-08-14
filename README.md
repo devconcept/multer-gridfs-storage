@@ -17,6 +17,7 @@
 - Storage operation buffering for incoming files while the connection is opening.
 - Use it as a multer plugin or inside an express middleware function.
 - Builtin Typescript support.
+- Dual package: works with both ESM `import` and CommonJS `require`.
 
 ## 🚀 Installation
 
@@ -25,6 +26,11 @@ Using npm
 ```sh
 $ npm install multer-gridfs-storage --save
 ```
+
+The package ships both ESM and CommonJS builds, so you can load it with either
+`import { GridFsStorage } from 'multer-gridfs-storage'` or
+`const { GridFsStorage } = require('multer-gridfs-storage')`. The examples below
+use CommonJS.
 
 Basic usage example:
 

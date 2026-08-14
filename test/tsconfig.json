@@ -1,8 +1,11 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"noEmit": true,
 		"resolveJsonModule": true
-  },
+	},
 	"include": [
 		"./**/*"
 	]

@@ -1,10 +1,10 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import ConnectionString from 'mongodb-connection-string-url';
 import { Db } from 'mongodb';
-import { compare, compareArrays, compareBy, compareUris, getDatabase, hasKeys } from '../src/utils';
+import { compare, compareArrays, compareBy, compareUris, getDatabase, hasKeys, isPromise } from '../src/utils';
 import { UtilityFunctionsContext } from './types/utility-functions-context';
 
-const test = anyTest as TestInterface<UtilityFunctionsContext>;
+const test = anyTest as TestFn<UtilityFunctionsContext>;
 
 /* Compare */
 test('compare considers equal any falsey values', (t) => {
@@ -147,4 +147,27 @@ test('returns the database object fom a mongoose connection instance', (t) => {
 test('returns the database object directly if is not a mongoose object', (t) => {
 	const database = {} as Db;
 	t.is(getDatabase(database), database);
+});
+
+/* IsPromise */
+test('returns true for native promises', (t) => {
+	t.true(isPromise(Promise.resolve()));
+	t.true(isPromise(new Promise(() => undefined)));
+});
+
+test('returns true for thenable objects and functions', (t) => {
+	t.true(isPromise({ then: () => undefined }));
+	const thenableFn = () => undefined;
+	(thenableFn as any).then = () => undefined;
+	t.true(isPromise(thenableFn));
+});
+
+test('returns false for non-thenable values', (t) => {
+	t.false(isPromise(null));
+	t.false(isPromise(undefined));
+	t.false(isPromise(42));
+	t.false(isPromise('then'));
+	t.false(isPromise({}));
+	t.false(isPromise({ then: 'not a function' }));
+	t.false(isPromise(() => undefined));
 });

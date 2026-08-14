@@ -3,10 +3,10 @@
  * @module multer-gridfs-storage/cache
  */
 import { EventEmitter } from 'node:events';
-import ConnectionString from 'mongodb-connection-string-url';
+import { ConnectionString } from 'mongodb-connection-string-url';
 import { Db } from 'mongodb';
-import { compare, compareUris } from './utils';
-import { CacheIndex, CacheValue } from './types';
+import { compare, compareUris } from './utils.js';
+import { CacheIndex, CacheValue } from './types/index.js';
 
 /**
  * Plugin cached connection handling class.

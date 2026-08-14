@@ -1,4 +1,4 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import express, { Request, Response } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -10,7 +10,7 @@ import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { DefaultGeneratorContext } from './types/default-generator-context';
 
-const test = anyTest as TestInterface<DefaultGeneratorContext>;
+const test = anyTest as TestFn<DefaultGeneratorContext>;
 
 test.before(async (t) => {
 	const app = express();

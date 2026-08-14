@@ -1,4 +1,4 @@
-import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import anyTest, { TestFn, ExecutionContext } from 'ava';
 import { MongoClient, Db } from 'mongodb';
 import { spy, stub, restore } from 'sinon';
 
@@ -8,7 +8,7 @@ import { cleanStorage, fakeConnectCb } from './utils/testutils';
 import { CacheErrorsContext } from './types/cache-errors-context';
 
 const { url, options } = storageOptions();
-const test = anyTest as TestInterface<CacheErrorsContext>;
+const test = anyTest as TestFn<CacheErrorsContext>;
 
 function createStorage(settings: Partial<UrlStorageOptions>, { t, key }: { t?: ExecutionContext<CacheErrorsContext>; key?: string } = {}) {
 	const storage = new GridFsStorage({ url, options, ...settings });

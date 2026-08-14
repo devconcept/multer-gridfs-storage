@@ -1,4 +1,4 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -8,7 +8,7 @@ import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { HandlingNamesContext } from './types/handling-names-context';
 
-const test = anyTest as TestInterface<HandlingNamesContext>;
+const test = anyTest as TestFn<HandlingNamesContext>;
 
 test.afterEach.always('cleanup', async (t) => {
 	await cleanStorage(t.context.storage);

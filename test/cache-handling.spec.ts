@@ -1,4 +1,4 @@
-import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import anyTest, { TestFn, ExecutionContext } from 'ava';
 import { MongoClient } from 'mongodb';
 import delay from 'delay';
 import { spy, stub, restore } from 'sinon';
@@ -8,7 +8,7 @@ import { storageOptions } from './utils/settings';
 import { cleanStorage } from './utils/testutils';
 import { CacheHandlingContext } from './types/cache-handling-context';
 
-const test = anyTest as TestInterface<CacheHandlingContext>;
+const test = anyTest as TestFn<CacheHandlingContext>;
 const { url, options } = storageOptions();
 
 test.serial.beforeEach((t) => {

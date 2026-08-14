@@ -1,4 +1,4 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -9,7 +9,7 @@ import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { FileFunctionContext } from './types/file-function-context';
 
-const test = anyTest as TestInterface<FileFunctionContext>;
+const test = anyTest as TestFn<FileFunctionContext>;
 
 test.before(async (t) => {
 	const app = express();

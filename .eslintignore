@@ -1,5 +1,5 @@
 coverage/**/*
 docs/**/*
 examples/**
-lib/**
+dist/**
 

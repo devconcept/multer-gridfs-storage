@@ -1,4 +1,4 @@
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -8,7 +8,7 @@ import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { IncompleteGeneratorsContext } from './types/incomplete-generators-context';
 
-const test = anyTest as TestInterface<IncompleteGeneratorsContext>;
+const test = anyTest as TestFn<IncompleteGeneratorsContext>;
 
 test.before(async (t) => {
 	const app = express();

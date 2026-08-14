@@ -1,5 +1,5 @@
 import { readFile as readFileCb } from 'fs';
-import anyTest, { TestInterface } from 'ava';
+import anyTest, { TestFn } from 'ava';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -11,7 +11,7 @@ import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { UploadedFileContext } from './types/uploaded-file-context';
 
-const test = anyTest as TestInterface<UploadedFileContext>;
+const test = anyTest as TestFn<UploadedFileContext>;
 const readFile = pify(readFileCb);
 
 test.before(async (t) => {

@@ -7,15 +7,14 @@
 import crypto from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { Db, Document, GridFSBucket, GridFSBucketWriteStream, GridFSFile, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
-import isPromise from 'is-promise';
 import isGenerator from 'is-generator';
 import pump from 'pump';
 import { StorageEngine } from 'multer';
 import { Request } from 'express';
 
-import { getDatabase } from './utils';
-import { Cache } from './cache';
-import { CacheIndex, GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageOptions } from './types';
+import { getDatabase, isPromise } from './utils.js';
+import { Cache } from './cache.js';
+import { CacheIndex, GridFile, ConnectionResult, NodeCallback, UrlStorageOptions, DbStorageOptions } from './types/index.js';
 
 const isGeneratorFn = isGenerator.fn;
 

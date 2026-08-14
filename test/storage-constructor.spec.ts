@@ -1,4 +1,4 @@
-import anyTest, { TestInterface, ExecutionContext } from 'ava';
+import anyTest, { TestFn, ExecutionContext } from 'ava';
 import express, { Request, Response } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -10,7 +10,7 @@ import { storageOptions } from './utils/settings';
 import { filesMatchSource } from './utils/macros';
 import { StorageConstructorContext } from './types/storage-constructor-context';
 
-const test = anyTest as TestInterface<StorageConstructorContext>;
+const test = anyTest as TestFn<StorageConstructorContext>;
 
 function prepareTest(t: ExecutionContext<StorageConstructorContext>, options: UrlStorageOptions | DbStorageOptions) {
 	const app = express();

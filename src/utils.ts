@@ -5,9 +5,18 @@
 
 import isPlainObject from 'lodash.isplainobject';
 import { Db } from 'mongodb';
-import ConnectionString from 'mongodb-connection-string-url';
+import { ConnectionString } from 'mongodb-connection-string-url';
 
-import { ComparatorResult, MongooseConnectionInstance, MongooseInstance } from './types';
+import { ComparatorResult, MongooseConnectionInstance, MongooseInstance } from './types/index.js';
+
+/**
+ * Return true if the given value is a thenable/promise.
+ * @param value The value to inspect
+ * @return Whether the value is a promise
+ */
+export function isPromise<T = unknown>(value: unknown): value is Promise<T> {
+	return Boolean(value) && (typeof value === 'object' || typeof value === 'function') && typeof (value as { then?: unknown }).then === 'function';
+}
 
 /**
  * Compare two objects by value.

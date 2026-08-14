@@ -1,10 +1,13 @@
 import { Readable, Writable } from 'stream';
 import path from 'path';
-import ConnectionString from 'mongodb-connection-string-url';
+import { fileURLToPath } from 'node:url';
+import { ConnectionString } from 'mongodb-connection-string-url';
 import { Db, MongoClient } from 'mongodb';
 import delay from 'delay';
 
 import { connection, storageOptions } from './settings';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const files = ['sample1.jpg', 'sample2.jpg'].map((file) => path.join(__dirname, '/../attachments/', file));
 
