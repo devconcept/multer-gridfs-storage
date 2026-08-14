@@ -1,9 +1,8 @@
-import { readFile as readFileCb } from 'fs';
+import { readFile } from 'node:fs/promises';
 import anyTest, { TestFn } from 'ava';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
-import pify from 'pify';
 import hasOwn from 'has-own-prop';
 
 import { GridFsStorage } from '../src';
@@ -12,7 +11,6 @@ import { storageOptions } from './utils/settings';
 import { UploadedFileContext } from './types/uploaded-file-context';
 
 const test = anyTest as TestFn<UploadedFileContext>;
-const readFile = pify(readFileCb);
 
 test.before(async (t) => {
 	const app = express();
