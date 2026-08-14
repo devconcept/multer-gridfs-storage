@@ -1,6 +1,6 @@
 # Multer's GridFS storage engine
 
-[![Build Status][github-image]][github-url] [![Coverage Status][codecov-image]][codecov-url] ![Npm version][version-image] ![Downloads][downloads-image] [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage?ref=badge_shield) [![Gitter](https://badges.gitter.im/multer-gridfs-storage/community.svg)](https://gitter.im/multer-gridfs-storage/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status][github-image]][github-url] [![Coverage Status][codecov-image]][codecov-url] ![Npm version][version-image] ![Downloads][downloads-image] [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fdevconcept%2Fmulter-gridfs-storage?ref=badge_shield) [![GitHub Discussions][discussions-image]][discussions-url]
 
 [GridFS](https://docs.mongodb.com/manual/core/gridfs) storage engine for [Multer](https://github.com/expressjs/multer) to store uploaded files directly to MongoDb.
 
@@ -571,6 +571,8 @@ $ npm run coverage
 [codecov-image]: https://codecov.io/gh/devconcept/multer-gridfs-storage/branch/master/graph/badge.svg "Coverage report"
 [version-image]:https://img.shields.io/npm/v/multer-gridfs-storage.svg "Npm version"
 [downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
+[discussions-url]: https://github.com/devconcept/multer-gridfs-storage/discussions
+[discussions-image]: https://img.shields.io/github/discussions/devconcept/multer-gridfs-storage "GitHub Discussions"
 
 [connection-string]: https://docs.mongodb.com/manual/reference/connection-string
 [mongoclient-connect]: http://mongodb.github.io/node-mongodb-native/3.1/api/MongoClient.html#.connect
