@@ -636,6 +636,14 @@ $ npm install
 $ npm test
 ```
 
+The tests need a MongoDB server reachable at `127.0.0.1:27017` (override with the `MONGO_HOST` / `MONGO_PORT` environment variables). If you already run MongoDB locally, `npm test` works as-is. Otherwise you can start a throwaway instance with Docker:
+
+```bash
+$ npm run db:up    # start MongoDB in a container and wait until it is ready
+$ npm test
+$ npm run db:down  # stop and remove it
+```
+
 Tests are written with the [ava](https://avajs.dev) testing framework.
 
 Code coverage thanks to [istanbul](https://istanbul.js.org/)

@@ -8,6 +8,8 @@
 		"watch": "tshy --watch",
 		"prepublishOnly": "tshy",
 		"test": "npm run compile && ava",
+		"db:up": "docker compose up -d --wait",
+		"db:down": "docker compose down",
 		"lint": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" && eslint . --fix",
 		"coverage": "c8 --reporter=lcov --reporter=text ava --timeout=30s",
 		"docs": "npm run compile && jsdoc -c ./conf.json --readme ./README.md"

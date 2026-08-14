@@ -1,0 +1,18 @@
+# Throwaway MongoDB for running the test suite locally.
+#   npm run db:up    -> start it (waits until it is ready)
+#   npm test
+#   npm run db:down  -> stop and remove it
+#
+# Data is not persisted (no volume), which suits the tests since they create and
+# drop their own databases. Override the port the tests use with MONGO_PORT.
+services:
+  mongo:
+    image: mongo:8.0
+    container_name: multer-gridfs-storage-mongo
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
