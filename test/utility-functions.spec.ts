@@ -129,6 +129,25 @@ test('returns true for urls with the same parameters in different order', () => 
 	).toBe(true);
 });
 
+test('returns false for urls whose repeated parameters differ before the last value', () => {
+	// A repeated key keeps every value: these differ (tags a,b vs c,b) even though the last value matches.
+	expect(
+		compareUris(
+			new ConnectionString('mongodb://host1:1234/database?readPreferenceTags=a&readPreferenceTags=b'),
+			new ConnectionString('mongodb://host1:1234/database?readPreferenceTags=c&readPreferenceTags=b'),
+		),
+	).toBe(false);
+});
+
+test('returns true for identical urls with repeated parameters', () => {
+	expect(
+		compareUris(
+			new ConnectionString('mongodb://host1:1234/database?readPreferenceTags=a&readPreferenceTags=b'),
+			new ConnectionString('mongodb://host1:1234/database?readPreferenceTags=a&readPreferenceTags=b'),
+		),
+	).toBe(true);
+});
+
 /* GetDatabase */
 test('returns the database object fom a mongoose instance', () => {
 	const database = {} as Db;
@@ -143,6 +162,11 @@ test('returns the database object fom a mongoose connection instance', () => {
 test('returns the database object directly if is not a mongoose object', () => {
 	const database = {} as Db;
 	expect(getDatabase(database)).toBe(database);
+});
+
+test('throws when a mongoose connection has no database available', () => {
+	// A connection object that exposes a `db` slot which is not yet populated cannot yield a database.
+	expect(() => getDatabase({ db: undefined } as any)).toThrow('is not open yet');
 });
 
 /* IsPromise */

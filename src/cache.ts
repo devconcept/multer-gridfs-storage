@@ -82,7 +82,11 @@ export class Cache {
 			}
 		}
 
-		cached.set(cached.size, {
+		// Use one past the highest existing index rather than the map size: after remove() deletes an
+		// entry the size no longer equals the next free key, which would otherwise overwrite an
+		// existing entry and return the wrong index.
+		const index = cached.size === 0 ? 0 : Math.max(...cached.keys()) + 1;
+		cached.set(index, {
 			db: null,
 			pending: true,
 			opening: false,
@@ -92,7 +96,7 @@ export class Cache {
 		return {
 			url,
 			name,
-			index: cached.size - 1,
+			index,
 		};
 	}
 
@@ -282,7 +286,17 @@ export class Cache {
 			}
 
 			const { name, url, index } = cacheIndex;
-			this.store.get(name)?.get(url)?.delete(index);
+			const namedCache = this.store.get(name);
+			const urlCache = namedCache?.get(url);
+			urlCache?.delete(index);
+			// Drop now-empty containers so stale url/name keys don't linger in the store.
+			if (urlCache?.size === 0) {
+				namedCache?.delete(url);
+			}
+
+			if (namedCache?.size === 0) {
+				this.store.delete(name);
+			}
 		}
 	}
 

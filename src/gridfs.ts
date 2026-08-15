@@ -297,20 +297,13 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	}
 
 	protected async _openConnection(url: string, options?: MongoClientOptions): Promise<ConnectionResult> {
-		let db;
-		const connection = await MongoClient.connect(url, options);
-		if (connection instanceof MongoClient) {
-			// With no name argument the driver uses the database from the connection string
-			db = connection.db();
-		} else {
-			db = connection;
-		}
-
-		return { db };
+		const client = await MongoClient.connect(url, options);
+		// With no name argument the driver uses the database from the connection string
+		return { db: client.db() };
 	}
 
 	/**
-	 * Create a writable stream with backwards compatibility with GridStore
+	 * Opens a GridFS upload stream for the given options.
 	 * @param {object} options - The stream options
 	 */
 	protected createStream(options: CreateStreamOptions): GridFSBucketWriteStream {

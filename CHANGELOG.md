@@ -2,6 +2,9 @@
 
 * Added: A `close()` method that detaches a storage from its database connection, removing the `dbError` listeners it registered on the underlying `MongoClient` (and its own listeners). Call it for short-lived storages — for example per-request engines — so they no longer accumulate listeners on a shared or cached connection. Previously those listeners were never removed, leaking the storage and eventually triggering a `MaxListenersExceeded` warning.
 * Changed: Switched the test runner to [Vitest](https://vitest.dev).
+* Fixed: The connection cache could assign a new entry the wrong index and overwrite an existing one after an earlier entry for the same url was removed (for example when a cached connection with different options failed). New cache entries now take a fresh index past the highest existing one.
+* Fixed: Connection strings that differ only in a repeated query parameter (for example `readPreferenceTags`) are no longer treated as the same connection by the cache; duplicate parameters are compared instead of being collapsed.
+* Changed: Passing a database connection whose `db` is not available yet (an unopened connection) now throws a clear error instead of failing later with a confusing message.
 
 # 6.0.0
 

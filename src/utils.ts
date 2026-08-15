@@ -183,8 +183,13 @@ export function compareUris(uri1: ConnectionString, uri2: ConnectionString): boo
 		return false;
 	}
 
-	// Compare query parameter values regardless of the order they appear in
-	if (!compare(Object.fromEntries(uri1.searchParams), Object.fromEntries(uri2.searchParams))) {
+	// Compare query parameters as a multiset of key/value pairs, regardless of order. Iterating the
+	// entries (rather than Object.fromEntries) preserves parameters that legitimately repeat, such as
+	// `readPreferenceTags`, which collapsing into an object would drop.
+	const sortPairs = (params: Iterable<[string, string]>): Array<[string, string]> => [...params].sort(([k1, v1], [k2, v2]) => k1.localeCompare(k2) || v1.localeCompare(v2));
+	const params1 = sortPairs(uri1.searchParams);
+	const params2 = sortPairs(uri2.searchParams);
+	if (params1.length !== params2.length || params1.some(([key, value], index) => key !== params2[index][0] || value !== params2[index][1])) {
 		return false;
 	}
 
@@ -211,10 +216,17 @@ export function compareUris(uri1: ConnectionString, uri2: ConnectionString): boo
  * @return The database object
  */
 export function getDatabase(obj: MongooseConnectionInstance | MongooseInstance | Db): Db {
-	// If the object has a db property it should be a mongoose connection instance.
+	// A db property means it is a mongoose connection instance.
 	// Mongo 2 had a db property but it was a function. See issue #14
-	if ('db' in obj && obj.db && typeof obj.db !== 'function') {
-		return obj.db;
+	if ('db' in obj && typeof obj.db !== 'function') {
+		if (obj.db) {
+			return obj.db;
+		}
+
+		// The db slot is present but empty: the connection has not opened yet, so there is no usable
+		// database. Fail clearly here instead of returning a non-Db object that breaks later with a
+		// confusing error.
+		throw new Error('The provided database connection is not open yet (its `db` is not available)');
 	}
 
 	// If it has a connection property with a db property on it is a mongoose instance

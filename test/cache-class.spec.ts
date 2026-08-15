@@ -237,3 +237,36 @@ test('should remove all entries from the cache', () => {
 	cache.clear();
 	expect(cache.connections()).toBe(0);
 });
+
+test('removing the last entry cleans up the empty url and name maps', () => {
+	const index = cache.initialize({ url, cacheName: 'a' });
+	expect(cacheStore().has('a')).toBe(true);
+
+	cache.remove(index);
+
+	// The now-empty containers are dropped instead of lingering in the store.
+	expect(cacheStore().has('a')).toBe(false);
+	expect(cache.connections()).toBe(0);
+});
+
+test('assigns a fresh index after an earlier entry is removed', () => {
+	// Two entries for the same url with different options land at indices 0 and 1.
+	const index0 = cache.initialize({ url, cacheName: 'a', init: {} });
+	const index1 = cache.initialize({ url, cacheName: 'a', init: { db: 1 } });
+	expect(index0.index).toBe(0);
+	expect(index1.index).toBe(1);
+	expect(cache.connections()).toBe(2);
+
+	// Remove the first entry; the url map now holds a single entry at key 1 (but size 1).
+	cache.remove(index0);
+	expect(cache.connections()).toBe(1);
+
+	// A third, differently-configured entry must take a fresh index (one past the highest existing
+	// key) instead of reusing size-1 (=0), which would overwrite the entry at index 1.
+	const index2 = cache.initialize({ url, cacheName: 'a', init: { db: 2 } });
+	expect(index2.index).toBe(2);
+	expect(cache.connections()).toBe(2);
+	expect(cache.get(index1)).not.toBe(null);
+	expect(cache.get(index2)).not.toBe(null);
+	expect(cache.get(index1)).not.toBe(cache.get(index2));
+});
