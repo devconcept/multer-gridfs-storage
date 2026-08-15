@@ -7,3 +7,4 @@ docs/
 dist/
 .tshy/
 .tshy-build/
+test-report.junit.xml
