@@ -1,4 +1,4 @@
-import { test, expect, afterEach } from 'vitest';
+import { test, expect, afterEach, describe } from 'vitest';
 import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -35,45 +35,47 @@ function prepareTest(error?: Error) {
 	upload = multer({ storage });
 }
 
-afterEach(async () => {
-	await cleanStorage(storage, { db, client });
-	await dropDatabase(usedUrl);
-	db = undefined;
-	client = undefined;
-	usedUrl = undefined as any;
-});
-
-test('buffers incoming files while the connection is opening', async () => {
-	let result: any = {};
-	prepareTest();
-
-	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
-		result = {
-			headers: request_.headers,
-			files: request_.files,
-			body: request_.body,
-		};
-		response.end();
+describe('uploads while the connection is opening', () => {
+	afterEach(async () => {
+		await cleanStorage(storage, { db, client });
+		await dropDatabase(usedUrl);
+		db = undefined;
+		client = undefined;
+		usedUrl = undefined as any;
 	});
 
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+	test('buffers incoming files while the connection is opening', async () => {
+		let result: any = {};
+		prepareTest();
 
-	await storage.ready();
-	filesMatchSource(result.files);
-});
+		app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body,
+			};
+			response.end();
+		});
 
-test('rejects incoming files if the connection does not open', async () => {
-	let result: any = {};
-	const error = new Error('Failed error');
-	prepareTest(error);
+		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	app.post('/url', upload.array('photos', 2), (error_: any, request_: Request, response: Response, _next: NextFunction) => {
-		result = error_;
-		response.end();
+		await storage.ready();
+		filesMatchSource(result.files);
 	});
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	await storage.ready().catch(() => '');
-	expect(result).toBe(error);
-	expect(result.message).toBe('Failed error');
+	test('rejects incoming files if the connection does not open', async () => {
+		let result: any = {};
+		const error = new Error('Failed error');
+		prepareTest(error);
+
+		app.post('/url', upload.array('photos', 2), (error_: any, request_: Request, response: Response, _next: NextFunction) => {
+			result = error_;
+			response.end();
+		});
+		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+
+		await storage.ready().catch(() => '');
+		expect(result).toBe(error);
+		expect(result.message).toBe('Failed error');
+	});
 });

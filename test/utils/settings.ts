@@ -17,7 +17,6 @@ export const connection: ConnectionSettings = {
 	database,
 };
 
-
 interface StorageOptionsSettings {
 	url: string;
 	options: Record<string, any>;

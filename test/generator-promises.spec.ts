@@ -1,4 +1,4 @@
-import { test, expect, afterEach } from 'vitest';
+import { test, expect, afterEach, describe } from 'vitest';
 import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -44,17 +44,6 @@ async function successfulPromiseSetup() {
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 }
 
-afterEach(async () => {
-	await cleanStorage(storage);
-});
-
-test('yielding a promise is resolved as file configuration', async () => {
-	await successfulPromiseSetup();
-	expect(Array.isArray(result.files)).toBe(true);
-	expect(result.files.length).toBe(2);
-	for (const [idx, f] of result.files.entries()) expect(f.filename).toBe(filePrefix + (idx + 1));
-});
-
 async function failedPromiseSetup() {
 	const app = express();
 	rejectedError = new Error('reason');
@@ -75,12 +64,25 @@ async function failedPromiseSetup() {
 	await request(app).post('/url').attach('photos', files[0]);
 }
 
-test('yielding a promise rejection is handled properly', async () => {
-	await failedPromiseSetup();
-	const { db } = storage;
-	expect(error instanceof Error).toBe(true);
-	expect(error).toBe(rejectedError);
-	const collection = db.collection('fs.files');
-	const count = await (collection.estimatedDocumentCount ? collection.estimatedDocumentCount() : collection.count());
-	expect(count).toBe(0);
+describe('a generator yielding promises', () => {
+	afterEach(async () => {
+		await cleanStorage(storage);
+	});
+
+	test('yielding a promise is resolved as file configuration', async () => {
+		await successfulPromiseSetup();
+		expect(Array.isArray(result.files)).toBe(true);
+		expect(result.files.length).toBe(2);
+		for (const [idx, f] of result.files.entries()) expect(f.filename).toBe(filePrefix + (idx + 1));
+	});
+
+	test('yielding a promise rejection is handled properly', async () => {
+		await failedPromiseSetup();
+		const { db } = storage;
+		expect(error instanceof Error).toBe(true);
+		expect(error).toBe(rejectedError);
+		const collection = db.collection('fs.files');
+		const count = await (collection.estimatedDocumentCount ? collection.estimatedDocumentCount() : collection.count());
+		expect(count).toBe(0);
+	});
 });

@@ -1,5 +1,5 @@
 import { Readable, Transform } from 'node:stream';
-import { test, expect, afterEach } from 'vitest';
+import { test, expect, afterEach, describe } from 'vitest';
 import { GridFSBucket } from 'mongodb';
 
 import { GridFsStorage } from '../src';
@@ -7,8 +7,6 @@ import { storageOptions } from './utils/settings';
 import { cleanStorage } from './utils/testutils';
 
 let storage: any;
-
-afterEach(async () => cleanStorage(storage));
 
 function upperCaseTransform(): Transform {
 	return new Transform({
@@ -28,62 +26,66 @@ async function downloadFile(id: any, bucketName: string): Promise<string> {
 	return Buffer.concat(chunks).toString();
 }
 
-test('applies transforms to the stored file', async () => {
-	storage = new GridFsStorage({
-		...storageOptions(),
-		file: () => ({ filename: 'transformed.txt', transforms: [upperCaseTransform()] }),
+describe('file transforms', () => {
+	afterEach(async () => cleanStorage(storage));
+
+	test('applies transforms to the stored file', async () => {
+		storage = new GridFsStorage({
+			...storageOptions(),
+			file: () => ({ filename: 'transformed.txt', transforms: [upperCaseTransform()] }),
+		});
+		await storage.ready();
+
+		const readable = Readable.from([Buffer.from('hello world')]);
+		const result: any = await storage.fromStream(readable, undefined, undefined);
+		const content = await downloadFile(result.id, result.bucketName);
+
+		expect(content).toBe('HELLO WORLD');
 	});
-	await storage.ready();
 
-	const readable = Readable.from([Buffer.from('hello world')]);
-	const result: any = await storage.fromStream(readable, undefined, undefined);
-	const content = await downloadFile(result.id, result.bucketName);
+	test('chains multiple transforms in order', async () => {
+		const exclaim = new Transform({
+			transform(chunk, encoding, callback) {
+				callback(null, Buffer.from(chunk.toString() + '!'));
+			},
+		});
+		storage = new GridFsStorage({
+			...storageOptions(),
+			file: () => ({ filename: 'chained.txt', transforms: [upperCaseTransform(), exclaim] }),
+		});
+		await storage.ready();
 
-	expect(content).toBe('HELLO WORLD');
-});
+		const readable = Readable.from([Buffer.from('hi')]);
+		const result: any = await storage.fromStream(readable, undefined, undefined);
+		const content = await downloadFile(result.id, result.bucketName);
 
-test('chains multiple transforms in order', async () => {
-	const exclaim = new Transform({
-		transform(chunk, encoding, callback) {
-			callback(null, Buffer.from(chunk.toString() + '!'));
-		},
+		expect(content).toBe('HI!');
 	});
-	storage = new GridFsStorage({
-		...storageOptions(),
-		file: () => ({ filename: 'chained.txt', transforms: [upperCaseTransform(), exclaim] }),
+
+	test('surfaces transform errors as a stream error instead of hanging', async () => {
+		const failing = new Transform({
+			transform(chunk, encoding, callback) {
+				callback(new Error('transform failed'));
+			},
+		});
+		storage = new GridFsStorage({
+			...storageOptions(),
+			file: () => ({ filename: 'failing.txt', transforms: [failing] }),
+		});
+		await storage.ready();
+
+		const streamErrors: Error[] = [];
+		storage.on('streamError', (error: Error) => streamErrors.push(error));
+
+		const readable = Readable.from([Buffer.from('data')]);
+		let caught: any;
+		try {
+			await storage.fromStream(readable, undefined, undefined);
+		} catch (error) {
+			caught = error;
+		}
+
+		expect(caught.message).toBe('transform failed');
+		expect(streamErrors.length).toBe(1);
 	});
-	await storage.ready();
-
-	const readable = Readable.from([Buffer.from('hi')]);
-	const result: any = await storage.fromStream(readable, undefined, undefined);
-	const content = await downloadFile(result.id, result.bucketName);
-
-	expect(content).toBe('HI!');
-});
-
-test('surfaces transform errors as a stream error instead of hanging', async () => {
-	const failing = new Transform({
-		transform(chunk, encoding, callback) {
-			callback(new Error('transform failed'));
-		},
-	});
-	storage = new GridFsStorage({
-		...storageOptions(),
-		file: () => ({ filename: 'failing.txt', transforms: [failing] }),
-	});
-	await storage.ready();
-
-	const streamErrors: Error[] = [];
-	storage.on('streamError', (error: Error) => streamErrors.push(error));
-
-	const readable = Readable.from([Buffer.from('data')]);
-	let caught: any;
-	try {
-		await storage.fromStream(readable, undefined, undefined);
-	} catch (error) {
-		caught = error;
-	}
-
-	expect(caught.message).toBe('transform failed');
-	expect(streamErrors.length).toBe(1);
 });

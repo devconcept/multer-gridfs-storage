@@ -1,4 +1,4 @@
-import { test, expect, afterEach } from 'vitest';
+import { test, expect, afterEach, describe } from 'vitest';
 import express, { Request, Response } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -20,121 +20,123 @@ function prepareTest(options: UrlStorageOptions | DbStorageOptions) {
 	upload = multer({ storage });
 }
 
-afterEach(async () => {
-	await cleanStorage(storage);
-	await dropDatabase(usedUrl);
-	usedUrl = undefined as any;
-});
-
-test('create storage from url parameter', async () => {
-	let result: any = {};
-	prepareTest(storageOptions());
-
-	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
-		result = {
-			headers: request_.headers,
-			files: request_.files,
-			body: request_.body,
-		};
-		response.end();
+describe('storage construction', () => {
+	afterEach(async () => {
+		await cleanStorage(storage);
+		await dropDatabase(usedUrl);
+		usedUrl = undefined as any;
 	});
 
-	await storage.ready();
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+	test('create storage from url parameter', async () => {
+		let result: any = {};
+		prepareTest(storageOptions());
 
-	filesMatchSource(result.files);
-});
+		app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body,
+			};
+			response.end();
+		});
 
-test('create storage from db parameter', async () => {
-	const { url, options } = storageOptions();
-	usedUrl = url;
-	let result: any = {};
-	const _db = await MongoClient.connect(url, options);
-	const db = getDb(_db, url);
-	prepareTest({ db });
+		await storage.ready();
+		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
-		result = {
-			headers: request_.headers,
-			files: request_.files,
-			body: request_.body,
-		};
-		response.end();
+		filesMatchSource(result.files);
 	});
 
-	await storage.ready();
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+	test('create storage from db parameter', async () => {
+		const { url, options } = storageOptions();
+		usedUrl = url;
+		let result: any = {};
+		const _db = await MongoClient.connect(url, options);
+		const db = getDb(_db, url);
+		prepareTest({ db });
 
-	filesMatchSource(result.files);
-});
+		app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body,
+			};
+			response.end();
+		});
 
-test('connects to a mongoose instance', async () => {
-	const { url, options } = storageOptions();
-	usedUrl = url;
-	let result: any = {};
-	const promise = mongoose.connect(url, options);
-	prepareTest({ db: promise as unknown as Promise<DbTypes> });
+		await storage.ready();
+		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
-		result = {
-			headers: request_.headers,
-			files: request_.files,
-			body: request_.body,
-		};
-		response.end();
+		filesMatchSource(result.files);
 	});
 
-	const { db } = await storage.ready();
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+	test('connects to a mongoose instance', async () => {
+		const { url, options } = storageOptions();
+		usedUrl = url;
+		let result: any = {};
+		const promise = mongoose.connect(url, options);
+		prepareTest({ db: promise as unknown as Promise<DbTypes> });
 
-	expect(db instanceof mongoose.mongo.Db).toBe(true);
-	filesMatchSource(result.files);
-});
+		app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body,
+			};
+			response.end();
+		});
 
-test('creates an instance without the new keyword', async () => {
-	let result: any = {};
-	app = express();
-	// @ts-expect-error calling constructor without new is intentional
-	storage = GridFsStorage(storageOptions());
+		const { db } = await storage.ready();
+		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	upload = multer({ storage });
-
-	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
-		result = {
-			headers: request_.headers,
-			files: request_.files,
-			body: request_.body,
-		};
-		response.end();
+		expect(db instanceof mongoose.mongo.Db).toBe(true);
+		filesMatchSource(result.files);
 	});
 
-	await storage.ready();
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+	test('creates an instance without the new keyword', async () => {
+		let result: any = {};
+		app = express();
+		// @ts-expect-error calling constructor without new is intentional
+		storage = GridFsStorage(storageOptions());
 
-	filesMatchSource(result.files);
-});
+		upload = multer({ storage });
 
-test('client is derived from the db', async () => {
-	const { url, options } = storageOptions();
-	usedUrl = url;
-	let result: any = {};
-	const _db = await MongoClient.connect(url, options);
-	const db = getDb(_db, url);
-	const client = getClient(_db);
-	prepareTest({ db });
-	expect(storage.db.client).toBe(client);
+		app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body,
+			};
+			response.end();
+		});
 
-	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
-		result = {
-			headers: request_.headers,
-			files: request_.files,
-			body: request_.body,
-		};
-		response.end();
+		await storage.ready();
+		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+
+		filesMatchSource(result.files);
 	});
 
-	await storage.ready();
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+	test('client is derived from the db', async () => {
+		const { url, options } = storageOptions();
+		usedUrl = url;
+		let result: any = {};
+		const _db = await MongoClient.connect(url, options);
+		const db = getDb(_db, url);
+		const client = getClient(_db);
+		prepareTest({ db });
+		expect(storage.db.client).toBe(client);
 
-	filesMatchSource(result.files);
+		app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body,
+			};
+			response.end();
+		});
+
+		await storage.ready();
+		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
+
+		filesMatchSource(result.files);
+	});
 });

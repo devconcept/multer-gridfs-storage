@@ -1,4 +1,4 @@
-import { test, expect, beforeAll, afterAll } from 'vitest';
+import { test, expect, beforeAll, afterAll, describe } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -17,77 +17,79 @@ let sizes: number[];
 let bucketNames: string[];
 let contentTypes: string[];
 
-beforeAll(async () => {
-	const app = express();
-	let counter = 0;
-	filenamePrefix = 'file';
-	ids = [new ObjectId(), new ObjectId()];
-	metadatas = ['foo', 'bar'];
-	sizes = [102_400, 204_800];
-	bucketNames = ['plants', 'animals'];
-	contentTypes = ['text/plain', 'image/jpeg'];
-	storage = new GridFsStorage({
-		...storageOptions(),
-		file: () => {
-			counter++;
-			return {
-				filename: `${filenamePrefix}${counter}`,
-				metadata: metadatas[counter - 1],
-				id: ids[counter - 1],
-				chunkSize: sizes[counter - 1],
-				bucketName: bucketNames[counter - 1],
-				contentType: contentTypes[counter - 1],
+describe('file function returning an object', () => {
+	beforeAll(async () => {
+		const app = express();
+		let counter = 0;
+		filenamePrefix = 'file';
+		ids = [new ObjectId(), new ObjectId()];
+		metadatas = ['foo', 'bar'];
+		sizes = [102_400, 204_800];
+		bucketNames = ['plants', 'animals'];
+		contentTypes = ['text/plain', 'image/jpeg'];
+		storage = new GridFsStorage({
+			...storageOptions(),
+			file: () => {
+				counter++;
+				return {
+					filename: `${filenamePrefix}${counter}`,
+					metadata: metadatas[counter - 1],
+					id: ids[counter - 1],
+					chunkSize: sizes[counter - 1],
+					bucketName: bucketNames[counter - 1],
+					contentType: contentTypes[counter - 1],
+				};
+			},
+		});
+
+		const upload = multer({ storage });
+
+		app.post('/url', upload.array('photos', 2), (request_, response) => {
+			result = {
+				headers: request_.headers,
+				files: request_.files,
+				body: request_.body,
 			};
-		},
+			response.end();
+		});
+
+		await storage.ready();
+		await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 	});
 
-	const upload = multer({ storage });
-
-	app.post('/url', upload.array('photos', 2), (request_, response) => {
-		result = {
-			headers: request_.headers,
-			files: request_.files,
-			body: request_.body,
-		};
-		response.end();
+	afterAll(async () => {
+		await cleanStorage(storage);
 	});
 
-	await storage.ready();
-	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
-});
+	test('request contains the two uploaded files', () => {
+		expect(result.files).toBeTruthy();
+		expect(Array.isArray(result.files)).toBe(true);
+		expect(result.files.length).toBe(2);
+	});
 
-afterAll(async () => {
-	await cleanStorage(storage);
-});
+	test('files are named with the provided value', () => {
+		for (const [idx, f] of result.files.entries()) expect(f.filename).toBe(filenamePrefix + (idx + 1));
+	});
 
-test('request contains the two uploaded files', () => {
-	expect(result.files).toBeTruthy();
-	expect(Array.isArray(result.files)).toBe(true);
-	expect(result.files.length).toBe(2);
-});
+	test('files contain a metadata object with the provided object', () => {
+		for (const [idx, f] of result.files.entries()) expect(f.metadata).toBe(metadatas[idx]);
+	});
 
-test('files are named with the provided value', () => {
-	for (const [idx, f] of result.files.entries()) expect(f.filename).toBe(filenamePrefix + (idx + 1));
-});
+	test('files are stored with the provided chunkSize value', () => {
+		for (const [idx, f] of result.files.entries()) expect(f.chunkSize).toBe(sizes[idx]);
+	});
 
-test('files contain a metadata object with the provided object', () => {
-	for (const [idx, f] of result.files.entries()) expect(f.metadata).toBe(metadatas[idx]);
-});
+	test('files have the provided id value', () => {
+		for (const [idx, f] of result.files.entries()) expect(f.id).toBe(ids[idx]);
+	});
 
-test('files are stored with the provided chunkSize value', () => {
-	for (const [idx, f] of result.files.entries()) expect(f.chunkSize).toBe(sizes[idx]);
-});
+	test('files are stored under a collection with the provided name', async () => {
+		const { db } = storage;
+		const collections = await db.listCollections({ name: { $in: ['plants.files', 'animals.files'] } }).toArray();
+		expect(collections.length).toBe(2);
+	});
 
-test('files have the provided id value', () => {
-	for (const [idx, f] of result.files.entries()) expect(f.id).toBe(ids[idx]);
-});
-
-test('files are stored under a collection with the provided name', async () => {
-	const { db } = storage;
-	const collections = await db.listCollections({ name: { $in: ['plants.files', 'animals.files'] } }).toArray();
-	expect(collections.length).toBe(2);
-});
-
-test('files are stored with the provided content-type value', () => {
-	for (const [idx, f] of result.files.entries()) expect(f.contentType).toBe(contentTypes[idx]);
+	test('files are stored with the provided content-type value', () => {
+		for (const [idx, f] of result.files.entries()) expect(f.contentType).toBe(contentTypes[idx]);
+	});
 });
