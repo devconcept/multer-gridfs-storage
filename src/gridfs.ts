@@ -31,6 +31,12 @@ const defaults: Partial<CreateStreamOptions> = {
 };
 
 /**
+ * MongoClient events that are surfaced to the user as a `dbError` event.
+ * @const clientErrorEvents
+ **/
+const clientErrorEvents = ['error', 'parseError', 'timeout', 'close'];
+
+/**
  * Options used to open a GridFS upload stream, produced by merging the plugin
  * defaults with the values returned by the file naming function.
  */
@@ -73,6 +79,14 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	private readonly _options: MongoClientOptions | undefined;
 	private readonly cacheName?: string;
 	private readonly cacheIndex?: CacheIndex;
+	// The MongoClient the storage attached its error listeners to, kept so they can be removed again.
+	private _clientEventSource: MongoClient | null = null;
+	// Stable handler reference (a per-instance closure) so it can be removed with removeListener.
+	private readonly _emitDbError = (error_: unknown): void => {
+		// Some driver error events fire without an error object even though the docs specify a MongoError argument.
+		const error = error_ || new Error('Unknown database error');
+		this.emit('dbError', error);
+	};
 
 	constructor(configuration: UrlStorageOptions | DbStorageOptions) {
 		super();
@@ -235,6 +249,27 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			this.once('connection', done);
 			this.once('connectionFailed', fail);
 		});
+	}
+
+	/**
+	 * Detaches the storage from its database connection.
+	 *
+	 * Removes the error listeners this storage registered on the underlying `MongoClient`, along with
+	 * its own event listeners. Call this when a storage is no longer needed — for example a
+	 * short-lived, per-request engine — so it does not accumulate listeners on a shared or cached
+	 * connection. The database connection itself is left open because it may be shared with other
+	 * storages.
+	 */
+	close(): void {
+		if (this._clientEventSource) {
+			for (const evt of clientErrorEvents) {
+				this._clientEventSource.removeListener(evt, this._emitDbError);
+			}
+
+			this._clientEventSource = null;
+		}
+
+		this.removeAllListeners();
 	}
 
 	/**
@@ -451,29 +486,17 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		this.connecting = false;
 		// Check if the object is a mongoose instance, a mongoose Connection or a mongo Db object
 		this.db = getDatabase(db);
-		// Derive the MongoClient from the Db — it's a public property in the driver (MongoClient is
-		// the only EventEmitter in the modern driver, needed for dbError event listeners)
+		// Derive the MongoClient from the Db — it's a public property in the driver and the only
+		// EventEmitter in the modern driver, so it is where the dbError listeners are attached.
 		const client = this.db?.client ?? null;
-
-		const errorEvent = (error_: unknown) => {
-			// Needs verification. Sometimes the event fires without an error object
-			// although the docs specify each of the events has a MongoError argument
-			const error = error_ || new Error('Unknown database error');
-			this.emit('dbError', error);
-		};
-
-		// These are all the events that emit errors
-		const errorEventNames = ['error', 'parseError', 'timeout', 'close'];
-		// Only the MongoClient is an EventEmitter in the modern driver
-		const eventSource = client;
-
-		if (eventSource) {
-			for (const evt of errorEventNames) eventSource.on(evt, errorEvent);
+		this._clientEventSource = client;
+		if (client) {
+			for (const evt of clientErrorEvents) client.on(evt, this._emitDbError);
 		}
 
 		// Emit on next tick so user code can set listeners in case the db object is already available
 		process.nextTick(() => {
-			this.emit('connection', { db: this.db, client: this.db?.client ?? null });
+			this.emit('connection', { db: this.db, client });
 		});
 	}
 

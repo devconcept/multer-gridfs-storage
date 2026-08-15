@@ -212,3 +212,26 @@ test('error event is emitted when there is an error in the writable stream', asy
 
 	expect(errorSpy.callCount).toBe(1);
 });
+
+test('close() removes the error listeners a storage adds to the client', async () => {
+	const { url, options } = storageOptions();
+	usedUrl = url;
+	const client = await MongoClient.connect(url, options);
+	const db = getDb(client, url);
+
+	const baseline = client.listenerCount('error');
+
+	storage = new GridFsStorage({ db });
+	await storage.ready();
+	// A second storage sharing the same client adds its own listeners on top — without cleanup these
+	// would accumulate on the shared connection.
+	const second = new GridFsStorage({ db });
+	await second.ready();
+	expect(client.listenerCount('error')).toBe(baseline + 2);
+
+	// Closing a storage removes exactly the listeners it added.
+	second.close();
+	expect(client.listenerCount('error')).toBe(baseline + 1);
+	storage.close();
+	expect(client.listenerCount('error')).toBe(baseline);
+});

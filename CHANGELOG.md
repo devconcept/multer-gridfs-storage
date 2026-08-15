@@ -1,5 +1,6 @@
 # Unreleased
 
+* Added: A `close()` method that detaches a storage from its database connection, removing the `dbError` listeners it registered on the underlying `MongoClient` (and its own listeners). Call it for short-lived storages — for example per-request engines — so they no longer accumulate listeners on a shared or cached connection. Previously those listeners were never removed, leaking the storage and eventually triggering a `MaxListenersExceeded` warning.
 * Changed: Switched the test runner to [Vitest](https://vitest.dev).
 
 # 6.0.0
