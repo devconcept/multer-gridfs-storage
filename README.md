@@ -644,7 +644,7 @@ $ npm test
 $ npm run db:down  # stop and remove it
 ```
 
-Tests are written with the [ava](https://avajs.dev) testing framework.
+Tests are written with the [Vitest](https://vitest.dev) testing framework.
 
 Code coverage thanks to [c8](https://github.com/bcoe/c8)
 

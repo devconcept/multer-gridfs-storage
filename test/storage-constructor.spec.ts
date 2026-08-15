@@ -1,4 +1,4 @@
-import anyTest, { TestFn, ExecutionContext } from 'ava';
+import { test, expect, afterEach } from 'vitest';
 import express, { Request, Response } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -8,29 +8,27 @@ import { GridFsStorage, UrlStorageOptions, DbStorageOptions, DbTypes } from '../
 import { files, cleanStorage, getDb, getClient, dropDatabase } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 import { filesMatchSource } from './utils/macros';
-import { StorageConstructorContext } from './types/storage-constructor-context';
 
-const test = anyTest as TestFn<StorageConstructorContext>;
+let storage: any;
+let upload: any;
+let app: any;
+let usedUrl: string;
 
-function prepareTest(t: ExecutionContext<StorageConstructorContext>, options: UrlStorageOptions | DbStorageOptions) {
-	const app = express();
-	const storage = new GridFsStorage(options);
-	const upload = multer({ storage });
-	t.context.storage = storage;
-	t.context.upload = upload;
-	t.context.app = app;
+function prepareTest(options: UrlStorageOptions | DbStorageOptions) {
+	app = express();
+	storage = new GridFsStorage(options);
+	upload = multer({ storage });
 }
 
-test.afterEach.always('cleanup', async (t) => {
-	const { storage, url } = t.context;
+afterEach(async () => {
 	await cleanStorage(storage);
-	return dropDatabase(url);
+	await dropDatabase(usedUrl);
+	usedUrl = undefined as any;
 });
 
-test('create storage from url parameter', async (t) => {
+test('create storage from url parameter', async () => {
 	let result: any = {};
-	prepareTest(t, storageOptions());
-	const { app, storage, upload } = t.context;
+	prepareTest(storageOptions());
 
 	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
 		result = {
@@ -44,17 +42,16 @@ test('create storage from url parameter', async (t) => {
 	await storage.ready();
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	return filesMatchSource(t, result.files);
+	filesMatchSource(result.files);
 });
 
-test('create storage from db parameter', async (t) => {
+test('create storage from db parameter', async () => {
 	const { url, options } = storageOptions();
-	t.context.url = url;
+	usedUrl = url;
 	let result: any = {};
 	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
-	prepareTest(t, { db });
-	const { app, storage, upload } = t.context;
+	prepareTest({ db });
 
 	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
 		result = {
@@ -68,16 +65,15 @@ test('create storage from db parameter', async (t) => {
 	await storage.ready();
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	return filesMatchSource(t, result.files);
+	filesMatchSource(result.files);
 });
 
-test('connects to a mongoose instance', async (t) => {
+test('connects to a mongoose instance', async () => {
 	const { url, options } = storageOptions();
-	t.context.url = url;
+	usedUrl = url;
 	let result: any = {};
 	const promise = mongoose.connect(url, options);
-	prepareTest(t, { db: promise as unknown as Promise<DbTypes> });
-	const { app, storage, upload } = t.context;
+	prepareTest({ db: promise as unknown as Promise<DbTypes> });
 
 	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
 		result = {
@@ -91,18 +87,17 @@ test('connects to a mongoose instance', async (t) => {
 	const { db } = await storage.ready();
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	t.true(db instanceof mongoose.mongo.Db);
-	await filesMatchSource(t, result.files);
+	expect(db instanceof mongoose.mongo.Db).toBe(true);
+	filesMatchSource(result.files);
 });
 
-test('creates an instance without the new keyword', async (t) => {
+test('creates an instance without the new keyword', async () => {
 	let result: any = {};
-	const app = express();
+	app = express();
 	// @ts-expect-error calling constructor without new is intentional
-	const storage = GridFsStorage(storageOptions());
+	storage = GridFsStorage(storageOptions());
 
-	const upload = multer({ storage });
-	t.context.storage = storage;
+	upload = multer({ storage });
 
 	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
 		result = {
@@ -116,19 +111,18 @@ test('creates an instance without the new keyword', async (t) => {
 	await storage.ready();
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	return filesMatchSource(t, result.files);
+	filesMatchSource(result.files);
 });
 
-test('client is derived from the db', async (t) => {
+test('client is derived from the db', async () => {
 	const { url, options } = storageOptions();
-	t.context.url = url;
+	usedUrl = url;
 	let result: any = {};
 	const _db = await MongoClient.connect(url, options);
 	const db = getDb(_db, url);
 	const client = getClient(_db);
-	prepareTest(t, { db });
-	const { app, storage, upload } = t.context;
-	t.is(storage.db.client, client);
+	prepareTest({ db });
+	expect(storage.db.client).toBe(client);
 
 	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
 		result = {
@@ -142,5 +136,5 @@ test('client is derived from the db', async (t) => {
 	await storage.ready();
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 
-	return filesMatchSource(t, result.files);
+	filesMatchSource(result.files);
 });

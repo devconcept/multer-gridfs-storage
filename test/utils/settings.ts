@@ -17,11 +17,10 @@ export const connection: ConnectionSettings = {
 	database,
 };
 
-type KeyValuePair = Record<string, any>;
 
 interface StorageOptionsSettings {
 	url: string;
-	options: KeyValuePair;
+	options: Record<string, any>;
 }
 
 export const storageOptions = function (): StorageOptionsSettings {

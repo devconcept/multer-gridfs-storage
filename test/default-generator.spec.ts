@@ -1,4 +1,4 @@
-import anyTest, { TestFn } from 'ava';
+import { test, expect, beforeAll, afterAll } from 'vitest';
 import express, { Request, Response } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -8,44 +8,51 @@ import hasOwn from 'has-own-prop';
 import { GridFsStorage } from '../src';
 import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
-import { DefaultGeneratorContext } from './types/default-generator-context';
 
-const test = anyTest as TestFn<DefaultGeneratorContext>;
+let storage: any;
+let result: any;
+let req: any;
+let params: any[];
+let filePrefix: string;
+let metadatas: string[];
+let ids: ObjectId[];
+let sizes: number[];
+let collections: string[];
+let contentTypes: string[];
 
-test.before(async (t) => {
+beforeAll(async () => {
 	const app = express();
-	t.context.filePrefix = 'file';
-	t.context.metadatas = ['foo', 'bar'];
-	t.context.ids = [new ObjectId(), new ObjectId()];
-	t.context.sizes = [102_400, 204_800];
-	t.context.collections = ['plants', 'animals'];
-	t.context.contentTypes = ['text/plain', 'image/jpeg'];
-	const storage = new GridFsStorage({
+	filePrefix = 'file';
+	metadatas = ['foo', 'bar'];
+	ids = [new ObjectId(), new ObjectId()];
+	sizes = [102_400, 204_800];
+	collections = ['plants', 'animals'];
+	contentTypes = ['text/plain', 'image/jpeg'];
+	storage = new GridFsStorage({
 		...storageOptions(),
 		*file(request_, file): Generator<Record<string, unknown>, void, any> {
 			let counter = 0;
-			t.context.params = [{ req: request_, file }];
+			params = [{ req: request_, file }];
 			for (;;) {
 				const response = yield {
-					filename: t.context.filePrefix + (counter + 1).toString(),
-					metadata: t.context.metadatas[counter],
-					id: t.context.ids[counter],
-					chunkSize: t.context.sizes[counter],
-					bucketName: t.context.collections[counter],
-					contentType: t.context.contentTypes[counter],
+					filename: filePrefix + (counter + 1).toString(),
+					metadata: metadatas[counter],
+					id: ids[counter],
+					chunkSize: sizes[counter],
+					bucketName: collections[counter],
+					contentType: contentTypes[counter],
 				};
-				t.context.params.push({ req: response[0], file: response[1] });
+				params.push({ req: response[0], file: response[1] });
 				counter++;
 			}
 		},
 	});
-	t.context.storage = storage;
 
 	const upload = multer({ storage });
 
 	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
-		t.context.req = request_;
-		t.context.result = {
+		req = request_;
+		result = {
 			headers: request_.headers,
 			files: request_.files,
 			body: request_.body,
@@ -57,61 +64,54 @@ test.before(async (t) => {
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 });
 
-test.after.always('cleanup', async (t) => {
-	await cleanStorage(t.context.storage);
+afterAll(async () => {
+	await cleanStorage(storage);
 });
 
-test('the request contains the two uploaded files', (t) => {
-	const { result } = t.context;
-	t.true(Array.isArray(result.files));
-	t.is(result.files.length, 2);
+test('the request contains the two uploaded files', () => {
+	expect(Array.isArray(result.files)).toBe(true);
+	expect(result.files.length).toBe(2);
 });
 
-test('files are named with the yielded value', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.filename, t.context.filePrefix + (idx + 1).toString());
+test('files are named with the yielded value', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.filename).toBe(filePrefix + (idx + 1).toString());
 });
 
-test('files contain a metadata object with the yielded object', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.metadata, t.context.metadatas[idx]);
+test('files contain a metadata object with the yielded object', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.metadata).toBe(metadatas[idx]);
 });
 
-test('should be stored with the yielded chunkSize value', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.chunkSize, t.context.sizes[idx]);
+test('should be stored with the yielded chunkSize value', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.chunkSize).toBe(sizes[idx]);
 });
 
-test('should change the id with the yielded value', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.id, t.context.ids[idx]);
+test('should change the id with the yielded value', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.id).toBe(ids[idx]);
 });
 
-test('files are stored under a collection with the yielded name', async (t) => {
-	const { storage } = t.context;
+test('files are stored under a collection with the yielded name', async () => {
 	const { db } = storage;
-	const collections = await db.listCollections({ name: { $in: ['plants.files', 'animals.files'] } }).toArray();
-	t.is(collections.length, 2);
+	const dbCollections = await db.listCollections({ name: { $in: ['plants.files', 'animals.files'] } }).toArray();
+	expect(dbCollections.length).toBe(2);
 });
 
-test('files are stored with the yielded content-type value', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.contentType, t.context.contentTypes[idx]);
+test('files are stored with the yielded content-type value', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.contentType).toBe(contentTypes[idx]);
 });
 
-test('should the parameters be a request and a file objects', (t) => {
-	const { req: appRequest, params } = t.context;
+test('should the parameters be a request and a file objects', () => {
+	const appRequest = req;
 	for (const p of params) {
-		const { req, file } = p;
-		t.is(req, appRequest);
+		const { req: paramReq, file } = p;
+		expect(paramReq).toBe(appRequest);
 		// Use `in` rather than an own-property check: since Express 5, `req.query` is a lazy
 		// getter on the prototype instead of an own property.
 		for (const k of ['body', 'query', 'params', 'files']) {
-			t.true(k in req);
+			expect(k in paramReq).toBe(true);
 		}
 
 		for (const k of ['fieldname', 'originalname', 'encoding', 'mimetype']) {
-			t.true(hasOwn(file, k));
+			expect(hasOwn(file, k)).toBe(true);
 		}
 	}
 });

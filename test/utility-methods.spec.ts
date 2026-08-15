@@ -1,5 +1,5 @@
 import fs from 'fs';
-import anyTest, { TestFn } from 'ava';
+import { test, expect, afterEach } from 'vitest';
 import hasOwn from 'has-own-prop';
 import multer from 'multer';
 import express from 'express';
@@ -10,57 +10,54 @@ import { fileURLToPath } from 'node:url';
 import { GridFsStorage } from '../src';
 import { cleanStorage, defer, files } from './utils/testutils';
 import { storageOptions } from './utils/settings';
-import { UtilityMethodsContext } from './types/utility-methods-context';
 
-const test = anyTest as TestFn<UtilityMethodsContext>;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-test.afterEach.always('cleanup', async (t) => {
+let storage: any;
+let result: any;
+
+afterEach(async () => {
 	const testFile = path.join(__dirname, 'attachments', 'test_disk.jpg');
 	// `force: true` removes the file if present and is a no-op when it is already
 	// gone, avoiding a race between concurrent cleanups on this shared file.
 	await fs.promises.rm(testFile, { force: true });
-	return cleanStorage(t.context.storage);
+	await cleanStorage(storage);
 });
 
-test('generate 16 byte hex string', async (t) => {
+test('generate 16 byte hex string', async () => {
 	const { generateBytes } = GridFsStorage;
-	const result: any = await generateBytes();
-	t.true(hasOwn(result, 'filename'));
-	t.regex(result.filename, /^[a-f\d]{32}$/);
+	const generated: any = await generateBytes();
+	expect(hasOwn(generated, 'filename')).toBe(true);
+	expect(generated.filename).toMatch(/^[a-f\d]{32}$/);
 });
 
-test('upload a file using the fromFile method', async (t) => {
-	t.context.storage = new GridFsStorage({
+test('upload a file using the fromFile method', async () => {
+	storage = new GridFsStorage({
 		...storageOptions(),
 		file: () => 'test.jpg',
 	});
-	const { storage } = t.context;
 	await storage.ready();
 	const file = { stream: fs.createReadStream(files[0]), mimetype: 'image/jpeg' };
-	t.context.result = await storage.fromFile(null, file);
-	const { result } = t.context;
-	t.true(hasOwn(result, 'filename'));
-	t.is(result.filename, 'test.jpg');
-	t.is(result.contentType, 'image/jpeg');
+	result = await storage.fromFile(null, file);
+	expect(hasOwn(result, 'filename')).toBe(true);
+	expect(result.filename).toBe('test.jpg');
+	expect(result.contentType).toBe('image/jpeg');
 });
 
-test('upload a file using the fromStream method', async (t) => {
-	t.context.storage = new GridFsStorage({
+test('upload a file using the fromStream method', async () => {
+	storage = new GridFsStorage({
 		...storageOptions(),
 		file: () => 'test.jpg',
 	});
-	const { storage } = t.context;
 	await storage.ready();
 	const stream = fs.createReadStream(files[0]);
-	t.context.result = await storage.fromStream(stream);
-	const { result } = t.context;
-	t.true(hasOwn(result, 'filename'));
-	t.is(result.filename, 'test.jpg');
-	t.is(result.contentType, undefined);
+	result = await storage.fromStream(stream);
+	expect(hasOwn(result, 'filename')).toBe(true);
+	expect(result.filename).toBe('test.jpg');
+	expect(result.contentType).toBe(undefined);
 });
 
-test('upload a file using the fromStream method after another upload', async (t) => {
+test('upload a file using the fromStream method after another upload', async () => {
 	const diskStorage = multer.diskStorage({
 		destination: path.join(__dirname, 'attachments'),
 		filename: (request_, file, cb) => {
@@ -71,11 +68,10 @@ test('upload a file using the fromStream method after another upload', async (t)
 	const app = express();
 	const route = defer<any>();
 	app.post('/url', upload.single('photos'), (request, response) => {
-		const storage = new GridFsStorage({
+		storage = new GridFsStorage({
 			...storageOptions(),
 			file: () => 'test.jpg',
 		});
-		t.context.storage = storage;
 		const file = request.file as Express.Multer.File;
 		const stream = fs.createReadStream(file.path);
 		storage
@@ -86,8 +82,8 @@ test('upload a file using the fromStream method after another upload', async (t)
 	});
 
 	await request(app).post('/url').attach('photos', files[0]);
-	const result = await route.promise;
-	t.true(hasOwn(result, 'filename'));
-	t.is(result.filename, 'test.jpg');
-	t.is(result.contentType, 'image/jpeg');
+	result = await route.promise;
+	expect(hasOwn(result, 'filename')).toBe(true);
+	expect(result.filename).toBe('test.jpg');
+	expect(result.contentType).toBe('image/jpeg');
 });

@@ -1,61 +1,60 @@
-import anyTest, { TestFn, ExecutionContext } from 'ava';
+import { test, expect, beforeAll, afterEach } from 'vitest';
 import { MongoClient, Db } from 'mongodb';
 import { spy, stub, restore } from 'sinon';
 
 import { Cache, GridFsStorage, UrlStorageOptions } from '../src';
 import { storageOptions } from './utils/settings';
 import { cleanStorage, fakeConnectCb } from './utils/testutils';
-import { CacheErrorsContext } from './types/cache-errors-context';
 
 const { url, options } = storageOptions();
-const test = anyTest as TestFn<CacheErrorsContext>;
 
-function createStorage(settings: Partial<UrlStorageOptions>, { t, key }: { t?: ExecutionContext<CacheErrorsContext>; key?: string } = {}) {
-	const storage = new GridFsStorage({ url, options, ...settings });
-	if (t && key) {
-		t.context[key as keyof CacheErrorsContext] = storage;
-	}
+let oldCache: Cache;
+let cache: Cache;
+let error: Error;
+let mongoSpy: any;
+let storage1: any;
+let storage2: any;
+let storage3: any;
+let storage4: any;
 
-	return storage;
+function createStorage(settings: Partial<UrlStorageOptions>) {
+	return new GridFsStorage({ url, options, ...settings });
 }
 
-test.serial.before((t) => {
-	t.context.oldCache = GridFsStorage.cache;
-	const cache = new Cache();
+beforeAll(() => {
+	oldCache = GridFsStorage.cache;
+	cache = new Cache();
 	GridFsStorage.cache = cache;
-	t.context.cache = cache;
-	t.context.error = new Error('reason');
-	t.context.mongoSpy = stub(MongoClient, 'connect')
+	error = new Error('reason');
+	mongoSpy = stub(MongoClient, 'connect')
 		.callThrough()
 		.onSecondCall()
-		.callsFake(fakeConnectCb(t.context.error) as any);
-	createStorage({ cache: '1' }, { t, key: 'storage1' });
-	createStorage({ cache: '2' }, { t, key: 'storage2' });
-	createStorage({ cache: '1' }, { t, key: 'storage3' });
-	createStorage({ cache: '2' }, { t, key: 'storage4' });
+		.callsFake(fakeConnectCb(error) as any);
+	storage1 = createStorage({ cache: '1' });
+	storage2 = createStorage({ cache: '2' });
+	storage3 = createStorage({ cache: '1' });
+	storage4 = createStorage({ cache: '2' });
 });
 
-test.serial(' rejects only connections associated to the same cache', async (t) => {
-	const { storage1, storage2, storage3, storage4, mongoSpy, cache } = t.context;
+test('rejects only connections associated to the same cache', async () => {
 	const conSpy = spy();
 	const rejectSpy = spy();
-	t.is(mongoSpy.callCount, 2);
+	expect(mongoSpy.callCount).toBe(2);
 
 	storage2.on('connectionFailed', conSpy);
 	storage1.on('connectionFailed', rejectSpy);
 
 	await storage1.ready();
-	t.true(storage1.db instanceof Db);
-	t.is(storage2.db, null);
-	t.true(storage3.db instanceof Db);
-	t.is(storage4.db, null);
-	t.is(conSpy.callCount, 1);
-	t.is(rejectSpy.callCount, 0);
-	t.is(cache.connections(), 1);
+	expect(storage1.db instanceof Db).toBe(true);
+	expect(storage2.db).toBe(null);
+	expect(storage3.db instanceof Db).toBe(true);
+	expect(storage4.db).toBe(null);
+	expect(conSpy.callCount).toBe(1);
+	expect(rejectSpy.callCount).toBe(0);
+	expect(cache.connections()).toBe(1);
 });
 
-test.serial.afterEach.always(async (t) => {
-	const { storage1, storage2, oldCache } = t.context;
+afterEach(async () => {
 	GridFsStorage.cache = oldCache;
 	restore();
 	await Promise.all([cleanStorage(storage1), cleanStorage(storage2)]);

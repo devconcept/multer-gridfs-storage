@@ -1,3 +1,7 @@
+# Unreleased
+
+* Changed: Switched the test runner to [Vitest](https://vitest.dev).
+
 # 6.0.0
 
 This is a major release. Upgrading requires Node.js 22 or newer, installing `mongodb` yourself, and Multer 2. See the breaking changes below.
@@ -10,7 +14,7 @@ This is a major release. Upgrading requires Node.js 22 or newer, installing `mon
 * Removed: Dropped the `md5` file property and the `disableMD5` file option. MongoDB removed automatic md5 hashing from GridFS in the mongodb Node.js driver 4.0.0 (`disableMD5` has had no effect since), so stored files no longer expose an md5 hash.
 * Changed: Replaced the `mongodb-uri` dependency with `mongodb-connection-string-url` (the parser used by the mongodb driver itself) for connection string comparison. The database name is now resolved by the driver via `client.db()` instead of being parsed manually.
 * Changed: The package is now a dual ESM/CommonJS module, built with [tshy](https://github.com/isaacs/tshy). It exposes an `exports` map with both `import` and `require` entry points (output moved from `lib/` to `dist/`).
-* Changed: Modernized the test toolchain to AVA 8 running TypeScript through `tsx` (replacing `ts-node`), and switched coverage from `nyc` to `c8`.
+* Changed: Modernized the test toolchain to run TypeScript through `tsx` (replacing `ts-node`), and switched coverage from `nyc` to `c8`.
 * Changed: Updated development dependencies to their latest versions (including Express 5, supertest 7 and sinon 22 in the test suite) and migrated ESLint to v10 with a flat `eslint.config.js` (replacing `.eslintrc.json`/`.eslintignore`).
 * Changed: Replaced the unmaintained `coveralls` package (which pulled in the deprecated `request` dependency and its security advisories) with Codecov coverage uploads from CI.
 * Removed: Dropped the `is-promise` dependency; the trivial promise check is now inlined.

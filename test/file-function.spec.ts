@@ -1,4 +1,4 @@
-import anyTest, { TestFn } from 'ava';
+import { test, expect, beforeAll, afterAll } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -7,39 +7,44 @@ import { ObjectId } from 'mongodb';
 import { GridFsStorage } from '../src';
 import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
-import { FileFunctionContext } from './types/file-function-context';
 
-const test = anyTest as TestFn<FileFunctionContext>;
+let storage: any;
+let result: any;
+let filenamePrefix: string;
+let ids: ObjectId[];
+let metadatas: string[];
+let sizes: number[];
+let bucketNames: string[];
+let contentTypes: string[];
 
-test.before(async (t) => {
+beforeAll(async () => {
 	const app = express();
 	let counter = 0;
-	t.context.filenamePrefix = 'file';
-	t.context.ids = [new ObjectId(), new ObjectId()];
-	t.context.metadatas = ['foo', 'bar'];
-	t.context.sizes = [102_400, 204_800];
-	t.context.bucketNames = ['plants', 'animals'];
-	t.context.contentTypes = ['text/plain', 'image/jpeg'];
-	const storage = new GridFsStorage({
+	filenamePrefix = 'file';
+	ids = [new ObjectId(), new ObjectId()];
+	metadatas = ['foo', 'bar'];
+	sizes = [102_400, 204_800];
+	bucketNames = ['plants', 'animals'];
+	contentTypes = ['text/plain', 'image/jpeg'];
+	storage = new GridFsStorage({
 		...storageOptions(),
 		file: () => {
 			counter++;
 			return {
-				filename: `${t.context.filenamePrefix}${counter}`,
-				metadata: t.context.metadatas[counter - 1],
-				id: t.context.ids[counter - 1],
-				chunkSize: t.context.sizes[counter - 1],
-				bucketName: t.context.bucketNames[counter - 1],
-				contentType: t.context.contentTypes[counter - 1],
+				filename: `${filenamePrefix}${counter}`,
+				metadata: metadatas[counter - 1],
+				id: ids[counter - 1],
+				chunkSize: sizes[counter - 1],
+				bucketName: bucketNames[counter - 1],
+				contentType: contentTypes[counter - 1],
 			};
 		},
 	});
 
-	t.context.storage = storage;
 	const upload = multer({ storage });
 
 	app.post('/url', upload.array('photos', 2), (request_, response) => {
-		t.context.result = {
+		result = {
 			headers: request_.headers,
 			files: request_.files,
 			body: request_.body,
@@ -51,45 +56,38 @@ test.before(async (t) => {
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 });
 
-test.after.always('cleanup', async (t) => {
-	await cleanStorage(t.context.storage);
+afterAll(async () => {
+	await cleanStorage(storage);
 });
 
-test('request contains the two uploaded files', (t) => {
-	const { result } = t.context;
-	t.truthy(result.files);
-	t.true(Array.isArray(result.files));
-	t.is(result.files.length, 2);
+test('request contains the two uploaded files', () => {
+	expect(result.files).toBeTruthy();
+	expect(Array.isArray(result.files)).toBe(true);
+	expect(result.files.length).toBe(2);
 });
 
-test('files are named with the provided value', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.filename, t.context.filenamePrefix + (idx + 1));
+test('files are named with the provided value', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.filename).toBe(filenamePrefix + (idx + 1));
 });
 
-test('files contain a metadata object with the provided object', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.metadata, t.context.metadatas[idx]);
+test('files contain a metadata object with the provided object', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.metadata).toBe(metadatas[idx]);
 });
 
-test('files are stored with the provided chunkSize value', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.chunkSize, t.context.sizes[idx]);
+test('files are stored with the provided chunkSize value', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.chunkSize).toBe(sizes[idx]);
 });
 
-test('files have the provided id value', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.id, t.context.ids[idx]);
+test('files have the provided id value', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.id).toBe(ids[idx]);
 });
 
-test('files are stored under a collection with the provided name', async (t) => {
-	const { storage } = t.context;
+test('files are stored under a collection with the provided name', async () => {
 	const { db } = storage;
 	const collections = await db.listCollections({ name: { $in: ['plants.files', 'animals.files'] } }).toArray();
-	t.is(collections.length, 2);
+	expect(collections.length).toBe(2);
 });
 
-test('files are stored with the provided content-type value', (t) => {
-	const { result } = t.context;
-	for (const [idx, f] of result.files.entries()) t.is(f.contentType, t.context.contentTypes[idx]);
+test('files are stored with the provided content-type value', () => {
+	for (const [idx, f] of result.files.entries()) expect(f.contentType).toBe(contentTypes[idx]);
 });

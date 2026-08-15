@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import anyTest, { TestFn } from 'ava';
+import { test, expect, beforeAll, afterAll } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -8,18 +8,18 @@ import hasOwn from 'has-own-prop';
 import { GridFsStorage } from '../src';
 import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
-import { UploadedFileContext } from './types/uploaded-file-context';
 
-const test = anyTest as TestFn<UploadedFileContext>;
+let storage: any;
+let result: any;
+let size: number;
 
-test.before(async (t) => {
+beforeAll(async () => {
 	const app = express();
-	const storage = new GridFsStorage(storageOptions());
+	storage = new GridFsStorage(storageOptions());
 	const upload = multer({ storage });
-	t.context.storage = storage;
 
 	app.post('/url', upload.single('photo'), (request_, response) => {
-		t.context.result = {
+		result = {
 			headers: request_.headers,
 			file: request_.file,
 			body: request_.body,
@@ -31,46 +31,40 @@ test.before(async (t) => {
 	await request(app).post('/url').attach('photo', files[0]);
 
 	const f = await readFile(files[0]);
-	t.context.size = f.length;
+	size = f.length;
 });
 
-test.after.always('cleanup', async (t) => {
-	await cleanStorage(t.context.storage);
+afterAll(async () => {
+	await cleanStorage(storage);
 });
 
-test('uploaded file have a filename property', (t) => {
-	const { result } = t.context;
-	t.true(hasOwn(result.file, 'filename'));
-	t.is(typeof result.file.filename, 'string');
-	t.regex(result.file.filename, /^[\da-f]{32}$/);
+test('uploaded file have a filename property', () => {
+	expect(hasOwn(result.file, 'filename')).toBe(true);
+	expect(typeof result.file.filename).toBe('string');
+	expect(result.file.filename).toMatch(/^[\da-f]{32}$/);
 });
 
-test('uploaded file have a metadata property', (t) => {
-	const { result } = t.context;
-	t.true(hasOwn(result.file, 'metadata'));
-	t.is(result.file.metadata, null);
+test('uploaded file have a metadata property', () => {
+	expect(hasOwn(result.file, 'metadata')).toBe(true);
+	expect(result.file.metadata).toBe(null);
 });
 
-test('uploaded file have a id property', (t) => {
-	const { result } = t.context;
-	t.true(hasOwn(result.file, 'id'));
-	t.regex(result.file.id.toHexString(), /^[\da-f]{24}$/);
+test('uploaded file have a id property', () => {
+	expect(hasOwn(result.file, 'id')).toBe(true);
+	expect(result.file.id.toHexString()).toMatch(/^[\da-f]{24}$/);
 });
 
-test('uploaded file have a size property with the length of the file', (t) => {
-	const { result, size } = t.context;
-	t.true(hasOwn(result.file, 'size'));
-	t.is(result.file.size, size);
+test('uploaded file have a size property with the length of the file', () => {
+	expect(hasOwn(result.file, 'size')).toBe(true);
+	expect(result.file.size).toBe(size);
 });
 
-test('uploaded file have the default bucket name pointing to the fs collection', (t) => {
-	const { result } = t.context;
-	t.true(hasOwn(result.file, 'bucketName'));
-	t.is(result.file.bucketName, 'fs');
+test('uploaded file have the default bucket name pointing to the fs collection', () => {
+	expect(hasOwn(result.file, 'bucketName')).toBe(true);
+	expect(result.file.bucketName).toBe('fs');
 });
 
-test('uploaded file have the date of the upload', (t) => {
-	const { result } = t.context;
-	t.true(hasOwn(result.file, 'uploadDate'));
-	t.true(result.file.uploadDate instanceof Date);
+test('uploaded file have the date of the upload', () => {
+	expect(hasOwn(result.file, 'uploadDate')).toBe(true);
+	expect(result.file.uploadDate instanceof Date).toBe(true);
 });

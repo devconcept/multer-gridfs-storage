@@ -1,4 +1,4 @@
-import anyTest, { TestFn, ExecutionContext } from 'ava';
+import { test, expect, afterEach } from 'vitest';
 import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -6,31 +6,33 @@ import multer from 'multer';
 import { GridFsStorage } from '../src';
 import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
-import { GeneratorPromisesContext } from './types/generator-promises-context';
 
-const test = anyTest as TestFn<GeneratorPromisesContext>;
+let storage: any;
+let result: any;
+let error: any;
+let filePrefix: string;
+let rejectedError: Error;
 
-async function successfulPromiseSetup(t: ExecutionContext<GeneratorPromisesContext>) {
+async function successfulPromiseSetup() {
 	const app = express();
-	t.context.filePrefix = 'file';
-	const storage = new GridFsStorage({
+	filePrefix = 'file';
+	storage = new GridFsStorage({
 		...storageOptions(),
 		*file() {
 			let counter = 0;
 			for (;;) {
 				yield Promise.resolve({
-					filename: t.context.filePrefix + (counter + 1).toString(),
+					filename: filePrefix + (counter + 1).toString(),
 				});
 				counter++;
 			}
 		},
 	});
-	t.context.storage = storage;
 
 	const upload = multer({ storage });
 
 	app.post('/url', upload.array('photos', 2), (request_: Request, response: Response) => {
-		t.context.result = {
+		result = {
 			headers: request_.headers,
 			files: request_.files,
 			body: request_.body,
@@ -42,32 +44,30 @@ async function successfulPromiseSetup(t: ExecutionContext<GeneratorPromisesConte
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 }
 
-test.afterEach.always('cleanup', async (t) => {
-	await cleanStorage(t.context.storage);
+afterEach(async () => {
+	await cleanStorage(storage);
 });
 
-test('yielding a promise is resolved as file configuration', async (t) => {
-	await successfulPromiseSetup(t);
-	const { result } = t.context;
-	t.true(Array.isArray(result.files));
-	t.is(result.files.length, 2);
-	for (const [idx, f] of result.files.entries()) t.is(f.filename, t.context.filePrefix + (idx + 1));
+test('yielding a promise is resolved as file configuration', async () => {
+	await successfulPromiseSetup();
+	expect(Array.isArray(result.files)).toBe(true);
+	expect(result.files.length).toBe(2);
+	for (const [idx, f] of result.files.entries()) expect(f.filename).toBe(filePrefix + (idx + 1));
 });
 
-async function failedPromiseSetup(t: ExecutionContext<GeneratorPromisesContext>) {
+async function failedPromiseSetup() {
 	const app = express();
-	t.context.rejectedError = new Error('reason');
-	const storage = new GridFsStorage({
+	rejectedError = new Error('reason');
+	storage = new GridFsStorage({
 		...storageOptions(),
 		*file() {
-			yield Promise.reject(t.context.rejectedError);
+			yield Promise.reject(rejectedError);
 		},
 	});
-	t.context.storage = storage;
 	const upload = multer({ storage });
 
-	app.post('/url', upload.array('photos', 2), (error: any, request_: Request, response: Response, next: NextFunction) => {
-		t.context.error = error;
+	app.post('/url', upload.array('photos', 2), (error_: any, request_: Request, response: Response, next: NextFunction) => {
+		error = error_;
 		next();
 	});
 
@@ -75,13 +75,12 @@ async function failedPromiseSetup(t: ExecutionContext<GeneratorPromisesContext>)
 	await request(app).post('/url').attach('photos', files[0]);
 }
 
-test('yielding a promise rejection is handled properly', async (t) => {
-	await failedPromiseSetup(t);
-	const { error, storage } = t.context;
+test('yielding a promise rejection is handled properly', async () => {
+	await failedPromiseSetup();
 	const { db } = storage;
-	t.true(error instanceof Error);
-	t.is(error, t.context.rejectedError);
+	expect(error instanceof Error).toBe(true);
+	expect(error).toBe(rejectedError);
 	const collection = db.collection('fs.files');
 	const count = await (collection.estimatedDocumentCount ? collection.estimatedDocumentCount() : collection.count());
-	t.is(count, 0);
+	expect(count).toBe(0);
 });

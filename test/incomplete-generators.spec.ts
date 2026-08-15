@@ -1,4 +1,4 @@
-import anyTest, { TestFn } from 'ava';
+import { test, expect, beforeAll, afterAll } from 'vitest';
 import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import multer from 'multer';
@@ -6,23 +6,22 @@ import multer from 'multer';
 import { GridFsStorage } from '../src';
 import { files, cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
-import { IncompleteGeneratorsContext } from './types/incomplete-generators-context';
 
-const test = anyTest as TestFn<IncompleteGeneratorsContext>;
+let storage: any;
+let error: any;
 
-test.before(async (t) => {
+beforeAll(async () => {
 	const app = express();
-	const storage = new GridFsStorage({
+	storage = new GridFsStorage({
 		...storageOptions(),
 		*file() {
 			yield { filename: 'name' };
 		},
 	});
-	t.context.storage = storage;
 	const upload = multer({ storage });
 
-	app.post('/url', upload.array('photos', 2), (error: any, request_: Request, response: Response, _next: NextFunction) => {
-		t.context.error = error;
+	app.post('/url', upload.array('photos', 2), (error_: any, request_: Request, response: Response, _next: NextFunction) => {
+		error = error_;
 		response.end();
 	});
 
@@ -30,25 +29,22 @@ test.before(async (t) => {
 	await request(app).post('/url').attach('photos', files[0]).attach('photos', files[1]);
 });
 
-test.after.always('cleanup', async (t) => {
-	await cleanStorage(t.context.storage);
+afterAll(async () => {
+	await cleanStorage(storage);
 });
 
-test('is a failed request', (t) => {
-	const { error } = t.context;
-	t.true(error instanceof Error);
-	t.is(error.storageErrors.length, 0);
+test('is a failed request', () => {
+	expect(error instanceof Error).toBe(true);
+	expect(error.storageErrors.length).toBe(0);
 });
 
-test('does not upload any file', async (t) => {
-	const { storage } = t.context;
+test('does not upload any file', async () => {
 	const { db } = storage;
 	const collection = await db.collection('fs.files');
 	const count = await (collection.estimatedDocumentCount ? collection.estimatedDocumentCount() : collection.count());
-	t.is(count, 0);
+	expect(count).toBe(0);
 });
 
-test('throws an error about the ended generator', (t) => {
-	const { error } = t.context;
-	t.regex(error.message, /Generator ended unexpectedly/);
+test('throws an error about the ended generator', () => {
+	expect(error.message).toMatch(/Generator ended unexpectedly/);
 });
