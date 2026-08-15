@@ -431,11 +431,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 		const { cache } = GridFsStorage;
 		if (!cache.isOpening(this.cacheIndex) && cache.isPending(this.cacheIndex)) {
-			const cached = cache.get(this.cacheIndex);
-			if (cached) {
-				cached.opening = true;
-			}
-
+			// isPending is only true when the entry exists, so get() is guaranteed non-null here.
+			cache.get(this.cacheIndex)!.opening = true;
 			return this._createConnection();
 		}
 

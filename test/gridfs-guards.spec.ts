@@ -84,4 +84,14 @@ describe('GridFsStorage without an open connection', () => {
 		storage = s;
 		expect(() => s.close()).not.toThrow();
 	});
+
+	test('a db object without a client yields a null client and attaches no error listeners', async () => {
+		// getDatabase returns the bare object as the Db; it has no `client`, so the `?? null` fallback
+		// runs and the error-listener loop is skipped. Kept local (not the module `storage`) because its
+		// fake db has no dropDatabase for cleanStorage to call.
+		const s: any = new GridFsStorage({ db: {} as any });
+		const result: any = await new Promise((resolve) => s.once('connection', resolve));
+		expect(result.client).toBe(null);
+		s.close();
+	});
 });

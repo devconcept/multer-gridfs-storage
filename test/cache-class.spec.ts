@@ -176,6 +176,16 @@ describe('Cache', () => {
 			expect(cache.get(index2)).not.toBe(null);
 			expect(cache.get(index1)).not.toBe(cache.get(index2));
 		});
+
+		test('falls back to index 0 when the url map is unexpectedly empty', () => {
+			// Defensive path: an empty-but-present url map cannot occur through the public API (remove()
+			// drops empty maps), so construct one directly to exercise the size===0 fallback.
+			const cacheName = 'a';
+			cache.initialize({ url, cacheName, init: {} });
+			cacheStore().get(cacheName).set(url, new Map());
+			const index = cache.initialize({ url, cacheName, init: { db: 1 } });
+			expect(index.index).toBe(0);
+		});
 	});
 
 	describe('has / get / set', () => {
@@ -349,6 +359,28 @@ describe('Cache', () => {
 			cacheStore().get(index.name).get(index.url).delete(index.index);
 			(cache as any).emitter.emit('resolve', index);
 			await expect(promise).rejects.toThrow('The cache entry was deleted');
+		});
+
+		test('waitFor on a missing entry falls through to await an event', async () => {
+			// No entry exists, so isPending/isOpening are both false and get() is null: waitFor must not
+			// return early, but wait for a matching event instead.
+			const index = { url, name: 'missing', index: 0 };
+			const promise = cache.waitFor(index);
+			const error = new Error('gone');
+			(cache as any).emitter.emit('reject', index, error);
+			await expect(promise).rejects.toBe(error);
+		});
+
+		test('waitFor ignores resolve events for other entries', async () => {
+			const indexA = cache.initialize({ url, cacheName: 'a' });
+			const indexB = cache.initialize({ url: url2, cacheName: 'a' });
+			const promise = cache.waitFor(indexA);
+			// A resolve event for a different entry must not settle A's waitFor.
+			(cache as any).emitter.emit('resolve', indexB);
+			const db = {} as any;
+			cache.resolve(indexA, db);
+			const cached = await promise;
+			expect(cached.db).toBe(db);
 		});
 	});
 });
