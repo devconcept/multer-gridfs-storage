@@ -86,5 +86,4 @@ describe('file function returning an object', () => {
 		const collections = await db.listCollections({ name: { $in: ['plants.files', 'animals.files'] } }).toArray();
 		expect(collections.length).toBe(2);
 	});
-
 });
