@@ -1,10 +1,16 @@
-# Unreleased
+# 6.1.0
 
 * Added: A `close()` method that detaches a storage from its database connection, removing the `dbError` listeners it registered on the underlying `MongoClient` (and its own listeners). Call it for short-lived storages — for example per-request engines — so they no longer accumulate listeners on a shared or cached connection. Previously those listeners were never removed, leaking the storage and eventually triggering a `MaxListenersExceeded` warning.
 * Changed: Switched the test runner to [Vitest](https://vitest.dev).
 * Fixed: The connection cache could assign a new entry the wrong index and overwrite an existing one after an earlier entry for the same url was removed (for example when a cached connection with different options failed). New cache entries now take a fresh index past the highest existing one.
 * Fixed: Connection strings that differ only in a repeated query parameter (for example `readPreferenceTags`) are no longer treated as the same connection by the cache; duplicate parameters are compared instead of being collapsed.
 * Changed: Passing a database connection whose `db` is not available yet (an unopened connection) now throws a clear error instead of failing later with a confusing message.
+* Removed: The `contentType` file option and the `contentType` property on the uploaded file (`req.file.contentType`). Recent versions of the mongodb driver no longer persist a native `contentType` field on the GridFS file document — it was deprecated from the GridFS specification — so the value was never actually stored. Use the file's `metadata` for a per-file content type that is saved and queryable; the content type sent by the client is still available as Multer's `req.file.mimetype`.
+* Removed: The `aliases` file option. As with `contentType`, the mongodb driver no longer stores the GridFS `aliases` field, so the option was silently ignored and never appeared on the uploaded file.
+* Removed: The `NodeCallback` type export. The storage engine's `_handleFile` and `_removeFile` callbacks now derive their signatures directly from Multer's `StorageEngine` interface.
+* Added: A `GridFsStorageInstance` type export so a storage instance can be annotated directly (for example `let storage: GridFsStorageInstance`). The `GridFsStorage` export remains the callable value used to create engines.
+* Changed: Improved the TypeScript types. The `file` option and the object it returns are now fully typed (`FileOption` / `FileConfig`) instead of `any`, the uploaded file's `metadata` is typed `Document | null` to match the value the engine emits, and the storage's `error` property is now `Error | null` instead of `unknown`.
+* Changed: The README examples now use ESM `import` syntax; `require` still works for CommonJS projects.
 
 # 6.0.0
 
