@@ -114,7 +114,7 @@ Not required
 
 Default value: `false`
 
-Store this connection in the internal cache. You can also use a string to use a named cache. By default caching is disabled. See [caching](#caching) to learn more about reusing connections.
+Store this connection in the internal cache. You can also use a string to use a named cache. By default, caching is disabled. See [caching](#-caching) to learn more about reusing connections.
 
 > This option only applies when you use an url string to connect to MongoDb. Caching is not enabled when you create instances with a [database][db-option] object directly.
 
@@ -131,6 +131,8 @@ This is useful to reuse an existing connection to create more storage objects.
 Example:
 
 ```javascript
+import { MongoClient } from 'mongodb';
+import { GridFsStorage } from 'multer-gridfs-storage';
 
 // using a database instance
 const client = await MongoClient.connect('mongodb://yourhost:27017');
@@ -146,24 +148,13 @@ const storage = new GridFsStorage({ db: promise });
 ```
 
 ```javascript
-// using Mongoose
+import mongoose from 'mongoose';
+import { GridFsStorage } from 'multer-gridfs-storage';
 
+// using Mongoose
 const connection = mongoose.connect('mongodb://yourhost:27017/database');
 
 const storage = new GridFsStorage({ db: connection });
-```
-
-```javascript
-// mongodb v2
-import { GridFsStorage } from 'multer-gridfs-storage';
- 
-// using a database instance
-const database = await MongoClient.connect('mongodb://yourhost:27017/database');
-const storage = new GridFsStorage({ db: database });
-
-// using a promise
-const promise = MongoClient.connect('mongodb://yourhost:27017/database');
-const storage = new GridFsStorage({ db: promise });
 ```
 
 #### file
@@ -180,16 +171,16 @@ By default, naming behaves exactly like the default Multer disk storage, a 16 by
 
 The return value of this function is an object, or a promise that resolves to an object (this also applies to generators) with the following properties. 
 
-Property name | Description
-------------- | -----------
-`filename` | The desired filename for the file (default: 16 byte hex name without extension)
-`id` | An ObjectID to use as identifier (default: auto-generated)
-`metadata` | The metadata for the file (default: `null`)
-`chunkSize` | The size of file chunks in bytes (default: 261120)
-`bucketName` | The GridFs collection to store the file (default: `fs`)
-`contentType` | The content type for the file (default: inferred from the request)
-`aliases` | Optional array of strings to store in the file document's aliases field (default: `null`)
-`transforms` | Optional array of transform streams to pipe the file through before it is stored (default: none). See [Transforming the stored file](#transforming-the-stored-file)
+| Property name | Description                                                                                                                                                         |
+|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `filename`    | The desired filename for the file (default: 16 byte hex name without extension)                                                                                     |
+| `id`          | An ObjectID to use as identifier (default: auto-generated)                                                                                                          |
+| `metadata`    | The metadata for the file (default: `null`)                                                                                                                         |
+| `chunkSize`   | The size of file chunks in bytes (default: 261120)                                                                                                                  |
+| `bucketName`  | The GridFs collection to store the file (default: `fs`)                                                                                                             |
+| `contentType` | The content type for the file (default: inferred from the request)                                                                                                  |
+| `aliases`     | Optional array of strings to store in the file document's aliases field (default: `null`)                                                                           |
+| `transforms`  | Optional array of transform streams to pipe the file through before it is stored (default: none). See [Transforming the stored file](#transforming-the-stored-file) |
 
 Any missing properties will use the defaults. Also, note that each property must be supported by your installed version of MongoDb.
 
@@ -346,16 +337,16 @@ const upload = multer({ storage });
 
 Each saved file located in `req.file` and `req.files` contain the following properties in addition to the ones that Multer create by default. Most of them can be set using the [`file`][file-option] configuration.
 
-Key | Description
---- | -----------
-`filename` | The name of the file within the database
-`metadata` | The stored metadata of the file
-`id` | The id of the stored file
-`bucketName` | The name of the GridFs collection used to store the file
-`chunkSize` | The size of file chunks used to store the file
-`size` | The final size of the file in bytes
-`contentType` | Content type of the file in the database
-`uploadDate` | The timestamp when the file was uploaded
+| Key           | Description                                              |
+|---------------|----------------------------------------------------------|
+| `filename`    | The name of the file within the database                 |
+| `metadata`    | The stored metadata of the file                          |
+| `id`          | The id of the stored file                                |
+| `bucketName`  | The name of the GridFs collection used to store the file |
+| `chunkSize`   | The size of file chunks used to store the file           |
+| `size`        | The final size of the file in bytes                      |
+| `contentType` | Content type of the file in the database                 |
+| `uploadDate`  | The timestamp when the file was uploaded                 |
 
 To see all the other properties of the file object, check the Multer's [documentation](https://github.com/expressjs/multer#file-information).
 
@@ -513,8 +504,10 @@ const result = await generateBytes();
 A function that pipe a readable stream to gridfs using the current storage configuration. Useful if you want to upload the received file in multiple storage devices.
 
 ```javascript
-import { GridFsStorage } from 'multer-gridfs-storage';
+import fs from 'node:fs';
+import express from 'express';
 import multer from 'multer';
+import { GridFsStorage } from 'multer-gridfs-storage';
 const upload = multer({ dest: 'uploads/' });
 const app = express();
 const storage = new GridFsStorage({url: 'mongodb://yourhost:27017/database'});
@@ -636,7 +629,7 @@ $ npm install
 $ npm test
 ```
 
-The tests need a MongoDB server reachable at `127.0.0.1:27017` (override with the `MONGO_HOST` / `MONGO_PORT` environment variables). If you already run MongoDB locally, `npm test` works as-is. Otherwise you can start a throwaway instance with Docker:
+The tests need a MongoDB server reachable at `127.0.0.1:27017` (override with the `MONGO_HOST` / `MONGO_PORT` environment variables). If you already run MongoDB locally, `npm test` works as-is. Otherwise, you can start a throwaway instance with Docker:
 
 ```bash
 $ npm run db:up    # start MongoDB in a container and wait until it is ready
