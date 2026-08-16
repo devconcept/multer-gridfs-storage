@@ -1,5 +1,9 @@
-import { Request } from 'express';
+import { FileOption } from './file-config.js';
 
 export interface MulterGfsOptions {
-	file?: (request: Request, file: Express.Multer.File) => unknown;
+	/**
+	 * A function (or generator function) invoked once per file to control how it
+	 * is stored. See {@link FileOption}.
+	 */
+	file?: FileOption;
 }

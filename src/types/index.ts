@@ -4,6 +4,7 @@ export * from './comparator-result.js';
 export * from './connection-result.js';
 export * from './db-storage-options.js';
 export * from './db-types.js';
+export * from './file-config.js';
 export * from './grid-file.js';
 export * from './multer-gfs-options.js';
 export * from './node-callback.js';
