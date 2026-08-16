@@ -1,5 +1,4 @@
 import { test, expect, beforeEach, afterEach, describe } from 'vitest';
-import { MongoClient } from 'mongodb';
 import delay from 'delay';
 import { spy, stub, restore } from 'sinon';
 
@@ -26,7 +25,7 @@ describe('cached url connections', () => {
 		oldCache = GridFsStorage.cache;
 		cache = new Cache();
 		GridFsStorage.cache = cache;
-		mongoSpy = stub(MongoClient, 'connect').callThrough();
+		mongoSpy = stub(GridFsStorage.prototype as any, '_openConnection').callThrough();
 	});
 
 	afterEach(async () => {
@@ -89,9 +88,9 @@ describe('cached url connections', () => {
 	});
 
 	test('fails when a cached connection resolves without a database', async () => {
-		// Keep every real connection attempt pending so the cache entry never resolves on its own and
+		// Keep every connection attempt pending so the cache entry never resolves on its own and
 		// the second storage registers as a waiter on it.
-		mongoSpy.callsFake(async () => new Promise(() => {}));
+		mongoSpy.callsFake(() => new Promise(() => {}));
 
 		storage1 = createStorage({ cache: true });
 		// Local (not tracked): this storage fails to connect, so it owns no connection to clean up.

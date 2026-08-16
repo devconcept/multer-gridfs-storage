@@ -1,16 +1,14 @@
-import crypto from 'crypto';
 import { Writable } from 'stream';
 import { test, expect, afterEach, describe } from 'vitest';
 import multer from 'multer';
 import request from 'supertest';
 import express, { Request, Response, NextFunction } from 'express';
-import { MongoClient } from 'mongodb';
 import delay from 'delay';
 import { spy, stub, restore } from 'sinon';
 
 import { GridFsStorage } from '../src';
 import { storageOptions } from './utils/settings';
-import { files, cleanStorage, fakeConnectCb } from './utils/testutils';
+import { files, cleanStorage } from './utils/testutils';
 
 // Per-test state is kept in a module-scoped variable. Vitest runs the tests within a file
 // sequentially, so a single shared variable is safe (no concurrent overwrite).
@@ -19,7 +17,7 @@ let storage: any;
 describe('edge cases', () => {
 	test('connection function fails to connect', async () => {
 		const error = new Error('Failed connection');
-		const mongoSpy = stub(MongoClient, 'connect').callsFake(fakeConnectCb(error) as any);
+		const openSpy = stub(GridFsStorage.prototype as any, '_openConnection').rejects(error);
 
 		const connectionSpy = spy();
 		// Not tracked for cleanup (the connection fails), matching the original test.
@@ -29,7 +27,7 @@ describe('edge cases', () => {
 
 		await delay(50);
 		expect(connectionSpy.callCount).toBe(1);
-		expect(mongoSpy.callCount).toBe(1);
+		expect(openSpy.callCount).toBe(1);
 	});
 
 	test('errors generating random bytes', async () => {
@@ -38,18 +36,9 @@ describe('edge cases', () => {
 		let error: any = {};
 
 		storage = new GridFsStorage(storageOptions());
-		const originalRandomBytes = crypto.randomBytes;
-		const randomBytesSpy = stub(crypto, 'randomBytes').callsFake((size, cb) => {
-			// The storage engine calls randomBytes with a callback; fail only that path.
-			if (typeof cb === 'function') {
-				cb(generatedError, Buffer.alloc(0));
-				return;
-			}
-
-			// Other consumers (e.g. form-data generating the multipart boundary) use the
-			// synchronous form and must keep working, so delegate to the real implementation.
-			return (originalRandomBytes as any)(size);
-		});
+		// Stub the promisified byte generator attached to the storage class rather than the global
+		// crypto.randomBytes, so unrelated consumers (e.g. form-data's multipart boundary) are untouched.
+		const randomBytesSpy = stub(GridFsStorage as any, '_randomBytes').rejects(generatedError);
 		const upload = multer({ storage });
 
 		app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, next: NextFunction) => {
@@ -62,10 +51,7 @@ describe('edge cases', () => {
 
 		expect(error).toBe(generatedError);
 		expect(error.message).toBe('Random bytes error');
-		// Assert on the callback-style invocation the library makes; form-data may also call
-		// randomBytes synchronously for its boundary, which should not count here.
-		const callbackCalls = randomBytesSpy.getCalls().filter((call) => typeof call.args[1] === 'function');
-		expect(callbackCalls.length).toBe(1);
+		expect(randomBytesSpy.calledOnce).toBe(true);
 	});
 
 	test('errors when the write stream finishes without storing a file', async () => {

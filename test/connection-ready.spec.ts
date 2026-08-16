@@ -1,9 +1,8 @@
 import { test, expect, afterEach, describe } from 'vitest';
-import { MongoClient } from 'mongodb';
 import { spy, restore, stub } from 'sinon';
 
 import { GridFsStorage } from '../src';
-import { cleanStorage, fakeConnectCb } from './utils/testutils';
+import { cleanStorage } from './utils/testutils';
 import { storageOptions } from './utils/settings';
 
 let storage: any;
@@ -15,7 +14,7 @@ function createStorage() {
 
 function forceFailure() {
 	forcedError = new Error('Fake error');
-	stub(MongoClient, 'connect').callsFake(fakeConnectCb(forcedError) as any);
+	stub(GridFsStorage.prototype as any, '_openConnection').rejects(forcedError);
 	createStorage();
 }
 

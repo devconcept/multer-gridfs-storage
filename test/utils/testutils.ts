@@ -3,7 +3,6 @@ import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { ConnectionString } from 'mongodb-connection-string-url';
 import { Db, MongoClient } from 'mongodb';
-import delay from 'delay';
 
 import { connection, storageOptions } from './settings';
 
@@ -65,23 +64,6 @@ export function getDb(client: MongoClient | Db, url: string): Db {
 
 export function getClient(client: unknown): MongoClient | null {
 	return client instanceof MongoClient ? client : null;
-}
-
-export function fakeConnectCb(error: Error | null = null) {
-	return async (...args: any[]) => {
-		if (args.length === 3) {
-			const cb = args[2];
-			setTimeout(() => {
-				cb(error);
-			});
-			return;
-		}
-
-		await delay(1);
-		if (error) {
-			return Promise.reject(error);
-		}
-	};
 }
 
 export interface Deferred<T = unknown> {

@@ -5,6 +5,7 @@
  *
  */
 import crypto from 'node:crypto';
+import { promisify } from 'node:util';
 import { EventEmitter } from 'node:events';
 import { Duplex } from 'node:stream';
 import { Db, Document, GridFSBucket, GridFSBucketWriteStream, GridFSFile, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
@@ -83,6 +84,9 @@ interface CreateStreamOptions {
  */
 export class GridFsStorage extends EventEmitter implements StorageEngine {
 	static cache: Cache = new Cache();
+	// Promise-returning form of crypto.randomBytes. Attached to the class (rather than a
+	// module-level binding) so it is reused across calls and can be stubbed in tests.
+	private static readonly _randomBytes = promisify(crypto.randomBytes);
 	db: Db | null = null;
 	configuration: DbStorageOptions | UrlStorageOptions;
 	connecting = false;
@@ -137,16 +141,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * Generates 16 bytes long strings in hexadecimal format
 	 */
 	static async generateBytes(): Promise<{ filename: string }> {
-		return new Promise((resolve, reject) => {
-			crypto.randomBytes(16, (error, buffer) => {
-				if (error) {
-					reject(error);
-					return;
-				}
-
-				resolve({ filename: buffer.toString('hex') });
-			});
-		});
+		const buffer = await GridFsStorage._randomBytes(16);
+		return { filename: buffer.toString('hex') };
 	}
 
 	/**

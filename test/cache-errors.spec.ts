@@ -1,10 +1,11 @@
 import { test, expect, beforeAll, afterEach } from 'vitest';
-import { MongoClient, Db } from 'mongodb';
+import { Db } from 'mongodb';
+import delay from 'delay';
 import { spy, stub, restore } from 'sinon';
 
 import { Cache, GridFsStorage, UrlStorageOptions } from '../src';
 import { storageOptions } from './utils/settings';
-import { cleanStorage, fakeConnectCb } from './utils/testutils';
+import { cleanStorage } from './utils/testutils';
 
 const { url, options } = storageOptions();
 
@@ -26,10 +27,16 @@ beforeAll(() => {
 	cache = new Cache();
 	GridFsStorage.cache = cache;
 	error = new Error('reason');
-	mongoSpy = stub(MongoClient, 'connect')
+	// The second connection (a different cache) fails. Reject on a later tick — like a real
+	// connection would — so the failure lands while the test is awaiting readiness, after its
+	// event listeners are attached, rather than synchronously during construction.
+	mongoSpy = stub(GridFsStorage.prototype as any, '_openConnection')
 		.callThrough()
 		.onSecondCall()
-		.callsFake(fakeConnectCb(error) as any);
+		.callsFake(async () => {
+			await delay(1);
+			throw error;
+		});
 	storage1 = createStorage({ cache: '1' });
 	storage2 = createStorage({ cache: '2' });
 	storage3 = createStorage({ cache: '1' });
