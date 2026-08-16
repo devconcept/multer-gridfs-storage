@@ -26,11 +26,8 @@ export function isPromise<T = unknown>(value: unknown): value is Promise<T> {
  * @param object2 The second object to compare with the first
  * @return Return true if both objects are equal by value
  */
-export function compare(object1: any, object2: any): boolean {
-	let prop;
-	let comp;
-	let value1;
-	let value2;
+export function compare(object1: unknown, object2: unknown): boolean {
+	let prop: string;
 	let keys1 = 0;
 	let keys2 = 0;
 
@@ -45,17 +42,22 @@ export function compare(object1: any, object2: any): boolean {
 			return true;
 		}
 
-		return !(object1 ? hasKeys(object1) : hasKeys(object2));
+		return !(object1 ? hasKeys(object1 as object) : hasKeys(object2 as object));
 	}
 
+	// Both values are truthy here; index them as records to walk their properties.
+	const record1 = object1 as Record<string, unknown>;
+	const record2 = object2 as Record<string, unknown>;
+
 	// Check both own and inherited properties, MongoDb doesn't care where the property was defined
-	for (prop in object1) {
-		value1 = object1[prop];
-		value2 = object2[prop];
+	for (prop in record1) {
+		const value1 = record1[prop];
+		const value2 = record2[prop];
 		// If one object has one property not present in the other they are different
-		if (prop in object2) {
-			comp = compareBy(value1, value2);
-			switch (comp) {
+		if (prop in record2) {
+			// The comparator narrows how each pair should be compared; the casts below are safe
+			// because a branch is only entered when both values share that runtime type.
+			switch (compareBy(value1, value2)) {
 				case 'object':
 					// If both values are plain objects recursively compare its properties
 					if (!compare(value1, value2)) {
@@ -65,14 +67,14 @@ export function compare(object1: any, object2: any): boolean {
 					break;
 				case 'array':
 					// If both values are arrays compare buffers and strings by content and every other value by identity
-					if (!compareArrays(value1, value2)) {
+					if (!compareArrays(value1 as unknown[], value2 as unknown[])) {
 						return false;
 					}
 
 					break;
 				case 'buffer':
 					// If both values are buffers compare them by content
-					if (Buffer.compare(value1, value2) !== 0) {
+					if (Buffer.compare(value1 as Buffer, value2 as Buffer) !== 0) {
 						return false;
 					}
 
@@ -93,7 +95,7 @@ export function compare(object1: any, object2: any): boolean {
 	}
 
 	// Count all properties from the target object
-	for (prop in object2) {
+	for (prop in record2) {
 		keys2++;
 	}
 
@@ -107,20 +109,17 @@ export function compare(object1: any, object2: any): boolean {
  * @param array2 The target array to compare with
  * @return Returns true if both arrays are equivalent
  */
-export function compareArrays(array1: any[], array2: any[]): boolean {
-	let value1;
-	let value2;
+export function compareArrays(array1: unknown[], array2: unknown[]): boolean {
 	if (array1.length !== array2.length) {
 		return false;
 	}
 
-	for (const [i, element] of array1.entries()) {
-		value1 = element;
-		value2 = array2[i];
+	for (const [i, value1] of array1.entries()) {
+		const value2 = array2[i];
 		// Types other than string or buffers are compared by reference because MongoDb only accepts those two types
 		// for configuration inside arrays
 		if (compareBy(value1, value2) === 'buffer') {
-			if (Buffer.compare(value1, value2) !== 0) {
+			if (Buffer.compare(value1 as Buffer, value2 as Buffer) !== 0) {
 				return false;
 			}
 		} else if (value1 !== value2) {
@@ -138,7 +137,7 @@ export function compareArrays(array1: any[], array2: any[]): boolean {
  * @return Always returns 'identity' unless both objects have the same type and they are plain objects, arrays
  * or buffers
  */
-export function compareBy(object1: any, object2: any): ComparatorResult {
+export function compareBy(object1: unknown, object2: unknown): ComparatorResult {
 	if (isPlainObject(object1) && isPlainObject(object2)) {
 		return 'object';
 	}
