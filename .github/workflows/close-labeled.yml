@@ -1,0 +1,30 @@
+name: Close labeled issues
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # daily at 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          only-labels: 'needs-info'
+          days-before-stale: 7         # after 7 idle days, warn (post message + add stale label)
+          days-before-close: 7         # close 7 more days later if still no activity
+          stale-issue-label: 'stale'   # label added alongside the warning
+          stale-issue-message: >
+            This issue has been labeled `needs-info` with no activity for 7 days.
+            It will be closed in 7 more days unless the requested details are provided.
+          close-issue-message: >
+            Closing this issue due to inactivity. Please comment with the
+            requested details to reopen it.
+          close-issue-reason: 'not_planned'
+          remove-issue-stale-when-updated: true
+          # Only touch issues, leave pull requests alone:
+          days-before-pr-close: -1
