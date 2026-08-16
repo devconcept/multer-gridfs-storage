@@ -80,7 +80,6 @@ interface CreateStreamOptions {
  * @fires GridFsStorage#file
  * @fires GridFsStorage#streamError
  * @fires GridFsStorage#dbError
- * @version 0.0.3
  */
 export class GridFsStorage extends EventEmitter implements StorageEngine {
 	static cache: Cache = new Cache();
@@ -552,21 +551,18 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
  * Event emitted when the MongoDb connection is ready to use
  * @event module:multer-gridfs-storage/gridfs~GridFSStorage#connection
  * @param {{db: Db, client: MongoClient}} result - An object containing the mongodb database and client
- * @version 0.0.3
  */
 
 /**
  * Event emitted when the MongoDb connection fails to open
  * @event module:multer-gridfs-storage/gridfs~GridFSStorage#connectionFailed
  * @param {Error} err - The error received when attempting to connect
- * @version 2.0.0
  */
 
 /**
  * Event emitted when a new file is uploaded
  * @event module:multer-gridfs-storage/gridfs~GridFSStorage#file
  * @param {File} file - The uploaded file
- * @version 0.0.3
  */
 
 /**
@@ -574,14 +570,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
  * @event module:multer-gridfs-storage/gridfs~GridFSStorage#streamError
  * @param {Error} error - The error thrown by the stream
  * @param {Object} conf - The failed file configuration
- * @version 1.3
  */
 
 /**
  * Event emitted when the internal database connection emits an error
  * @event module:multer-gridfs-storage/gridfs~GridFSStorage#dbError
  * @param {Error} error - The error thrown by the database connection
- * @version 1.2.2
  **/
 
 export const GridFsStorageCtr = new Proxy(GridFsStorage, {

@@ -10,7 +10,6 @@ import { CacheIndex, CacheValue } from './types/index.js';
 
 /**
  * Plugin cached connection handling class.
- * @version 3.1.0
  */
 export class Cache {
 	private store: Map<string, Map<string, Map<number, CacheValue>>> = new Map();
