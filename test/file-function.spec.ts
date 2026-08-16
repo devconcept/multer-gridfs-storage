@@ -15,7 +15,6 @@ let ids: ObjectId[];
 let metadatas: string[];
 let sizes: number[];
 let bucketNames: string[];
-let contentTypes: string[];
 
 describe('file function returning an object', () => {
 	beforeAll(async () => {
@@ -26,18 +25,17 @@ describe('file function returning an object', () => {
 		metadatas = ['foo', 'bar'];
 		sizes = [102_400, 204_800];
 		bucketNames = ['plants', 'animals'];
-		contentTypes = ['text/plain', 'image/jpeg'];
 		storage = new GridFsStorage({
 			...storageOptions(),
 			file: () => {
 				counter++;
 				return {
 					filename: `${filenamePrefix}${counter}`,
-					metadata: metadatas[counter - 1],
+					// String metadata is stored/read back verbatim; the typed contract is a Document, so cast.
+					metadata: metadatas[counter - 1] as any,
 					id: ids[counter - 1],
 					chunkSize: sizes[counter - 1],
 					bucketName: bucketNames[counter - 1],
-					contentType: contentTypes[counter - 1],
 				};
 			},
 		});
@@ -89,7 +87,4 @@ describe('file function returning an object', () => {
 		expect(collections.length).toBe(2);
 	});
 
-	test('files are stored with the provided content-type value', () => {
-		for (const [idx, f] of result.files.entries()) expect(f.contentType).toBe(contentTypes[idx]);
-	});
 });

@@ -3,7 +3,7 @@ import { expect } from 'vitest';
 import { files as testFiles } from './testutils';
 
 // Uploaded files are verified against their source by byte length.
-export function filesMatchSource(files: any[], count = 2) {
+export function filesMatchSource(files: Express.Multer.File[], count = 2) {
 	expect(files).toBeTruthy();
 	expect(Array.isArray(files)).toBe(true);
 	expect(files.length).toBe(count);

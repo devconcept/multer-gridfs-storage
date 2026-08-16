@@ -20,11 +20,12 @@ export class Cache {
 	}
 
 	/**
-	 * Handles creating a new connection from an url and caching if necessary
+	 * Registers the url under the given cache and returns the index of its slot, reusing the slot of an
+	 * equivalent url or matching connection options when possible. The connection itself is opened later.
 	 * @param {object} options - Options to initialize the cache
 	 * @param {string} options.url - The url to cache
 	 * @param {string} options.cacheName - The name of the cache to use
-	 * @param {any} options.init - The connection options provided
+	 * @param {unknown} options.init - The connection options provided
 	 **/
 	initialize(options: { url: string; cacheName: string; init?: unknown }): CacheIndex {
 		const { cacheName: name } = options;
@@ -177,7 +178,7 @@ export class Cache {
 	/**
 	 * Return true if a given cache started resolving a connection for itself
 	 * @param cacheIndex {object} The index to look for
-	 * @return Return true if no instances have started creating a connection for this cache
+	 * @return Return true if an instance has started creating a connection for this cache
 	 */
 	isOpening(cacheIndex: CacheIndex): boolean {
 		const cached = this.get(cacheIndex);
@@ -202,9 +203,9 @@ export class Cache {
 	}
 
 	/**
-	 * Rejects all instances waiting for this connections
+	 * Rejects all instances waiting for this connection
 	 * @param cacheIndex The index to look for
-	 * @param err The error thrown by the driver
+	 * @param error The error thrown by the driver
 	 */
 	reject(cacheIndex: CacheIndex, error: unknown): void {
 		const cached = this.get(cacheIndex);
@@ -275,7 +276,7 @@ export class Cache {
 	/**
 	 * Removes a cache entry.
 	 *
-	 * > If the cache hasn't resolved yet it will be rejected.
+	 * > If the cache hasn't resolved yet, it will be rejected.
 	 * @param cacheIndex The index to look for
 	 */
 	remove(cacheIndex: CacheIndex): void {

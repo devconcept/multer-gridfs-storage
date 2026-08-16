@@ -8,6 +8,7 @@
 		"watch": "tshy --watch",
 		"prepublishOnly": "tshy",
 		"test": "npm run compile && vitest run",
+		"typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p test/tsconfig.json",
 		"db:up": "docker compose up -d --wait",
 		"db:down": "docker compose down",
 		"lint": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" && eslint . --fix",

@@ -18,10 +18,6 @@ export interface FileConfig {
 	chunkSize?: number;
 	/** The GridFs collection to store the file (default: `fs`). */
 	bucketName?: string;
-	/** The content type for the file (default: inferred from the request). */
-	contentType?: string;
-	/** Optional array of strings to store in the file document's aliases field (default: `null`). */
-	aliases?: string[] | null;
 	/** Optional array of transform streams to pipe the file through before it is stored. */
 	transforms?: Duplex[];
 }

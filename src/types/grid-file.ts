@@ -4,7 +4,6 @@ export interface GridFile {
 	id: ObjectId;
 	filename: string;
 	metadata: Document | null;
-	contentType?: string;
 	chunkSize: number;
 	bucketName: string;
 	uploadDate: Date;
@@ -19,13 +18,15 @@ declare global {
 			/**
 			 * The stored file merges the base multer `File` with the mongodb
 			 * `GridFSFile` document (`_id`, `length`, `chunkSize`, `filename`,
-			 * `metadata`, `uploadDate`) plus the extra properties this storage engine
-			 * assigns to every upload.
+			 * `uploadDate`) plus the extra properties this storage engine assigns to
+			 * every upload. `metadata` is redeclared as `Document | null` because this
+			 * engine emits `null` (not the driver's `undefined`) when a file has none,
+			 * matching {@link GridFile}.
 			 */
-			interface File extends GridFSFile {
+			interface File extends Omit<GridFSFile, 'metadata'> {
 				id: ObjectId;
 				bucketName: string;
-				contentType?: string;
+				metadata: Document | null;
 			}
 		}
 	}

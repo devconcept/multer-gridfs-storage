@@ -18,7 +18,6 @@ let metadatas: string[];
 let ids: ObjectId[];
 let sizes: number[];
 let collections: string[];
-let contentTypes: string[];
 
 describe('generator file function', () => {
 	beforeAll(async () => {
@@ -28,7 +27,6 @@ describe('generator file function', () => {
 		ids = [new ObjectId(), new ObjectId()];
 		sizes = [102_400, 204_800];
 		collections = ['plants', 'animals'];
-		contentTypes = ['text/plain', 'image/jpeg'];
 		storage = new GridFsStorage({
 			...storageOptions(),
 			*file(request_, file): Generator<Record<string, unknown>, void, any> {
@@ -41,7 +39,6 @@ describe('generator file function', () => {
 						id: ids[counter],
 						chunkSize: sizes[counter],
 						bucketName: collections[counter],
-						contentType: contentTypes[counter],
 					};
 					params.push({ req: response[0], file: response[1] });
 					counter++;
@@ -94,10 +91,6 @@ describe('generator file function', () => {
 		const { db } = storage;
 		const dbCollections = await db.listCollections({ name: { $in: ['plants.files', 'animals.files'] } }).toArray();
 		expect(dbCollections.length).toBe(2);
-	});
-
-	test('files are stored with the yielded content-type value', () => {
-		for (const [idx, f] of result.files.entries()) expect(f.contentType).toBe(contentTypes[idx]);
 	});
 
 	test('should the parameters be a request and a file objects', () => {

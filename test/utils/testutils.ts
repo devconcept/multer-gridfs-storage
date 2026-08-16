@@ -4,13 +4,14 @@ import { fileURLToPath } from 'node:url';
 import { ConnectionString } from 'mongodb-connection-string-url';
 import { Db, MongoClient } from 'mongodb';
 
+import { GridFsStorageInstance } from '../../src';
 import { connection, storageOptions } from './settings';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const files = ['sample1.jpg', 'sample2.jpg'].map((file) => path.join(__dirname, '/../attachments/', file));
 
-export async function cleanStorage(storage: any, { client = null, db = null }: { client?: MongoClient | null; db?: Db | null } = {}) {
+export async function cleanStorage(storage: GridFsStorageInstance | null | undefined, { client = null, db = null }: { client?: MongoClient | null; db?: Db | null } = {}) {
 	if (storage) {
 		storage.removeAllListeners();
 		if (!db && !client) {
@@ -38,7 +39,7 @@ export function closeConnections({ db, client }: { db?: any; client?: any }) {
 	}
 }
 
-export async function dropDatabase(url: string): Promise<any> {
+export async function dropDatabase(url: string): Promise<void> {
 	if (url) {
 		const { options } = storageOptions();
 		const _db = await MongoClient.connect(url, options);

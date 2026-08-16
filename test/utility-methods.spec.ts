@@ -42,7 +42,6 @@ describe('storage instance methods', () => {
 		result = await storage.fromFile(null, file);
 		expect(hasOwn(result, 'filename')).toBe(true);
 		expect(result.filename).toBe('test.jpg');
-		expect(result.contentType).toBe('image/jpeg');
 	});
 
 	test('upload a file using the fromStream method', async () => {
@@ -55,7 +54,6 @@ describe('storage instance methods', () => {
 		result = await storage.fromStream(stream);
 		expect(hasOwn(result, 'filename')).toBe(true);
 		expect(result.filename).toBe('test.jpg');
-		expect(result.contentType).toBe(undefined);
 	});
 
 	test('upload a file using the fromStream method after another upload', async () => {
@@ -86,6 +84,5 @@ describe('storage instance methods', () => {
 		result = await route.promise;
 		expect(hasOwn(result, 'filename')).toBe(true);
 		expect(result.filename).toBe('test.jpg');
-		expect(result.contentType).toBe('image/jpeg');
 	});
 });

@@ -28,6 +28,7 @@ jobs:
       - run: npm install multer --no-save
       - run: npm install mongodb --no-save
       - run: npm run compile
+      - run: npm run typecheck
       - run: npm run coverage
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

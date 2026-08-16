@@ -20,19 +20,20 @@ import {
 	CacheIndex,
 	GridFile,
 	ConnectionResult,
-	NodeCallback,
 	UrlStorageOptions,
 	DbStorageOptions,
 	FileConfig,
 	FileConfigResult,
 	FileConfigValue,
-	FileFunction,
 	FileGenerator,
 	FileGeneratorFunction,
 	FileOption,
 } from './types/index.js';
 
-const isGeneratorFn = isGenerator.fn;
+// `is-generator` returns plain booleans; wrap its checks as type guards so the file naming
+// value narrows to the right callable/iterator type without casts at the call site.
+const isFileGeneratorFunction = (value: FileOption | FileGenerator): value is FileGeneratorFunction => isGenerator.fn(value);
+const isFileGenerator = (value: FileOption | FileGenerator): value is FileGenerator => isGenerator(value);
 
 /**
  * Default file information
@@ -42,7 +43,6 @@ const defaults: Partial<CreateStreamOptions> = {
 	metadata: null,
 	chunkSize: 261_120,
 	bucketName: 'fs',
-	aliases: null,
 };
 
 /**
@@ -59,9 +59,7 @@ interface CreateStreamOptions {
 	id?: ObjectId;
 	filename: string;
 	chunkSize?: number;
-	contentType?: string;
 	metadata?: Document | null;
-	aliases?: string[] | null;
 	bucketName: string;
 	transforms?: Duplex[];
 }
@@ -71,11 +69,10 @@ interface CreateStreamOptions {
  * @extends EventEmitter
  * @param {object} configuration
  * @param {string} [configuration.url] - The url pointing to a MongoDb database
- * @param {object} [configuration.options] - Options to use when connection with an url.
- * @param {object} [configuration.connectionOpts] - DEPRECATED: Use options instead.
+ * @param {object} [configuration.options] - Options to use when connecting with an url.
  * @param {boolean | string} [configuration.cache] - Store this connection in the internal cache.
  * @param {Db | Promise} [configuration.db] - The MongoDb database instance to use or a promise that resolves with it
- * @param {Function} [configuration.file] - A function to control the file naming in the database
+ * @param {Function} [configuration.file] - A function or generator function to control the file naming in the database
  * @fires GridFsStorage#connection
  * @fires GridFsStorage#connectionFailed
  * @fires GridFsStorage#file
@@ -91,12 +88,11 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	configuration: DbStorageOptions | UrlStorageOptions;
 	connecting = false;
 	caching = false;
-	error: unknown = null;
+	error: Error | null = null;
 	// The user-provided naming function or generator function. A generator function is replaced
 	// with its running generator instance on the first file so it can be resumed for later files.
 	private _file: FileOption | FileGenerator | undefined;
 	private readonly _options: MongoClientOptions | undefined;
-	private readonly cacheName?: string;
 	private readonly cacheIndex?: CacheIndex;
 	// The MongoClient the storage attached its error listeners to, kept so they can be removed again.
 	private _clientEventSource: MongoClient | null = null;
@@ -126,7 +122,6 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		if (this.caching) {
 			const { cache, url } = configuration as UrlStorageOptions;
 			const cacheName = typeof cache === 'string' ? cache : 'default';
-			this.cacheName = cacheName;
 			this.cacheIndex = GridFsStorage.cache.initialize({
 				url,
 				cacheName,
@@ -147,11 +142,10 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 	/**
 	 * Merge the properties received in the file function with default values
-	 * @param extra Extra properties like contentType
 	 * @param fileSettings Properties received in the file function
 	 * @return An object with the merged properties wrapped in a promise
 	 */
-	private static async _mergeProps(extra: { contentType?: string }, fileSettings: FileConfig): Promise<CreateStreamOptions> {
+	private static async _mergeProps(fileSettings: FileConfig): Promise<CreateStreamOptions> {
 		// If the filename is not provided generate one
 		const previous: { filename?: string; id?: ObjectId } = await (fileSettings.filename ? {} : GridFsStorage.generateBytes());
 		// If no id is provided generate one
@@ -161,7 +155,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			previous.id = new ObjectId();
 		}
 
-		return { ...previous, ...defaults, ...extra, ...fileSettings } as unknown as CreateStreamOptions;
+		return { ...previous, ...defaults, ...fileSettings } as CreateStreamOptions;
 	}
 
 	/**
@@ -188,12 +182,12 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param {File} file - The uploaded file stream
 	 * @param cb - A standard node callback to signal the end of the upload or an error
 	 **/
-	_handleFile(request: Request, file: Express.Multer.File, cb: NodeCallback): void {
+	_handleFile(request: Request, file: Express.Multer.File, cb: Parameters<StorageEngine['_handleFile']>[2]): void {
 		if (this.connecting) {
 			this.ready()
 				.then(async () => this.fromFile(request, file))
-				.then((file) => {
-					cb(null, file);
+				.then((stored) => {
+					cb(null, stored);
 				})
 				.catch(cb);
 			return;
@@ -205,8 +199,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		this.fromFile(request, file)
-			.then((file) => {
-				cb(null, file);
+			.then((stored) => {
+				cb(null, stored);
 			})
 			.catch(cb);
 	}
@@ -217,9 +211,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * @param {File} file - The uploaded file stream
 	 * @param cb - A standard node callback to signal the end of the upload or an error
 	 **/
-	_removeFile(request: Request, file: Express.Multer.File, cb: NodeCallback): void {
+	_removeFile(request: Request, file: Express.Multer.File, cb: Parameters<StorageEngine['_removeFile']>[2]): void {
 		if (!this.db) {
-			cb(this.error || new Error('The database connection must be open to remove files'));
+			cb(this.error ?? new Error('The database connection must be open to remove files'));
 			return;
 		}
 
@@ -283,9 +277,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	}
 
 	/**
-	 * Pipes the file stream to the MongoDb database. The file requires a property named `file` which is a readable stream
+	 * Pipes the uploaded file's `stream` to the MongoDb database.
 	 * @param request - The http request where the file was uploaded
-	 * @param {File} file - The file stream to pipe
+	 * @param {File} file - The uploaded file whose `stream` is piped
 	 * @return  {Promise} Resolves with the uploaded file
 	 */
 	async fromFile(request: Request, file: Express.Multer.File): Promise<GridFile> {
@@ -293,10 +287,10 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	}
 
 	/**
-	 * Pipes the file stream to the MongoDb database. The request and file parameters are optional and used for file generation only
-	 * @param readStream - The http request where the file was uploaded
-	 * @param [request] - The http request where the file was uploaded
-	 * @param {File} [file] - The file stream to pipe
+	 * Pipes a readable stream to the MongoDb database. The request and file are used for file naming only.
+	 * @param readStream - The readable stream to pipe
+	 * @param request - The http request where the file was uploaded
+	 * @param {File} file - The uploaded file
 	 * @return Resolves with the uploaded file
 	 */
 	async fromStream(readStream: NodeJS.ReadableStream, request: Request, file: Express.Multer.File): Promise<GridFile> {
@@ -324,9 +318,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		const settings = {
 			id: options.id,
 			chunkSizeBytes: options.chunkSize,
-			contentType: options.contentType,
 			metadata: options.metadata ?? undefined,
-			aliases: options.aliases,
 		};
 		const gfs = new GridFSBucket(this.db, { bucketName: options.bucketName });
 		return gfs.openUploadStream(options.filename, settings);
@@ -355,8 +347,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			settings = fileSettings as FileConfig;
 		}
 
-		const contentType = file ? file.mimetype : undefined;
-		const streamOptions = await GridFsStorage._mergeProps({ contentType }, settings);
+		const streamOptions = await GridFsStorage._mergeProps(settings);
 		return new Promise((resolve, reject) => {
 			const emitError = (streamError: unknown) => {
 				this.emit('streamError', streamError, streamOptions);
@@ -372,7 +363,6 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 					chunkSize: f.chunkSize,
 					size: f.length,
 					uploadDate: f.uploadDate,
-					contentType: streamOptions.contentType,
 				};
 				this.emit('file', storedFile);
 				resolve(storedFile);
@@ -405,7 +395,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	}
 
 	/**
-	 * Determines if a new connection should be created, a explicit connection is provided or a cached instance is required.
+	 * Determines if a new connection should be created, an explicit connection is provided or a cached instance is required.
 	 */
 	private _connect() {
 		const { db } = this.configuration as DbStorageOptions<Db>;
@@ -455,7 +445,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	}
 
 	/**
-	 * Handles creating a new connection from an url and storing it in the cache if necessary*}>}
+	 * Handles creating a new connection from an url and storing it in the cache if necessary
 	 */
 	private async _createConnection(): Promise<ConnectionResult> {
 		const { url } = this.configuration as UrlStorageOptions;
@@ -507,9 +497,10 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	private _fail(error: unknown): void {
 		this.connecting = false;
 		this.db = null;
-		this.error = error;
+		// Connection failures are Errors in practice; normalize so `error` is always a real Error for consumers.
+		this.error = error instanceof Error ? error : new Error(String(error));
 		// Fail event is only emitted after either a then promise handler or an I/O phase so is guaranteed to be asynchronous
-		this.emit('connectionFailed', error);
+		this.emit('connectionFailed', this.error);
 	}
 
 	/**
@@ -526,17 +517,16 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			return {};
 		}
 
-		if (isGeneratorFn(this._file)) {
+		if (isFileGeneratorFunction(this._file)) {
 			isGen = true;
-			const generator = (this._file as FileGeneratorFunction)(request, file);
+			const generator = this._file(request, file);
 			this._file = generator;
 			result = generator.next();
-		} else if (isGenerator(this._file)) {
+		} else if (isFileGenerator(this._file)) {
 			isGen = true;
-			const generator = this._file as FileGenerator;
-			result = generator.next([request, file]);
+			result = this._file.next([request, file]);
 		} else {
-			result = (this._file as FileFunction)(request, file);
+			result = this._file(request, file);
 		}
 
 		return GridFsStorage._handleResult(result, isGen);

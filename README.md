@@ -178,8 +178,6 @@ The return value of this function is an object, or a promise that resolves to an
 | `metadata`    | The metadata for the file (default: `null`)                                                                                                                         |
 | `chunkSize`   | The size of file chunks in bytes (default: 261120)                                                                                                                  |
 | `bucketName`  | The GridFs collection to store the file (default: `fs`)                                                                                                             |
-| `contentType` | The content type for the file (default: inferred from the request)                                                                                                  |
-| `aliases`     | Optional array of strings to store in the file document's aliases field (default: `null`)                                                                           |
 | `transforms`  | Optional array of transform streams to pipe the file through before it is stored (default: none). See [Transforming the stored file](#transforming-the-stored-file) |
 
 Any missing properties will use the defaults. Also, note that each property must be supported by your installed version of MongoDb.
@@ -345,12 +343,11 @@ Each saved file located in `req.file` and `req.files` contain the following prop
 | `bucketName`  | The name of the GridFs collection used to store the file |
 | `chunkSize`   | The size of file chunks used to store the file           |
 | `size`        | The final size of the file in bytes                      |
-| `contentType` | Content type of the file in the database                 |
 | `uploadDate`  | The timestamp when the file was uploaded                 |
 
 To see all the other properties of the file object, check the Multer's [documentation](https://github.com/expressjs/multer#file-information).
 
-> Do not confuse `contentType` with Multer's `mimetype`. The first is the value in the database while the latter is the value in the request. You could choose to override the value at the moment of storing the file. In most cases both values should be equal. 
+> The uploaded file also carries Multer's `mimetype` (the `Content-Type` from the request). If you need a per-file content type stored in the database, put it in `metadata`.
 
 ### 📀 Caching
 

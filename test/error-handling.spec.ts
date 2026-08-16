@@ -36,7 +36,8 @@ describe('error handling', () => {
 		const app = express();
 		storage = new GridFsStorage({
 			...storageOptions(),
-			file: () => true,
+			// Deliberately off-contract return type: the engine must reject it at runtime.
+			file: (() => true) as any,
 		});
 		const upload = multer({ storage });
 		app.post('/url', upload.single('photo'), (error_: any, request_: Request, response: Response, next: NextFunction) => {
