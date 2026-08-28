@@ -653,7 +653,7 @@ $ npm run coverage
 [version-image]:https://img.shields.io/npm/v/multer-gridfs-storage.svg "Npm version"
 [downloads-image]: https://img.shields.io/npm/dm/multer-gridfs-storage.svg "Monthly downloads"
 [discussions-url]: https://github.com/devconcept/multer-gridfs-storage/discussions
-[discussions-image]: https://img.shields.io/github/discussions/devconcept/multer-gridfs-storage "GitHub Discussions"
+[discussions-image]: https://img.shields.io/github/discussions-search/devconcept/multer-gridfs-storage?query=is%3Aopen&label=discussions "GitHub Discussions"
 
 [connection-string]: https://docs.mongodb.com/manual/reference/connection-string
 [mongoclient-connect]: https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/
