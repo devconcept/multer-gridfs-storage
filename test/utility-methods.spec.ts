@@ -1,6 +1,5 @@
 import fs from 'fs';
 import { test, expect, afterEach, describe } from 'vitest';
-import hasOwn from 'has-own-prop';
 import multer from 'multer';
 import express from 'express';
 import request from 'supertest';
@@ -28,7 +27,7 @@ describe('storage instance methods', () => {
 	test('generate 16 byte hex string', async () => {
 		const { generateBytes } = GridFsStorage;
 		const generated: any = await generateBytes();
-		expect(hasOwn(generated, 'filename')).toBe(true);
+		expect(Object.hasOwn(generated, 'filename')).toBe(true);
 		expect(generated.filename).toMatch(/^[a-f\d]{32}$/);
 	});
 
@@ -40,7 +39,7 @@ describe('storage instance methods', () => {
 		await storage.ready();
 		const file = { stream: fs.createReadStream(files[0]), mimetype: 'image/jpeg' };
 		result = await storage.fromFile(null, file);
-		expect(hasOwn(result, 'filename')).toBe(true);
+		expect(Object.hasOwn(result, 'filename')).toBe(true);
 		expect(result.filename).toBe('test.jpg');
 	});
 
@@ -52,7 +51,7 @@ describe('storage instance methods', () => {
 		await storage.ready();
 		const stream = fs.createReadStream(files[0]);
 		result = await storage.fromStream(stream);
-		expect(hasOwn(result, 'filename')).toBe(true);
+		expect(Object.hasOwn(result, 'filename')).toBe(true);
 		expect(result.filename).toBe('test.jpg');
 	});
 
@@ -82,7 +81,7 @@ describe('storage instance methods', () => {
 
 		await request(app).post('/url').attach('photos', files[0]);
 		result = await route.promise;
-		expect(hasOwn(result, 'filename')).toBe(true);
+		expect(Object.hasOwn(result, 'filename')).toBe(true);
 		expect(result.filename).toBe('test.jpg');
 	});
 });

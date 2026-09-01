@@ -1,3 +1,9 @@
+# 6.2.1
+
+* Changed: Dropped the `has-own-prop` dependency; the test suite now uses the native `Object.hasOwn` (available since the package's minimum supported Node.js version). It was a runtime dependency used only in tests.
+* Changed: Moved `@types/pump` from `dependencies` to `devDependencies` — it is a compile-time type declaration only and never appears in the public API.
+* Changed: Updated development dependencies to their latest compatible versions.
+
 # 6.1.0
 
 * Added: A `close()` method that detaches a storage from its database connection, removing the `dbError` listeners it registered on the underlying `MongoClient` (and its own listeners). Call it for short-lived storages — for example per-request engines — so they no longer accumulate listeners on a shared or cached connection. Previously those listeners were never removed, leaking the storage and eventually triggering a `MaxListenersExceeded` warning.
