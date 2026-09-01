@@ -3,7 +3,6 @@ import express, { Request, Response } from 'express';
 import request from 'supertest';
 import multer from 'multer';
 import { ObjectId } from 'mongodb';
-import hasOwn from 'has-own-prop';
 
 import { GridFsStorage } from '../src';
 import { files, cleanStorage } from './utils/testutils';
@@ -105,7 +104,7 @@ describe('generator file function', () => {
 			}
 
 			for (const k of ['fieldname', 'originalname', 'encoding', 'mimetype']) {
-				expect(hasOwn(file, k)).toBe(true);
+				expect(Object.hasOwn(file, k)).toBe(true);
 			}
 		}
 	});

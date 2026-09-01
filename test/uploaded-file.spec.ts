@@ -3,7 +3,6 @@ import { test, expect, beforeAll, afterAll, describe } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import multer from 'multer';
-import hasOwn from 'has-own-prop';
 
 import { GridFsStorage } from '../src';
 import { files, cleanStorage } from './utils/testutils';
@@ -40,33 +39,33 @@ describe('an uploaded file', () => {
 	});
 
 	test('has a filename property', () => {
-		expect(hasOwn(result.file, 'filename')).toBe(true);
+		expect(Object.hasOwn(result.file, 'filename')).toBe(true);
 		expect(typeof result.file.filename).toBe('string');
 		expect(result.file.filename).toMatch(/^[\da-f]{32}$/);
 	});
 
 	test('has a metadata property', () => {
-		expect(hasOwn(result.file, 'metadata')).toBe(true);
+		expect(Object.hasOwn(result.file, 'metadata')).toBe(true);
 		expect(result.file.metadata).toBe(null);
 	});
 
 	test('has an id property', () => {
-		expect(hasOwn(result.file, 'id')).toBe(true);
+		expect(Object.hasOwn(result.file, 'id')).toBe(true);
 		expect(result.file.id.toHexString()).toMatch(/^[\da-f]{24}$/);
 	});
 
 	test('has a size property with the length of the file', () => {
-		expect(hasOwn(result.file, 'size')).toBe(true);
+		expect(Object.hasOwn(result.file, 'size')).toBe(true);
 		expect(result.file.size).toBe(size);
 	});
 
 	test('has the default bucket name pointing to the fs collection', () => {
-		expect(hasOwn(result.file, 'bucketName')).toBe(true);
+		expect(Object.hasOwn(result.file, 'bucketName')).toBe(true);
 		expect(result.file.bucketName).toBe('fs');
 	});
 
 	test('has the date of the upload', () => {
-		expect(hasOwn(result.file, 'uploadDate')).toBe(true);
+		expect(Object.hasOwn(result.file, 'uploadDate')).toBe(true);
 		expect(result.file.uploadDate instanceof Date).toBe(true);
 	});
 });
