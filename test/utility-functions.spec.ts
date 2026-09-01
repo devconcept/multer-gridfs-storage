@@ -1,7 +1,7 @@
 import { test, expect, describe } from 'vitest';
 import ConnectionString from 'mongodb-connection-string-url';
 import { Db } from 'mongodb';
-import { compare, compareArrays, compareBy, compareUris, getDatabase, hasKeys, isPromise } from '../src/utils';
+import { abortIncompleteUpload, compare, compareArrays, compareBy, compareUris, createOnceGuard, getDatabase, hasKeys, isPromise } from '../src/utils';
 
 describe('utils', () => {
 	describe('compare', () => {
@@ -199,6 +199,108 @@ describe('utils', () => {
 			expect(isPromise({})).toBe(false);
 			expect(isPromise({ then: 'not a function' })).toBe(false);
 			expect(isPromise(() => undefined)).toBe(false);
+		});
+	});
+
+	describe('createOnceGuard', () => {
+		test('runs the first callback it receives', () => {
+			const guard = createOnceGuard();
+			const fn = () => 'ran';
+			let result: string | undefined;
+			guard(() => {
+				result = fn();
+			});
+
+			expect(result).toBe('ran');
+		});
+
+		test('ignores every call after the first, even with a different callback', () => {
+			const guard = createOnceGuard();
+			const calls: string[] = [];
+
+			guard(() => calls.push('first'));
+			guard(() => calls.push('second'));
+			guard(() => calls.push('third'));
+
+			expect(calls).toEqual(['first']);
+		});
+
+		test('each gate instance tracks its own state independently', () => {
+			const guardA = createOnceGuard();
+			const guardB = createOnceGuard();
+			const calls: string[] = [];
+
+			guardA(() => calls.push('a'));
+			guardB(() => calls.push('b'));
+
+			expect(calls).toEqual(['a', 'b']);
+		});
+	});
+
+	describe('abortIncompleteUpload', () => {
+		test('aborts a write stream that has not finished or been aborted yet', () => {
+			let called = false;
+			abortIncompleteUpload({
+				state: { streamEnd: false, aborted: false },
+				abort: async () => {
+					called = true;
+				},
+			});
+
+			expect(called).toBe(true);
+		});
+
+		test('does nothing when the stream already finished', () => {
+			let called = false;
+			abortIncompleteUpload({
+				state: { streamEnd: true, aborted: false },
+				abort: async () => {
+					called = true;
+				},
+			});
+
+			expect(called).toBe(false);
+		});
+
+		test('does nothing when the stream was already aborted', () => {
+			let called = false;
+			abortIncompleteUpload({
+				state: { streamEnd: false, aborted: true },
+				abort: async () => {
+					called = true;
+				},
+			});
+
+			expect(called).toBe(false);
+		});
+
+		test('does nothing when the stream has no state (not a real GridFSBucketWriteStream)', () => {
+			let called = false;
+			abortIncompleteUpload({
+				abort: async () => {
+					called = true;
+				},
+			});
+
+			expect(called).toBe(false);
+		});
+
+		test('does nothing when the stream has state but no abort method', () => {
+			expect(() => abortIncompleteUpload({ state: { streamEnd: false, aborted: false } })).not.toThrow();
+		});
+
+		test('swallows a rejection from abort() instead of throwing', async () => {
+			expect(() =>
+				abortIncompleteUpload({
+					state: { streamEnd: false, aborted: false },
+					abort: async () => {
+						throw new Error('abort failed');
+					},
+				}),
+			).not.toThrow();
+
+			// Let the rejected promise's .catch() run before the test ends.
+			await new Promise((resolve) => setImmediate(resolve));
 		});
 	});
 });

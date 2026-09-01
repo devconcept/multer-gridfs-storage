@@ -19,6 +19,57 @@ export function isPromise<T = unknown>(value: unknown): value is Promise<T> {
 }
 
 /**
+ * Creates a gate that runs the first callback it receives and silently ignores every call after that.
+ *
+ * Useful when several independent listeners can each try to settle the same outcome (e.g. a promise
+ * that can be resolved or rejected by more than one stream event) and only the first one should count.
+ * @return A function that invokes its argument only the first time it is called
+ */
+export function createOnceGuard(): (fn: () => void) => void {
+	let triggered = false;
+	return (fn: () => void) => {
+		if (triggered) {
+			return;
+		}
+
+		triggered = true;
+		fn();
+	};
+}
+
+/**
+ * Shape of the parts of a GridFSBucketWriteStream that {@link abortIncompleteUpload} needs. Kept
+ * minimal (rather than importing the driver's own type) so it can be exercised with lightweight
+ * test doubles instead of a real database connection.
+ */
+export interface AbortableWriteStream {
+	state?: {
+		streamEnd: boolean;
+		aborted: boolean;
+	};
+	abort?: () => Promise<void>;
+}
+
+/**
+ * Best-effort cleanup for a GridFS upload that failed before it finished.
+ *
+ * The driver only deletes chunks already written to GridFS when abort() is called explicitly; a
+ * plain stream destroy leaves them orphaned. Does nothing if the stream already finished or was
+ * already aborted (abort() throws in both cases), or if it isn't shaped like a real
+ * GridFSBucketWriteStream at all - a caller may hand it a test double or another kind of writable
+ * that has no state/abort of its own. Any rejection from abort() itself is swallowed: cleanup is a
+ * courtesy, not something the caller's own error should depend on.
+ * @param writeStream The write stream to abort if it is still in-flight
+ */
+export function abortIncompleteUpload(writeStream: AbortableWriteStream): void {
+	if (writeStream.state && !writeStream.state.streamEnd && !writeStream.state.aborted && typeof writeStream.abort === 'function') {
+		writeStream.abort().catch(() => {
+			// Best-effort cleanup: the caller's own error is what the consumer sees either way.
+		});
+	}
+}
+
+/**
  * Compare two objects by value.
  *
  * This function is designed taking into account how mongodb connection parsing routines work.

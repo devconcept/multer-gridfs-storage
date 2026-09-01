@@ -1,9 +1,11 @@
+import { Readable } from 'node:stream';
 import { test, expect, afterEach, describe } from 'vitest';
 import multer from 'multer';
 import request from 'supertest';
 import express, { Request, Response, NextFunction } from 'express';
 import { MongoClient } from 'mongodb';
 import { spy, restore } from 'sinon';
+import delay from 'delay';
 
 import { GridFsStorage } from '../src';
 import { storageOptions } from './utils/settings';
@@ -213,6 +215,40 @@ describe('error handling', () => {
 		await request(app).post('/url').attach('photo', files[0]);
 
 		expect(errorSpy.callCount).toBe(1);
+	});
+
+	test('abort() cleans up chunks already written when the upload fails mid-stream', async () => {
+		const { url, options } = storageOptions();
+		usedUrl = url;
+		const _db = await MongoClient.connect(url, options);
+		const db = getDb(_db, url);
+
+		// A tiny chunk size guarantees the first yielded buffer below is flushed as a real
+		// chunk document before the source stream fails.
+		storage = new GridFsStorage({ db, file: () => ({ filename: 'orphan-check.bin', chunkSize: 2 }) });
+		await storage.ready();
+
+		async function* chunkThenFail() {
+			yield Buffer.from('ab');
+			// Give the chunk insert time to land before the stream errors.
+			await delay(200);
+			throw new Error('boom mid-upload');
+		}
+
+		let caught: any;
+		try {
+			await storage.fromStream(Readable.from(chunkThenFail()), undefined, undefined);
+		} catch (error) {
+			caught = error;
+		}
+
+		expect(caught).toBeInstanceOf(Error);
+
+		// abort() runs fire-and-forget inside emitError; give its deleteMany a moment to land.
+		await delay(300);
+
+		const chunksCount = await storage.db.collection('fs.chunks').countDocuments({});
+		expect(chunksCount).toBe(0);
 	});
 
 	test('close() removes the error listeners a storage adds to the client', async () => {

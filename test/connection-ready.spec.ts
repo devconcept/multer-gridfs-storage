@@ -62,6 +62,17 @@ describe('ready()', () => {
 		expect(error).toBe(forcedError);
 	});
 
+	test('normalizes a non-Error connection rejection into an Error', async () => {
+		stub(GridFsStorage.prototype as any, '_openConnection').callsFake(() => Promise.reject('plain rejection reason'));
+		createStorage();
+
+		const evtError: any = await new Promise((resolve) => storage.once('connectionFailed', resolve));
+
+		expect(evtError).toBeInstanceOf(Error);
+		expect(evtError.message).toBe('plain rejection reason');
+		expect(storage.error).toBe(evtError);
+	});
+
 	test('returns a promise that resolves when the connection is created', async () => {
 		createStorage();
 		const resolveSpy = spy();

@@ -14,7 +14,7 @@ import pump from 'pump';
 import { StorageEngine } from 'multer';
 import { Request } from 'express';
 
-import { getDatabase, isPromise } from './utils.js';
+import { getDatabase, isPromise, createOnceGuard, abortIncompleteUpload } from './utils.js';
 import { Cache } from './cache.js';
 import {
 	CacheIndex,
@@ -349,23 +349,35 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 		const streamOptions = await GridFsStorage._mergeProps(settings);
 		return new Promise((resolve, reject) => {
+			// Guards against settling (and emitting) twice, e.g. when pump's premature-close
+			// callback fires after an 'error' listener has already settled the promise.
+			const settleOnce = createOnceGuard();
+
 			const emitError = (streamError: unknown) => {
-				this.emit('streamError', streamError, streamOptions);
-				reject(streamError);
+				settleOnce(() => {
+					// createStream() is a protected extension point, so a subclass may return something
+					// that isn't a real GridFSBucketWriteStream (e.g. a plain Writable in tests) -
+					// abortIncompleteUpload guards for that shape itself.
+					abortIncompleteUpload(writeStream);
+					this.emit('streamError', streamError, streamOptions);
+					reject(streamError);
+				});
 			};
 
 			const emitFile = (f: GridFSFile) => {
-				const storedFile: GridFile = {
-					id: f._id,
-					filename: f.filename,
-					metadata: f.metadata || null,
-					bucketName: streamOptions.bucketName,
-					chunkSize: f.chunkSize,
-					size: f.length,
-					uploadDate: f.uploadDate,
-				};
-				this.emit('file', storedFile);
-				resolve(storedFile);
+				settleOnce(() => {
+					const storedFile: GridFile = {
+						id: f._id,
+						filename: f.filename,
+						metadata: f.metadata || null,
+						bucketName: streamOptions.bucketName,
+						chunkSize: f.chunkSize,
+						size: f.length,
+						uploadDate: f.uploadDate,
+					};
+					this.emit('file', storedFile);
+					resolve(storedFile);
+				});
 			};
 
 			const writeStream = this.createStream(streamOptions);
@@ -390,7 +402,14 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 				transform.on('error', emitError);
 			}
 
-			pump([readStream, ...transforms, writeStream]);
+			// pump's callback also fires on a premature close (e.g. the client aborts the upload
+			// mid-stream), which destroys the piped streams without ever emitting 'error' or 'finish'.
+			// Without this, neither emitFile nor emitError would run and the promise would hang forever.
+			pump([readStream, ...transforms, writeStream], (pumpError) => {
+				if (pumpError) {
+					emitError(pumpError);
+				}
+			});
 		});
 	}
 
