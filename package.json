@@ -59,7 +59,7 @@
 		"@types/sinon": "^22.0.0",
 		"@types/supertest": "^7.2.1",
 		"@typescript-eslint/eslint-plugin": "^8.67.0",
-		"@vitest/coverage-v8": "^4.1.10",
+		"@vitest/coverage-v8": "^5.0.0",
 		"crypto-random-string": "^6.0.0",
 		"delay": "^7.0.0",
 		"eslint": "^10.8.1",
