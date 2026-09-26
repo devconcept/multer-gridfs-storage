@@ -12,7 +12,7 @@ jobs:
   close:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v11
         with:
           only-labels: 'needs-info'
           days-before-stale: 7         # after 7 idle days, warn (post message + add stale label)
