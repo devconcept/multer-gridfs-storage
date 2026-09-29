@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import { test, expect, afterEach, describe } from 'vitest';
 import { restore } from 'sinon';
 
@@ -93,5 +94,50 @@ describe('GridFsStorage without an open connection', () => {
 		const result: any = await new Promise((resolve) => s.once('connection', resolve));
 		expect(result.client).toBe(null);
 		s.close();
+	});
+});
+
+describe('GridFsStorage close()', () => {
+	test('closing while connecting does not attach error listeners once the connection resolves', async () => {
+		const client = new EventEmitter();
+		let resolveDb: (db: any) => void = () => {};
+		const s: any = new GridFsStorage({ db: new Promise<any>((resolve) => (resolveDb = resolve)) });
+		s.close();
+		resolveDb({ client });
+		await new Promise((resolve) => setImmediate(resolve));
+		expect(s.db).toBeTruthy();
+		expect(client.listenerCount('error')).toBe(0);
+		expect(s._clientEventSource).toBe(null);
+	});
+
+	test('closing rejects pending ready() calls instead of leaving them hanging', async () => {
+		const s: any = new GridFsStorage({ db: new Promise<any>(() => {}) });
+		const pending = s.ready();
+		s.close();
+		await expect(pending).rejects.toThrow('The storage was closed');
+		await expect(s.ready()).rejects.toThrow('The storage was closed');
+	});
+});
+
+describe('GridFsStorage file settings merge', () => {
+	test('undefined values do not override defaults or the generated id', async () => {
+		const merged = await (GridFsStorage as any)._mergeProps({
+			filename: 'name',
+			bucketName: undefined,
+			chunkSize: undefined,
+			id: undefined,
+			metadata: undefined,
+		});
+		expect(merged.bucketName).toBe('fs');
+		expect(merged.chunkSize).toBe(261_120);
+		expect(merged.metadata).toBe(null);
+		expect(merged.id).toBeTruthy();
+		expect(merged.filename).toBe('name');
+	});
+
+	test('provided values still override defaults', async () => {
+		const merged = await (GridFsStorage as any)._mergeProps({ filename: 'n', bucketName: 'photos', chunkSize: 1024 });
+		expect(merged.bucketName).toBe('photos');
+		expect(merged.chunkSize).toBe(1024);
 	});
 });

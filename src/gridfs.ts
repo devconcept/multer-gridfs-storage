@@ -89,6 +89,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	connecting = false;
 	caching = false;
 	error: Error | null = null;
+	closed = false;
 	// The user-provided naming function or generator function. A generator function is replaced
 	// with its running generator instance on the first file so it can be resumed for later files.
 	private _file: FileOption | FileGenerator | undefined;
@@ -150,12 +151,14 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		const previous: { filename?: string; id?: ObjectId } = await (fileSettings.filename ? {} : GridFsStorage.generateBytes());
 		// If no id is provided generate one
 		// If an error occurs the emitted file information will contain the id
-		const hasId = fileSettings.id;
-		if (!hasId) {
+		if (!fileSettings.id) {
 			previous.id = new ObjectId();
 		}
 
-		return { ...previous, ...defaults, ...fileSettings } as CreateStreamOptions;
+		// Drop keys explicitly set to undefined so they don't override the defaults or the generated id
+		// (e.g. `bucketName: undefined` would otherwise store files in the `undefined.files` collection).
+		const provided = Object.fromEntries(Object.entries(fileSettings).filter(([, value]) => value !== undefined));
+		return { ...previous, ...defaults, ...provided } as CreateStreamOptions;
 	}
 
 	/**
@@ -231,6 +234,10 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * Waits for the MongoDb connection associated to the storage to succeed or fail
 	 */
 	async ready(): Promise<ConnectionResult> {
+		if (this.closed) {
+			throw new Error('The storage was closed');
+		}
+
 		if (this.error) {
 			throw this.error;
 		}
@@ -240,18 +247,25 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		return new Promise((resolve, reject) => {
-			const done = (result: ConnectionResult) => {
+			const cleanup = () => {
+				this.removeListener('connection', done);
 				this.removeListener('connectionFailed', fail);
+				this.removeListener('closed', fail);
+			};
+
+			const done = (result: ConnectionResult) => {
+				cleanup();
 				resolve(result);
 			};
 
 			const fail = (error: unknown) => {
-				this.removeListener('connection', done);
+				cleanup();
 				reject(error);
 			};
 
 			this.once('connection', done);
 			this.once('connectionFailed', fail);
+			this.once('closed', fail);
 		});
 	}
 
@@ -265,6 +279,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 * storages.
 	 */
 	close(): void {
+		this.closed = true;
 		if (this._clientEventSource) {
 			for (const evt of clientErrorEvents) {
 				this._clientEventSource.removeListener(evt, this._emitDbError);
@@ -273,6 +288,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			this._clientEventSource = null;
 		}
 
+		// Settle any pending ready() calls before their listeners are removed, otherwise they never resolve.
+		this.emit('closed', new Error('The storage was closed'));
 		this.removeAllListeners();
 	}
 
@@ -498,8 +515,9 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		// Derive the MongoClient from the Db — it's a public property in the driver and the only
 		// EventEmitter in the modern driver, so it is where the dbError listeners are attached.
 		const client = this.db?.client ?? null;
-		this._clientEventSource = client;
-		if (client) {
+		// A storage closed while still connecting must not attach listeners that nothing will remove.
+		if (client && !this.closed) {
+			this._clientEventSource = client;
 			for (const evt of clientErrorEvents) client.on(evt, this._emitDbError);
 		}
 
