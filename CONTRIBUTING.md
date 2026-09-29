@@ -8,19 +8,19 @@ This library is open and inclusive. Please read and follow our [Code of Conduct]
 
 ## Questions
 
-First make sure your question is entirely related to this library and not to MongoDB or Multer. You can find answers for those in StackOverflow and GitHub.
+First make sure your question is entirely related to this library and not to MongoDB or Multer. You can find answers for those on Stack Overflow and in their GitHub repositories.
 
-Search the issues, even the closed ones using keywords for your problem. There is a possibility that someone had the same problem before and there is already a fix available. Also try StackOverflow, you will find thousands of developers willing to help there and the solutions might help other people with the same problem as you. 
+Search the issues, including closed ones, using keywords for your problem. There is a possibility that someone had the same problem before and there is already a fix available. Also try Stack Overflow; you will find thousands of developers willing to help there and the solutions might help other people with the same problem as you.
 
 [coc]: https://github.com/devconcept/multer-gridfs-storage/blob/master/CODE_OF_CONDUCT.md
 
 ## Bugs and features
 
-If you found a bug you are welcome to report it submitting an issue. You can also open a pull request if you are confident you can fix it but make sure to open the issue first and discuss the problem. The same applies for new features big or small. This helps coordinate our efforts and prevent duplication of work.
+If you found a bug you are welcome to report it by submitting an issue. You can also open a pull request if you are confident you can fix it, but make sure to open the issue first and discuss the problem. The same applies for new features, big or small. This helps coordinate our efforts and prevent duplication of work.
 
 Try not to pollute your changes trying to address several issues at once. Keep them simple and focused on one single problem. You can open a new PR or issue to solve the others.
 
-Provide a demo via a GitHub repository or a minimal reproducible example with the problem you found. We need to confirm it actually exists before proceeding to fix it. Saving us time will serve to fix more bugs and help more people.
+Provide a demo via a GitHub repository, StackBlitz or CodePen with the problem you found. We need to confirm it actually exists before proceeding to fix it. Saving us time will serve to fix more bugs and help more people.
 
 ## Pull request
 
@@ -49,9 +49,9 @@ npm test
 
 If possible make sure code coverage didn't decrease. Run `npm run coverage` and open the HTML report generated in the `coverage` folder.
 
-Lint and format the code using `npm run lint` and fix any issues that cannot be solved automatically. You can also run `npm run typecheck` to check types.
+Lint and format the code using `npm run lint` and fix any issues that cannot be solved automatically. You can also run `npm run typecheck` to check types. If you change the public API, update the JSDoc comments accordingly.
 
-Commit your changes using a descriptive commit message that give us an idea of what you did
+Commit your changes using a descriptive commit message that gives us an idea of what you did.
 
 Push your branch to GitHub
 
