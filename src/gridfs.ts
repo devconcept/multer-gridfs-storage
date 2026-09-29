@@ -97,6 +97,8 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	private readonly cacheIndex?: CacheIndex;
 	// The MongoClient the storage attached its error listeners to, kept so they can be removed again.
 	private _clientEventSource: MongoClient | null = null;
+	// Rejections for ready() calls still waiting on the connection, so close() can settle them.
+	private readonly _pendingReady = new Set<(error: Error) => void>();
 	// Stable handler reference (a per-instance closure) so it can be removed with removeListener.
 	private readonly _emitDbError = (error_: unknown): void => {
 		// Some driver error events fire without an error object even though the docs specify a MongoError argument.
@@ -250,7 +252,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 			const cleanup = () => {
 				this.removeListener('connection', done);
 				this.removeListener('connectionFailed', fail);
-				this.removeListener('closed', fail);
+				this._pendingReady.delete(fail);
 			};
 
 			const done = (result: ConnectionResult) => {
@@ -265,7 +267,7 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 
 			this.once('connection', done);
 			this.once('connectionFailed', fail);
-			this.once('closed', fail);
+			this._pendingReady.add(fail);
 		});
 	}
 
@@ -289,7 +291,11 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 		}
 
 		// Settle any pending ready() calls before their listeners are removed, otherwise they never resolve.
-		this.emit('closed', new Error('The storage was closed'));
+		const error = new Error('The storage was closed');
+		for (const fail of this._pendingReady) {
+			fail(error);
+		}
+
 		this.removeAllListeners();
 	}
 

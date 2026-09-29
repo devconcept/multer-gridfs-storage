@@ -117,6 +117,28 @@ describe('GridFsStorage close()', () => {
 		await expect(pending).rejects.toThrow('The storage was closed');
 		await expect(s.ready()).rejects.toThrow('The storage was closed');
 	});
+
+	test('pending ready() calls are forgotten once the connection resolves', async () => {
+		let resolveDb: (db: any) => void = () => {};
+		const s: any = new GridFsStorage({ db: new Promise<any>((resolve) => (resolveDb = resolve)) });
+		const pending = [s.ready(), s.ready(), s.ready()];
+		expect(s._pendingReady.size).toBe(3);
+		resolveDb({});
+		await Promise.all(pending);
+		expect(s._pendingReady.size).toBe(0);
+		s.close();
+	});
+
+	test('pending ready() calls are forgotten once the connection fails', async () => {
+		let rejectDb: (error: Error) => void = () => {};
+		const s: any = new GridFsStorage({ db: new Promise<any>((_, reject) => (rejectDb = reject)) });
+		const pending = [s.ready(), s.ready()];
+		expect(s._pendingReady.size).toBe(2);
+		rejectDb(new Error('Connection failed'));
+		await Promise.allSettled(pending);
+		expect(s._pendingReady.size).toBe(0);
+		s.close();
+	});
 });
 
 describe('GridFsStorage file settings merge', () => {
