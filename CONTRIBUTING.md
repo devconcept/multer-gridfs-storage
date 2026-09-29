@@ -8,11 +8,11 @@ This library is open and inclusive. Please read and follow our [Code of Conduct]
 
 ## Questions
 
-First make sure your question is entirely related to this library and not to MongoDb or Multer. You can find answers for those in StackOverflow and GitHub.
+First make sure your question is entirely related to this library and not to MongoDB or Multer. You can find answers for those in StackOverflow and GitHub.
 
 Search the issues, even the closed ones using keywords for your problem. There is a possibility that someone had the same problem before and there is already a fix available. Also try StackOverflow, you will find thousands of developers willing to help there and the solutions might help other people with the same problem as you. 
 
-[coc]: https://github.com/devconcept/ng-shopping-cart/blob/master/CODE_OF_CONDUCT.md
+[coc]: https://github.com/devconcept/multer-gridfs-storage/blob/master/CODE_OF_CONDUCT.md
 
 ## Bugs and features
 
@@ -20,7 +20,7 @@ If you found a bug you are welcome to report it submitting an issue. You can als
 
 Try not to pollute your changes trying to address several issues at once. Keep them simple and focused on one single problem. You can open a new PR or issue to solve the others.
 
-Provide a demo via a GitHub repo or RunKit with the problem you found. We need to confirm it actually exist before proceeding to fix it. Saving us time will serve to fix more bugs and help more people.
+Provide a demo via a GitHub repository or a minimal reproducible example with the problem you found. We need to confirm it actually exists before proceeding to fix it. Saving us time will serve to fix more bugs and help more people.
 
 ## Pull request
 
@@ -30,25 +30,26 @@ Click the Fork button to create your personal fork of this repository
 
 Clone your copy using git
 
-Run `npm install` to download and install dependencies.
+Run `npm install` to download and install dependencies. Node.js 22 or later is required.
 
 Create a new branch for your changes
 
 ```shell
-git checkout -b my-fix-branch master
+git checkout -b my-fix-branch develop
 ```
 
 Fix the bug or add the feature you want
 
-Add the required tests to make sure your code works and run the test suite ensuring all tests pass.
-   
+Add the required tests to make sure your code works and run the test suite ensuring all tests pass. The tests need a running MongoDB instance; if you have Docker you can start a throwaway one with `npm run db:up` (and stop it with `npm run db:down`).
+
 ```shell
-ng test
+npm run db:up
+npm test
 ```
 
-If possible make sure code coverage didn't diminished. There are tasks available for that too. Execute `npm run coverage` and serve the `coverage` folder with your preferred web server for static assets.
+If possible make sure code coverage didn't decrease. Run `npm run coverage` and open the HTML report generated in the `coverage` folder.
 
-Lint the code using the task `npm run lint` and fix the issues that cannot be solved automatically.
+Lint and format the code using `npm run lint` and fix any issues that cannot be solved automatically. You can also run `npm run typecheck` to check types.
 
 Commit your changes using a descriptive commit message that give us an idea of what you did
 
@@ -58,9 +59,9 @@ Push your branch to GitHub
 git push origin my-fix-branch
 ```
 
-Open GitHub and send a pull request to the `master` branch. You could also sent it to `develop` if is a work in progress.
+Open GitHub and send a pull request to the `develop` branch. The `master` branch only receives releases.
 
-Check the results from the Travis CI tests
+Check the results of the GitHub Actions build
 
 Keep adding commits with more changes if needed.
 
