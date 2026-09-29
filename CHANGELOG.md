@@ -1,3 +1,9 @@
+# 6.2.2
+
+* Changed: `@types/multer` is now an optional peer dependency, so JavaScript projects are no longer asked to install a types-only package.
+* Changed: Narrowed the `lodash.isplainobject` range from `>=0.8.0` to `^4.0.6` so a future major release is not picked up unexpectedly.
+* Changed: Updated development dependencies to their latest compatible versions, including Multer 2.4.0 for the test suite.
+
 # 6.2.1
 
 * Changed: Dropped the `has-own-prop` dependency; the test suite now uses the native `Object.hasOwn` (available since the package's minimum supported Node.js version). It was a runtime dependency used only in tests.
