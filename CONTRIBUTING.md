@@ -10,7 +10,7 @@ This library is open and inclusive. Please read and follow our [Code of Conduct]
 
 First make sure your question is entirely related to this library and not to MongoDB or Multer. You can find answers for those on Stack Overflow and in their GitHub repositories.
 
-Search the issues, including closed ones, using keywords for your problem. There is a possibility that someone had the same problem before and there is already a fix available. Also try Stack Overflow; you will find thousands of developers willing to help there and the solutions might help other people with the same problem as you.
+Search the issues, including closed ones, using keywords for your problem. There is a possibility that someone had the same problem before and there is already a fix available. You can also ask in [GitHub Discussions](https://github.com/devconcept/multer-gridfs-storage/discussions) or try Stack Overflow; you will find thousands of developers willing to help there and the solutions might help other people with the same problem as you.
 
 [coc]: https://github.com/devconcept/multer-gridfs-storage/blob/master/CODE_OF_CONDUCT.md
 
@@ -40,7 +40,7 @@ git checkout -b my-fix-branch develop
 
 Fix the bug or add the feature you want
 
-Add the required tests to make sure your code works and run the test suite ensuring all tests pass. The tests need a running MongoDB instance; if you have Docker you can start a throwaway one with `npm run db:up` (and stop it with `npm run db:down`).
+Add the required tests to make sure your code works and run the test suite ensuring all tests pass. The tests need a MongoDB server reachable at `127.0.0.1:27017` (override with the `MONGO_HOST` / `MONGO_PORT` environment variables); if you have Docker you can start a throwaway one with `npm run db:up` (and stop it with `npm run db:down`).
 
 ```shell
 npm run db:up

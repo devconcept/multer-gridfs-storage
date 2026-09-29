@@ -636,7 +636,7 @@ $ npm run db:down  # stop and remove it
 
 Tests are written with the [Vitest](https://vitest.dev) testing framework.
 
-Code coverage thanks to [c8](https://github.com/bcoe/c8)
+Code coverage thanks to [Vitest's V8 coverage provider](https://vitest.dev/guide/coverage)
 
 ```bash
 $ npm run coverage

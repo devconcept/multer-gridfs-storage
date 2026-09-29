@@ -22,7 +22,7 @@ Instead, report them privately using one of the following channels:
 - **GitHub Security Advisories** (preferred): use the
   ["Report a vulnerability"](https://github.com/devconcept/multer-gridfs-storage/security/advisories/new)
   button in the Security tab of this repository.
-- **Email**: [devconcept@outlook.com](mailto:devconcept@outlook.com)
+- **Email**: [oss@devconcept.me](mailto:oss@devconcept.me)
 
 Please include as much of the following as you can to help us triage
 the report quickly:

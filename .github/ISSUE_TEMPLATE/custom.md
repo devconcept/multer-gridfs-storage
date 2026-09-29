@@ -1,6 +1,6 @@
 ---
 name: Other issue
-about: Contribute with this project in any other way
+about: Contribute to this project in any other way
 title: ''
 labels: ''
 assignees: ''
@@ -16,9 +16,9 @@ assignees: ''
 
 **Environment**
 
-<!-- If applicable include the environment where you run your code so we can reproduce it. -->
+<!-- If applicable, include the environment where you run your code so we can reproduce it. -->
 
-<!-- Replace *(major.minor.patch)* with your installed version number of each module, eg: "I'm using `multer-gridfs-storage` version 3.1.4" -->
+<!-- Replace *(major.minor.patch)* with your installed version number of each module, e.g.: "I'm using `multer-gridfs-storage` version 3.1.4" -->
 
 <!-- Otherwise remove the environment block -->
 
