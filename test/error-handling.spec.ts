@@ -191,6 +191,35 @@ describe('error handling', () => {
 		await expect(storage.fromStream(stream, {} as any, {} as any)).rejects.toThrow();
 	});
 
+	test('fromStream removes its error listener from the readable stream once settled', async () => {
+		const { url, options } = storageOptions();
+		usedUrl = url;
+		const _db = await MongoClient.connect(url, options);
+		const db = getDb(_db, url);
+		storage = new GridFsStorage({ db });
+		await storage.ready();
+
+		// fromStream attaches its listener synchronously, before pump adds its own (which pump never
+		// removes), so the listener added during the call itself is the one under test.
+		const addedListener = (stream: Readable, run: () => Promise<unknown>) => {
+			const before = stream.listeners('error');
+			const promise = run();
+			const added = stream.listeners('error').filter((l) => !before.includes(l));
+			expect(added).toHaveLength(1);
+			return { promise, listener: added[0] };
+		};
+
+		const okStream = Readable.from([Buffer.from('ok')]);
+		const ok = addedListener(okStream, () => storage.fromStream(okStream, {} as any, {} as any));
+		await ok.promise;
+		expect(okStream.listeners('error')).not.toContain(ok.listener);
+
+		const failStream = new ErrorReadableStream();
+		const fail = addedListener(failStream, () => storage.fromStream(failStream, {} as any, {} as any));
+		await expect(fail.promise).rejects.toThrow();
+		expect(failStream.listeners('error')).not.toContain(fail.listener);
+	});
+
 	test('error event is emitted when there is an error in the writable stream', async () => {
 		class StorageStub extends GridFsStorage {
 			protected createStream(_options: any): any {

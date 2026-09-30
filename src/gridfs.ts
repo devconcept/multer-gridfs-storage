@@ -318,8 +318,18 @@ export class GridFsStorage extends EventEmitter implements StorageEngine {
 	 */
 	async fromStream(readStream: NodeJS.ReadableStream, request: Request, file: Express.Multer.File): Promise<GridFile> {
 		return new Promise<GridFile>((resolve, reject) => {
-			readStream.on('error', reject);
-			this.fromMulterStream(readStream, request, file).then(resolve).catch(reject);
+			// Detach before settling so the listener is gone by the time the caller observes the result,
+			// whichever of the readable stream or the upload settles first.
+			const onError = (error: unknown) => {
+				readStream.removeListener('error', onError);
+				reject(error);
+			};
+
+			readStream.on('error', onError);
+			this.fromMulterStream(readStream, request, file).then((stored) => {
+				readStream.removeListener('error', onError);
+				resolve(stored);
+			}, onError);
 		});
 	}
 
