@@ -15,11 +15,7 @@ jobs:
     strategy:
       matrix:
         node-version: [ 22.x, 24.x ]
-        # MongoDB 8.0 refuses to start on Linux kernels 6.19 to 7.0.13 (SERVER-121912), which
-        # GitHub runners currently use. Move back to 8.0 once runners ship kernel 7.0.14+.
         mongodb-version: [ '7.0' ]
-    env:
-      MONGODB_IMAGE: mongo:${{ matrix.mongodb-version }}
     steps:
       - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
@@ -28,15 +24,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - name: Start MongoDB
-        run: |
-          docker run --name mongodb --publish 27017:27017 --detach "$MONGODB_IMAGE"
-          for i in $(seq 1 30); do
-            docker exec mongodb mongosh --quiet --eval "db.runCommand({ ping: 1 })" >/dev/null 2>&1 && exit 0
-            sleep 1
-          done
-          docker ps -a --filter name=mongodb
-          docker logs mongodb
-          exit 1
+        uses: supercharge/mongodb-github-action@1.12.1
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
       - run: npm ci
       - run: npm install multer --no-save
       - run: npm install mongodb --no-save
