@@ -29,13 +29,11 @@ jobs:
           cache: 'npm'
       - name: Start MongoDB
         run: |
-          echo "Kernel: $(uname -r)"
           docker run --name mongodb --publish 27017:27017 --detach "$MONGODB_IMAGE"
           for i in $(seq 1 30); do
             docker exec mongodb mongosh --quiet --eval "db.runCommand({ ping: 1 })" >/dev/null 2>&1 && exit 0
             sleep 1
           done
-          echo "MongoDB did not start within 30 seconds"
           docker ps -a --filter name=mongodb
           docker logs mongodb
           exit 1
