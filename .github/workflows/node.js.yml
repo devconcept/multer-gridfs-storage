@@ -11,11 +11,15 @@ permissions:
 
 jobs:
   default:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [ 22.x, 24.x ]
         mongodb-version: [ '8.0' ]
+    env:
+      # mongo:8.0 rebuilt after 2026-10-14 (still 8.0.34) fails to start on GitHub runners.
+      # Pinned to the last image that worked; remove once a newer mongo:8.0 starts again.
+      MONGODB_IMAGE: mongo@sha256:6657bf2413fefc5be649390318f5b4cd7328e982722f8ce2ac6dfa6f0a42cb03
     steps:
       - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
@@ -24,9 +28,16 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.12.1
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
+        run: |
+          docker run --name mongodb --publish 27017:27017 --detach "$MONGODB_IMAGE"
+          for i in $(seq 1 30); do
+            docker exec mongodb mongosh --quiet --eval "db.runCommand({ ping: 1 })" >/dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          echo "MongoDB did not start within 30 seconds"
+          docker ps -a --filter name=mongodb
+          docker logs mongodb
+          exit 1
       - run: npm ci
       - run: npm install multer --no-save
       - run: npm install mongodb --no-save
