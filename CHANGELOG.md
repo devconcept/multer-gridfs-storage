@@ -1,3 +1,12 @@
+# 6.2.3
+
+* Fixed: Calling `close()` now rejects any pending `ready()` calls with a `The storage was closed` error, and `ready()` rejects with the same error if called after `close()`. Previously, calls still waiting on the connection never settled.
+* Fixed: A storage closed while still connecting no longer attaches `dbError` listeners to the `MongoClient` once the connection opens.
+* Fixed: `fromStream` now removes its `error` listener from the read stream once it settles.
+* Fixed: File settings explicitly set to `undefined` no longer override the defaults or the generated id. For example, `bucketName: undefined` previously stored files in the `undefined.files` collection.
+* Added: A public `closed` property on the storage that indicates whether `close()` has been called.
+* Changed: Updated development dependencies to their latest compatible versions, including Multer 2.5.0 for the test suite.
+
 # 6.2.2
 
 * Changed: `@types/multer` is now an optional peer dependency, so JavaScript projects are no longer asked to install a types-only package.
@@ -9,6 +18,11 @@
 * Changed: Dropped the `has-own-prop` dependency; the test suite now uses the native `Object.hasOwn` (available since the package's minimum supported Node.js version). It was a runtime dependency used only in tests.
 * Changed: Moved `@types/pump` from `dependencies` to `devDependencies` — it is a compile-time type declaration only and never appears in the public API.
 * Changed: Updated development dependencies to their latest compatible versions.
+
+# 6.2.0
+
+* Fixed: An upload that failed mid-stream could leave orphaned chunks in GridFS. Failed writes now call `abort()` on the GridFS write stream so any chunks already written are cleaned up.
+* Fixed: An upload no longer hangs forever if the client aborts the request mid-stream. `pump`'s premature-close callback is now handled, and settling the upload (resolving or rejecting) is guarded against firing twice.
 
 # 6.1.0
 
